@@ -1,0 +1,39 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My English Dictionary</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'med/css/styles.css' %}">
+    <link rel="icon" href="{% static 'med/img/base/icon.png' %}" type="image/png"/>
+</head>
+<body>
+
+<header>
+    <a href="{% url 'home' %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
+    <nav>
+        <div class="nav-center">
+            <a href="#">My Dictionary</a>
+            <a href="#">Word Categories</a>
+            <a href="#" id="theme-toggle-light">Light Mode</a>
+            <a href="#" id="theme-toggle-dark">Dark Mode</a>
+        </div>
+        <div class="nav-right">
+            <button id="sign-up">Sign Up</button>
+            <button id="log-in">Log In</button>
+        </div>
+    </nav>
+</header>
+
+<div class="container">
+
+    {% block content %}
+    {% endblock %}
+
+</div>
+
+<script src="{% static 'med/js/script.js' %}"></script>
+</body>
+</html>

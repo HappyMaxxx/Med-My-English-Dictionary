@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Welcome to My English Dictionary</h1>
+<p>Our website is designed for everyone who wants to improve their English language skills and make the learning process more engaging and effective. We offer unique tools and features to help you create and manage your own English word dictionary.</p>
+
+<div class="features">
+    <h2>Key Features</h2>
+    <div class="feature left-image">
+        <img src="{% static 'med/img/features/personal_dictionary.jpg' %}" alt="Personal Dictionary">
+        <div class="feature-text">
+            <h3>Create Your Personal Dictionary</h3>
+            <p>Record new words and their translations to never forget them. Add example sentences for better understanding.</p>
+        </div>
+    </div>
+    <div class="feature right-image">
+        <div class="feature-text">
+            <h3>Interactive Tests</h3>
+            <p>Create tests based on your words to check your knowledge. Various test formats, including multiple choice, word input, and more.</p>
+        </div>
+        <img src="{% static 'med/img/features/interactive_tests.jpg' %}" alt="Interactive Tests">
+    </div>
+    <div class="feature left-image">
+        <img src="{% static 'med/img/features/word_groups.jpg' %}" alt="Word Groups">
+        <div class="feature-text">
+            <h3>Group Words</h3>
+            <p>Organize words by topics or categories for more structured learning. Easily find and study words by groups.</p>
+        </div>
+    </div>
+    <div class="feature right-image">
+        <div class="feature-text">
+            <h3>Share Words and Groups</h3>
+            <p>Share your words and groups with friends or colleagues. Access other users' dictionaries to expand your vocabulary.</p>
+        </div>
+        <img src="{% static 'med/img/features/share_words.jpg' %}" alt="Share Words">
+    </div>
+</div>
+
+<div class="why-us">
+    <h2>Why Choose Us?</h2>
+    <ul>
+        <li>Easy-to-use interface: Our website is easy to use, and you'll quickly master all the features.</li>
+        <li>Flexibility and personalization: Customize your dictionary to your needs and preferences.</li>
+        <li>Community: Join a community of users who are also striving to improve their English language skills.</li>
+    </ul>
+</div>
+
+<div class="buttons">
+    <a href="#">Get Started</a>
+    <a href="{% url 'home' %}">Back Home</a>
+</div>
+{% endblock %}
