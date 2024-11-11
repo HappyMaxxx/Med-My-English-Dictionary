@@ -19,7 +19,7 @@ body.dark-theme {
     --button-background: #555555;
     --button-text-color: #f5f5f5;
     --feature-background: #333;
-    --feature-shadow: 0px 8px 16px rgba(255, 255, 255, 0.1);
+    --feature-shadow: 0px 8px 16px rgba(255, 255, 255, 0.05);
     --feature-text-color: #ddd;
     --list-text-color: #ddd;
 }
@@ -251,6 +251,65 @@ header button:hover {
     height: 100%;
     object-fit: cover;
     border-radius: 5px;
+}
+
+form {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: var(--feature-background);
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+}
+
+form .form-label {
+    display: block;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+form input[type="text"],
+form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+    color: var(--text-color);
+    background-color: #f9f9f9;
+    transition: border-color 0.3s;
+    resize: none;
+    max-height: 150px;
+}
+
+form input[type="text"]:focus,
+form textarea:focus {
+    border-color: var(--button-background);
+    outline: none;
+}
+
+.form-error {
+    color: red;
+    font-size: 0.9em;
+    margin-top: -15px;
+    margin-bottom: 25px;
+
+}
+
+form .buttons a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+form .buttons a:hover {
+    background-color: #555;
 }
 
 /* Адаптивні стилі */
