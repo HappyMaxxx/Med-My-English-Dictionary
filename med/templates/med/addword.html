@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{{title}}</h1>
+
+<form action="{% url 'addword' %}" method="post" id="word_adding_form">
+    {% csrf_token %}
+    <p><label class="form-label" for="{{ form.word.id_for_label }}">{{ form.word.label }}: </label>{{ form.word }}</p>
+    <div class="form-error">{{ form.word.errors }}</div>
+
+    <p><label class="form-label" for="{{ form.translation.id_for_label }}">{{ form.translation.label }}: </label>{{ form.translation }}</p>
+    <div class="form-error">{{ form.translation.errors }}</div>
+
+    <p><label class="form-label" for="{{ form.example.id_for_label }}">{{ form.example.label }}: </label>{{ form.example }}</p>
+    <div class="form-error">{{ form.example.errors }}</div>
+
+    <div class="form-error">{{ form.non_field_errors }}</div>
+
+    <div class="buttons">
+        <a href="#" onclick="document.getElementById('word_adding_form').submit(); return false;">Add Word</a>
+    </div>
+</form>
+
+{% endblock %}
