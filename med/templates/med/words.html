@@ -3,17 +3,23 @@
 {% block content %}
 
 <div class="word_table_container">
+    <div class="buttons">
+        <a href="#" onclick="selectAllWords(); return false;">Select All Words</a>
+    </div>
+
     <table class="word_table">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Word</th>
                 <th>Translation</th>
                 <th>Example</th>
             </tr>
         </thead>
         <tbody>
-            {% for word in object_list %}
+            {% for word in words %}
                 <tr>
+                    <td><input type="checkbox" name="word_checkbox" value="{{ word.id }}"></td>
                     <td>{{ word.word }}</td>
                     <td>{{ word.translation }}</td>
                     <td>{{ word.example }}</td>
@@ -22,5 +28,21 @@
         </tbody>
     </table>
 </div>
+
+<script>
+function selectAllWords() {
+    var checkboxes = document.getElementsByName('word_checkbox');
+    var allChecked = true;
+    for (var checkbox of checkboxes) {
+        if (!checkbox.checked) {
+            allChecked = false;
+            break;
+        }
+    }
+    for (var checkbox of checkboxes) {
+        checkbox.checked = !allChecked;
+    }
+}
+</script>
 
 {% endblock %}

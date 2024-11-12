@@ -361,6 +361,17 @@ form .buttons a:hover {
     background-color: var(--dark-card-background);
 }
 
+.word_table th, td {
+    border: 1px solid var(--feature-background);
+    border-radius: 10px;
+}
+
+.word_table_container .buttons {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+}
+
 /* Адаптивні стилі */
 @media (max-width: 768px) {
     .container h1 {
