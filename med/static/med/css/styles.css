@@ -393,6 +393,55 @@ form .buttons a:hover {
     vertical-align: middle; 
 }
 
+/* Стиль для пагінації */
+.list-pages {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.list-pages ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 10px;
+}
+
+.list-pages li {
+    font-size: 1em;
+}
+
+.list-pages a {
+    display: inline-block;
+    padding: 8px 12px;
+    color: var(--text-color);
+    background-color: var(--feature-background);
+    border: 1px solid var(--button-background);
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.list-pages a:hover {
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+}
+
+.list-pages .page-num a.active {
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+    font-weight: bold;
+    cursor: default;
+}
+
+.page-num-selected {
+    font-weight: bold;
+    color: var(--button-text-color);
+    background-color: var(--button-background);
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
 /* Адаптивні стилі */
 @media (max-width: 768px) {
     .container h1 {
