@@ -14,11 +14,8 @@ def addword(request):
     if request.method == 'POST':
         form = AddWordForm(request.POST)
         if form.is_valid():
-            try:
-                Word.objects.create(**form.cleaned_data)
-                return redirect('home')
-            except:
-                form.add_error(None, 'Failed to add new word')
+            form.save()
+            return redirect('home')
 
     else:
         form = AddWordForm()

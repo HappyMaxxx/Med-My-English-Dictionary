@@ -3,7 +3,7 @@ from django.db import models
 class Word(models.Model):
     word = models.CharField(max_length=100)
     translation = models.CharField(max_length=100)
-    example = models.TextField(max_length=1000, blank=True)
+    example = models.TextField(blank=True)
     time_create = models.DateTimeField(auto_now_add=True)
     time_update = models.DateTimeField(auto_now=True)
 

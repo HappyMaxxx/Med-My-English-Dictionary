@@ -16,3 +16,10 @@ class AddWordForm(forms.ModelForm):
         required = {
             'example': False
         }
+    
+    def clean_example(self):
+        example = self.cleaned_data.get('example')
+        if len(example) > 1000:
+            raise forms.ValidationError('Example is too long, max 1000 characters.')
+        
+        return example
