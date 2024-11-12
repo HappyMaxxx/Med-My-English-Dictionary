@@ -37,7 +37,6 @@ body {
     padding: 0;
     box-sizing: border-box;
 }
-
 header {
     display: flex;
     justify-content: space-between;
@@ -47,14 +46,11 @@ header {
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-header img {
-    height: 40px;
-}
-
-header nav {
+header .nav-items {
     display: flex;
-    gap: 20px;
+    align-items: center;
     width: 100%;
+    justify-content: space-between;
 }
 
 header .nav-center {
@@ -65,31 +61,47 @@ header .nav-center {
     align-items: center;
 }
 
-header .nav-right {
+header .buttons {
     display: flex;
-    gap: 10px;
-    margin-left: 30px;
+    gap: 5px;
+    align-items: center;
+    margin-top: 0px;
 }
 
-header nav a {
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: bold;
-}
-
-header button {
-    background-color: var(--button-background);
-    color: var(--button-text-color);
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
+header #logo_img {
+    height: 50px;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s;
 }
 
-header button:hover {
-    background-color: #777;
+header .nav-center a {
+    text-decoration: none;
+    color: var(--nav-link-color);
+    font-size: 1em;
+    font-weight: 500;
+    padding: 5px 10px;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+header .nav-center a:hover {
+    color: var(--nav-link-hover-color);
+    background-color: var(--nav-link-hover-bg);
+    border-radius: 4px;
+}
+
+header .buttons a {
+    text-decoration: none;
+    color: var(--button-text-color);
+    background-color: var(--button-background);
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+header .buttons a:hover {
+    background-color: #444;
+    transform: scale(1.05);
 }
 
 .container {
