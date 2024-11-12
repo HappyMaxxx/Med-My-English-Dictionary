@@ -27,6 +27,7 @@ def addword(request):
 class WordListView(ListView):
     model = Word
     template_name = 'med/words.html'
+    context_object_name = 'words'
 
 def page_not_found(request, exception):
     return HttpResponseNotFound("<h1>404 Page Not Found</h1>")
