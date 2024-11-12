@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 
 <div class="word_table_container">
     <div class="buttons">
         <a href="#" onclick="selectAllWords(); return false;">Select All Words</a>
+        <a href="#">Delete Selected</a>
+        <a href="{% url 'addword' %}">Add new word</a>
     </div>
 
     <table class="word_table">
@@ -14,6 +17,7 @@
                 <th>Word</th>
                 <th>Translation</th>
                 <th>Example</th>
+                <th>Edit</th>
             </tr>
         </thead>
         <tbody>
@@ -23,6 +27,7 @@
                     <td>{{ word.word }}</td>
                     <td>{{ word.translation }}</td>
                     <td>{{ word.example }}</td>
+                    <td class="img_td"><a href="#"><img class="edit_img" src="{% static 'med/img/features/edit_light.png' %}" data-light-src="{% static 'med/img/features/edit_light.png' %}" data-dark-src="{% static 'med/img/features/edit_dark.png' %}" alt="Edit img"></a></td>
                 </tr>
             {% endfor %}
         </tbody>

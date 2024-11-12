@@ -16,30 +16,50 @@ function setTheme(theme) {
     localStorage.setItem("theme", theme);
 
     const logo = document.querySelector("header img");
-    if (theme === "dark") {
-        logo.setAttribute("src", logo.getAttribute("data-dark-src"));
-    } else {
-        logo.setAttribute("src", logo.getAttribute("data-light-src"));
+    const edit_imgs = document.querySelectorAll(".edit_img");
+
+    if (logo) {
+        if (theme === "dark") {
+            logo.setAttribute("src", logo.getAttribute("data-dark-src"));
+        } else {
+            logo.setAttribute("src", logo.getAttribute("data-light-src"));
+        }
     }
+
+    edit_imgs.forEach(img => {
+        if (theme === "dark") {
+            img.setAttribute("src", img.getAttribute("data-dark-src"));
+        } else {
+            img.setAttribute("src", img.getAttribute("data-light-src"));
+        }
+    });
 }
 
 const themeToggleLight = document.getElementById("theme-toggle-light");
 const themeToggleDark = document.getElementById("theme-toggle-dark");
 
-themeToggleLight.addEventListener("click", (event) => {
-    event.preventDefault();
-    setTheme("light");
-    updateButtonText();
-});
+if (themeToggleLight) {
+    themeToggleLight.addEventListener("click", (event) => {
+        event.preventDefault();
+        setTheme("light");
+        updateButtonText();
+    });
+}
 
-themeToggleDark.addEventListener("click", (event) => {
-    event.preventDefault();
-    setTheme("dark");
-    updateButtonText();
-});
+if (themeToggleDark) {
+    themeToggleDark.addEventListener("click", (event) => {
+        event.preventDefault();
+        setTheme("dark");
+        updateButtonText();
+    });
+}
 
 function updateButtonText() {
     const isDarkTheme = document.body.classList.contains("dark-theme");
-    themeToggleLight.style.display = isDarkTheme ? "inline" : "none";
-    themeToggleDark.style.display = isDarkTheme ? "none" : "inline";
+    if (themeToggleLight) {
+        themeToggleLight.style.display = isDarkTheme ? "inline" : "none";
+    }
+    if (themeToggleDark) {
+        themeToggleDark.style.display = isDarkTheme ? "none" : "inline";
+    }
 }

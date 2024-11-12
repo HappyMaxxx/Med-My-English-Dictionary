@@ -96,7 +96,7 @@ header button:hover {
     max-width: 1200px;
     margin: 0 auto;
     text-align: center;
-    padding: 60px 20px;
+    padding: 30px 10px;
 }
 
 .container h1 {
@@ -317,9 +317,9 @@ form .buttons a:hover {
 
 /* Контейнер для таблиці */
 .word_table_container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 10px;
     background-color: var(--feature-background);
     border-radius: 10px;
     box-shadow: var(--feature-shadow);
@@ -368,8 +368,29 @@ form .buttons a:hover {
 
 .word_table_container .buttons {
     display: flex;
-    justify-content: flex-start;
-    margin-bottom: 20px;
+    justify-content: flex-end;
+    /* margin-bottom: 20px; */
+}
+
+.word_table_container .buttons a {
+    margin: 5px 5px;
+    width: 20%;
+}
+
+.word_table_container .buttons a:last-child {
+    margin: 5px 2px 5px 5px;
+}
+
+.word_table_container .edit_img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.word_table_container .img_td {
+    text-align: center;
+    vertical-align: middle; 
 }
 
 /* Адаптивні стилі */
