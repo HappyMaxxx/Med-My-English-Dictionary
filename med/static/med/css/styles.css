@@ -6,6 +6,7 @@
     --button-background: #333;
     --button-text-color: #ffffff;
     --feature-background: #fff;
+    --word-list-background: #fff;
     --feature-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
     --feature-text-color: #666;
     --list-text-color: #666;
@@ -19,6 +20,7 @@ body.dark-theme {
     --button-background: #555555;
     --button-text-color: #f5f5f5;
     --feature-background: #333;
+    --word-list-background: #2d2c2c;
     --feature-shadow: 0px 8px 16px rgba(255, 255, 255, 0.05);
     --feature-text-color: #ddd;
     --list-text-color: #ddd;
@@ -313,6 +315,52 @@ form .buttons a:hover {
     background-color: #555;
 }
 
+/* Контейнер для таблиці */
+.word_table_container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: var(--feature-background);
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+}
+
+/* Стиль для таблиці */
+.word_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1em;
+    color: var(--text-color);
+    border: 1px solid var(--dark-card-border);
+}
+
+/* Заголовки таблиці */
+.word_table thead th {
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+    padding: 12px;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 2px solid var(--dark-card-border);
+}
+
+/* Стиль для рядків таблиці */
+.word_table tbody td {
+    padding: 10px;
+    border: 1px solid var(--dark-card-border);
+    text-align: left;
+    color: var(--text-color);
+}
+
+/* Чергування кольорів для парних рядків */
+.word_table tbody tr:nth-child(even) {
+    background-color: var(--background-color);
+}
+
+.word_table tbody tr:hover {
+    background-color: var(--dark-card-background);
+}
+
 /* Адаптивні стилі */
 @media (max-width: 768px) {
     .container h1 {
@@ -332,6 +380,37 @@ form .buttons a:hover {
     header nav {
         flex-direction: column;
         gap: 10px;
+    }
+    .word_table_container {
+        padding: 15px;
+    }
+
+    .word_table thead {
+        display: none;
+    }
+
+    .word_table tbody td {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        text-align: right;
+        position: relative;
+    }
+
+    .word_table tbody td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        padding-left: 10px;
+        font-weight: bold;
+    }
+
+    .word_table tbody tr {
+        display: block;
+        margin-bottom: 10px;
+        border-bottom: 2px solid var(--dark-card-border);
+        border-radius: 8px;
+        padding: 10px;
     }
 }
 
