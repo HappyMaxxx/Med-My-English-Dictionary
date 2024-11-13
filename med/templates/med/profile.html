@@ -16,6 +16,27 @@
         </div>
     </div>
     
+    <div class="stats">
+        <div class="stat-item">
+            <a href="{% url 'words' %}">
+                <p><strong>Words</strong></p>
+                <p>{{ word_count }}</p>
+            </a>
+        </div>
+        <div class="stat-item">
+            <a href="#">
+                <p><strong>Groups</strong></p>
+                <p> {{ group_count }} </p>
+            </a>
+        </div>
+        <div class="stat-item">
+            <a href="#">
+                <p><strong>Friends</strong></p>
+                <p> 0 </p>
+            </a>
+        </div>
+    </div>
+
     <div class="buttons">
         <!-- TODO: make edit profile and change password -->
         <a href="#">Edit Profile</a>
@@ -43,7 +64,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% endif%}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

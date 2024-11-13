@@ -10,6 +10,8 @@ from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
+from django.db import transaction
+
 from django.contrib.auth import logout, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from med.models import *
@@ -32,6 +34,14 @@ class AddWordView(LoginRequiredMixin, CreateView):
         word = form.save(commit=False)
         word.user = self.request.user
         word.save() 
+
+        group_name = f"All {self.request.user.username} words"
+        group, created = WordGroup.objects.get_or_create(
+            name=group_name, 
+            user=self.request.user
+        )
+
+        group.words.add(word)
 
         return super().form_valid(form)
 
@@ -101,8 +111,10 @@ class RegisterUser(CreateView):
     success_url = '/login'
     extra_context = {'title': 'Register'}
 
+    @transaction.atomic
     def form_valid(self, form):
         user = form.save()
+
         login(self.request, user)
         return redirect('profile')
 
@@ -120,7 +132,9 @@ class LoginUser(LoginView):
 class ProfileView(View):
     def get(self, request, *args, **kwargs):
         recent_words = Word.objects.filter(user=request.user)[:5]
-        return render(request, 'med/profile.html', {'recent_words': recent_words})
+        word_count = Word.objects.filter(user=request.user).count()
+        group_count = WordGroup.objects.filter(user=request.user).count()
+        return render(request, 'med/profile.html', {'recent_words': recent_words, 'word_count': word_count, 'group_count': group_count})
     
 
 def logout_user(request):

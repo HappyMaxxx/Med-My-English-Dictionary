@@ -531,6 +531,8 @@ form p a {
 .profile-container .buttons {
     text-align: right;
     margin-bottom: 35px;
+    padding-left: 0;
+    width: 100%;
 }
 
 .profile-container .buttons a {
@@ -539,6 +541,32 @@ form p a {
 
 .profile-container .center-table {
     text-align: center;
+}
+
+.stats {
+    display: flex; /* Використовуємо Flexbox для горизонтального розміщення */
+    justify-content: space-around; /* Розподіляємо елементи по горизонталі з рівними відступами */
+    align-items: center; /* Вертикально вирівнюємо елементи */
+    margin-top: 20px; /* Відступ від інших елементів */
+}
+
+.stat-item {
+    text-align: center; /* Центруємо текст всередині кожного елемента */
+}
+
+.stat-item p:first-child {
+    font-weight: bold; /* Заголовок робимо жирним */
+    margin-bottom: 5px; /* Відступ між заголовком і значенням */
+}
+
+.stat-item p:last-child {
+    font-size: 1.5em;  /* Збільшуємо розмір шрифту для значення */
+    font-weight: bold;  /* Робимо значення жирним */
+}
+
+.stat-item a {
+    color: var(--text-color);
+    text-decoration: none;
 }
 
 /* Адаптивні стилі */
