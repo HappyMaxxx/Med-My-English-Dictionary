@@ -1,3 +1,4 @@
+import re
 from django import forms
 from django.urls import reverse_lazy
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -25,6 +26,10 @@ class AddWordForm(forms.ModelForm):
         example = self.cleaned_data.get('example')
         if len(example) > 1000:
             raise forms.ValidationError('Example is too long, max 1000 characters.')
+        
+        word = self.cleaned_data.get('word')
+        if not re.match("^[a-zA-Z]+$", word):
+            raise forms.ValidationError("Word can contain only Latin characters.")
         
         return example
     

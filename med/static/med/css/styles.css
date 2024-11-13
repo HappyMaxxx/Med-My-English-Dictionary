@@ -230,10 +230,6 @@ header .buttons a:hover {
     font-size: 1.5em;
 }
 
-.buttons {
-    margin-top: 20px;
-}
-
 .buttons a {
     text-decoration: none;
     color: var(--button-text-color);
@@ -310,11 +306,17 @@ form textarea:focus {
 }
 
 .form-error {
+    list-style: none; 
     color: red;
     font-size: 0.9em;
     margin-top: -15px;
     margin-bottom: 25px;
 
+}
+
+.errorlist {
+    list-style: none; 
+    margin-top: 20px;
 }
 
 form .buttons a {
@@ -483,6 +485,10 @@ form p a {
     font-size: 1.1em;
     color: var(--list-text-color);
     margin-bottom: 10px;
+}
+
+.checboxes {
+    width: 4%;
 }
 
 .edit {
