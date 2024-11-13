@@ -484,6 +484,10 @@ form p a {
     margin-bottom: 10px;
 }
 
+.edit {
+    width: 6%;
+}
+
 /* Адаптивні стилі */
 @media (max-width: 768px) {
     .container h1 {

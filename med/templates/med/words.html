@@ -19,7 +19,7 @@
                 <th>Word</th>
                 <th>Translation</th>
                 <th>Example</th>
-                <th>Edit</th>
+                <th class="edit">Edit</th>
             </tr>
         </thead>
         <tbody>
@@ -29,7 +29,7 @@
                     <td>{{ word.word }}</td>
                     <td>{{ word.translation }}</td>
                     <td>{{ word.example }}</td>
-                    <td class="img_td"><a href="#"><img class="edit_img" src="{% static 'med/img/features/edit_light.png' %}" data-light-src="{% static 'med/img/features/edit_light.png' %}" data-dark-src="{% static 'med/img/features/edit_dark.png' %}" alt="Edit img"></a></td>
+                    <td class="img_td"><a href="{% url 'edit_word' word.id %}"><img class="edit_img" src="{% static 'med/img/features/edit_light.png' %}" data-light-src="{% static 'med/img/features/edit_light.png' %}" data-dark-src="{% static 'med/img/features/edit_dark.png' %}" alt="Edit img"></a></td>
                 </tr>
             {% endfor %}
         </tbody>

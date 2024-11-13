@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from .models import *
 
+
 class AddWordForm(forms.ModelForm):
     class Meta:
         model = Word
@@ -19,7 +20,7 @@ class AddWordForm(forms.ModelForm):
         required = {
             'example': False
         }
-    
+
     def clean_example(self):
         example = self.cleaned_data.get('example')
         if len(example) > 1000:
@@ -43,4 +44,16 @@ class LoginUserForm(AuthenticationForm):
     username = forms.CharField(label='Username', widget=forms.TextInput())
     password = forms.CharField(label='Password', widget=forms.PasswordInput())
 
-    
+
+class WordForm(forms.ModelForm):
+    class Meta:
+        model = Word
+        fields = ['word', 'translation', 'example']
+        labels = {
+            'word': 'Word',
+            'translation': 'Translation',
+            'example': 'Example'
+        }
+        widgets = {
+            'example': forms.Textarea(attrs={'rows': 3})
+        }

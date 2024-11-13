@@ -1,11 +1,10 @@
 from django.http import HttpResponseNotFound
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from med.forms import AddWordForm, RegisterUserForm, LoginUserForm
+from med.forms import AddWordForm, RegisterUserForm, LoginUserForm, WordForm
 
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
-from django.views.generic.edit import DeleteView
 from django.views import View
 
 from django.contrib.auth.decorators import login_required
@@ -22,6 +21,7 @@ def about(request):
     return render(request, 'med/about.html')
 
 
+@method_decorator(login_required, name='dispatch')
 class AddWordView(LoginRequiredMixin, CreateView):
     form_class = AddWordForm
     template_name = 'med/addword.html'
@@ -61,6 +61,24 @@ class ConfirmDeleteWordsView(View):
             Word.objects.filter(id__in=word_ids, user=request.user).delete()
         return redirect('words')
 
+
+@method_decorator(login_required, name='dispatch')
+class EditWordView(View):
+    def get(self, request, word_id, *args, **kwargs):
+        word = get_object_or_404(Word, id=word_id, user=request.user)
+        form = WordForm(instance=word)
+        return render(request, 'med/edit_word.html', {'form': form, 'word': word})
+
+    def post(self, request, word_id, *args, **kwargs):
+        word = get_object_or_404(Word, id=word_id, user=request.user)
+        form = WordForm(request.POST, instance=word)
+        if form.is_valid():
+            form.save()
+            return redirect('words')
+        return render(request, 'med/edit_word.html', {'form': form, 'word': word})
+    
+
+@method_decorator(login_required, name='dispatch')
 class WordListView(ListView):
     paginate_by = 25
     model = Word
@@ -86,6 +104,7 @@ class RegisterUser(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
+        # TODO: redirect to the user's profile page
         return redirect('home')
 
 
@@ -95,8 +114,8 @@ class LoginUser(LoginView):
     extra_context = {'title': 'Log in'}
 
     def get_success_url(self):
+        # TODO: redirect to the user's profile page
         return reverse_lazy('home')
-
 
 
 def logout_user(request):
