@@ -472,6 +472,18 @@ form p a {
     border-radius: 5px;
 }
 
+.word-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 15px;
+}
+
+.word-list li {
+    font-size: 1.1em;
+    color: var(--list-text-color);
+    margin-bottom: 10px;
+}
+
 /* Адаптивні стилі */
 @media (max-width: 768px) {
     .container h1 {

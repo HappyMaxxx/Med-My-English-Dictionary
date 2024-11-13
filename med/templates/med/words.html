@@ -8,7 +8,7 @@
 <div class="word_table_container">
     <div class="buttons">
         <a href="#" onclick="selectAllWords(); return false;">Select All Words</a>
-        <a href="#">Delete Selected</a>
+        <a href="#" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
         <a href="{% url 'addword' %}">Add New Word</a>
     </div>
 
@@ -75,6 +75,21 @@ function selectAllWords() {
     }
     for (var checkbox of checkboxes) {
         checkbox.checked = !allChecked;
+    }
+}
+</script>
+
+<script>
+function deleteSelectedWords() {
+    var checkboxes = document.getElementsByName('word_checkbox');
+    var wordIds = [];
+    for (var checkbox of checkboxes) {
+        if (checkbox.checked) {
+            wordIds.push(checkbox.value);
+        }
+    }
+    if (wordIds.length > 0) {
+        window.location.href = "{% url 'confirm_delete_words' %}?word_ids=" + wordIds.join('&word_ids=');
     }
 }
 </script>

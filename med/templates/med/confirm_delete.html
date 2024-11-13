@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container confirm-deletion">
+    <h1>Confirm Deletion</h1>
+
+    <p>Are you sure you want to delete the following words?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <ul class="word-list">
+            {% for word in words %}
+                 <!-- {{ word.word }} - {{ word.translation }}{% if not forloop.last %}, {% endif %} -->
+                 {{ word.word }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </ul>
+
+        <div class="buttons">
+            <a href="#" onclick="document.forms[0].submit(); return false;">Confirm Deletion</a>
+            <a href="{% url 'words' %}">Cancel</a>
+            {% for word_id in word_ids %}
+                <input type="hidden" name="word_ids" value="{{ word_id }}">
+            {% endfor %}
+        </div>
+    </form>
+</div>
+{% endblock %}
