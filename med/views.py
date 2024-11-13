@@ -104,8 +104,7 @@ class RegisterUser(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        # TODO: redirect to the user's profile page
-        return redirect('home')
+        return redirect('profile')
 
 
 class LoginUser(LoginView):
@@ -114,9 +113,15 @@ class LoginUser(LoginView):
     extra_context = {'title': 'Log in'}
 
     def get_success_url(self):
-        # TODO: redirect to the user's profile page
-        return reverse_lazy('home')
+        return reverse_lazy('profile')
 
+
+@method_decorator(login_required, name='dispatch')
+class ProfileView(View):
+    def get(self, request, *args, **kwargs):
+        recent_words = Word.objects.filter(user=request.user)[:5]
+        return render(request, 'med/profile.html', {'recent_words': recent_words})
+    
 
 def logout_user(request):
     logout(request)

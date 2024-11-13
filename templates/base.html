@@ -15,8 +15,7 @@
     {% if not user.is_authenticated %}
     <a href="{% url 'home' %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
     {% else %}
-    <!-- TODO: make url to profile -->
-    <a href="{% url 'words' %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
+    <a href="{% url 'profile' %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
     {% endif %}
     <nav class="nav-items">
         <div class="nav-center">
@@ -35,7 +34,7 @@
         {% if request.user.is_authenticated %}
         <div class="buttons">
             <!-- TODO: profile page -->
-            <a href="{% url 'home' %}">{{request.user.username}}</a>
+            <a href="{% url 'profile' %}">{{request.user.username}}</a>
             <a href="{% url 'logout' %}">Log out</a>
         </div>
         {% else %}

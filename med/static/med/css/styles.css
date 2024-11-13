@@ -97,6 +97,7 @@ header .buttons a {
     font-size: 0.9em;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.3s;
+    margin: 0;
 }
 
 header .buttons a:hover {
@@ -238,7 +239,7 @@ header .buttons a:hover {
     color: var(--button-text-color);
     background-color: var(--button-background);
     padding: 12px 24px;
-    margin: 0 10px;
+    margin: 0 5px;
     border-radius: 5px;
     font-size: 1em;
     transition: background-color 0.3s;
@@ -486,6 +487,52 @@ form p a {
 
 .edit {
     width: 6%;
+}
+
+.profile-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--feature-background);
+    color: var(--text-color);
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+    text-align: center;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile-details {
+    text-align: left;
+}
+
+.profile-details p {
+    margin: 5px 0;
+    font-size: 1rem;
+}
+
+.profile-container .buttons {
+    text-align: right;
+    margin-bottom: 35px;
+}
+
+.profile-container .buttons a {
+    margin: 0;
+}
+
+.profile-container .center-table {
+    text-align: center;
 }
 
 /* Адаптивні стилі */

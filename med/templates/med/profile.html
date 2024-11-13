@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-info">
+        {% if not user.profile.avatar %}
+        <img class="profile-avatar" src="{% static 'med/img/base/default_avatar.png' %}" alt="User Avatar">
+        {% else %}
+        <img class="profile-avatar" src="{{ user.profile.avatar.url }}" alt="User Avatar">
+        {% endif %}
+        <div class="profile-details">
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Join Date:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+        </div>
+    </div>
+    
+    <div class="buttons">
+        <!-- TODO: make edit profile and change password -->
+        <a href="#">Edit Profile</a>
+        <a href="#">Change Password</a>
+    </div>
+
+    <div class="last5words">
+        {% if recent_words %}
+        <table class="word_table">
+            <thead>
+                <tr>
+                    <th colspan="2" class="center-table">Last Words</th>
+                </tr>
+                <tr>
+                    <th>Word</th>
+                    <th>Translation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for word in recent_words %}
+                    <tr>
+                        <td>{{ word.word }}</td>
+                        <td>{{ word.translation }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif%}
+    </div>
+</div>
+{% endblock %}
