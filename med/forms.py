@@ -28,10 +28,10 @@ class AddWordForm(forms.ModelForm):
     
 
 class RegisterUserForm(UserCreationForm):
-    username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-input'}))
-    email = forms.EmailField(label='Email', widget=forms.EmailInput(attrs={'class': 'form-input'}))
-    password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    username = forms.CharField(label='Username', widget=forms.TextInput())
+    email = forms.EmailField(label='Email', widget=forms.EmailInput())
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput())
+    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
 
     class Meta:
         model = User
@@ -39,7 +39,7 @@ class RegisterUserForm(UserCreationForm):
 
 
 class LoginUserForm(AuthenticationForm):
-    username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'class': 'form-input'}))
-    password = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
+    username = forms.CharField(label='Username', widget=forms.TextInput())
+    password = forms.CharField(label='Password', widget=forms.PasswordInput())
 
     

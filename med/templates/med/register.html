@@ -1,19 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{{title}}</h1>
+<h1>{{ title }}</h1>
 
 <form method="post">
     {% csrf_token %}
-    
+
     {% for field in form %}
-        <p><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}: </label>{{ field }}</p>
+        <p>
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+            {{ field }}
+        </p>
         <div class="form-error">{{ field.errors }}</div>
     {% endfor %}
 
     <div class="buttons">
-        <a href="#" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Register</a>
+        <a href="#" class="register-button" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Register</a>
     </div>
+
+    <p>Alredy have an account? <a href="{% url 'login' %}">Login now</a></p>
 </form>
 
 {% endblock %}

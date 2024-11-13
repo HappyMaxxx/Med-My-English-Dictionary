@@ -15,6 +15,8 @@
     <div class="buttons">
         <a href="#" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Log in</a>
     </div>
+
+    <p>Not a member? <a href="{% url 'register' %}">Signup now</a></p>
 </form>
 
 {% endblock %}

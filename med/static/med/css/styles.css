@@ -285,6 +285,8 @@ form .form-label {
 }
 
 form input[type="text"],
+form input[type="email"],
+form input[type="password"],
 form textarea {
     width: 100%;
     padding: 10px;
@@ -299,6 +301,8 @@ form textarea {
 }
 
 form input[type="text"]:focus,
+form input[type="email"]:focus,
+form input[type="password"]:focus,
 form textarea:focus {
     border-color: var(--button-background);
     outline: none;
@@ -325,6 +329,20 @@ form .buttons a {
 
 form .buttons a:hover {
     background-color: #555;
+}
+
+.container form p {
+    padding-top: 15px;
+    text-align: center;
+    color: var(--secondary-text-color);
+    font-size: 1em;
+    margin: 0px;
+}
+
+form p a {
+    color: var(--link-color);
+    font-weight: bold;
+    text-decoration: none;
 }
 
 /* Контейнер для таблиці */

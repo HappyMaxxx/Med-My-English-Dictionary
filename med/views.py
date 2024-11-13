@@ -44,7 +44,7 @@ class RegisterUser(CreateView):
 class LoginUser(LoginView):
     form_class =  LoginUserForm
     template_name = 'med/login.html'
-    extra_context = {'title': 'Login'}
+    extra_context = {'title': 'Log in'}
 
     def get_success_url(self):
         return reverse_lazy('home')

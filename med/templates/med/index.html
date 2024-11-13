@@ -4,7 +4,11 @@
 <h1>Create Your Personalized Online Dictionary Today!</h1>
 <p>Welcome to your ultimate English dictionary platform! Here, you can effortlessly categorize words and build a dictionary that reflects your unique vocabulary.</p>
 <div class="buttons">
-    <a href="#">Get Started</a>
+    {% if not request.user.is_authenticated %}
+    <a href="{% url 'login' %}">Get Started</a>
+    {% else %}
+    <a href="{% url 'words' %}">Your Words</a>
+    {% endif %}
     <a href="{% url 'about' %}">Learn More</a>
 </div>
 {% endblock %}
