@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- <div class="container"> -->
+    <h1>Create New Group</h1>
+    <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <p><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}: </label>{{ field }}</p>
+            <div class="form-error">{{ field.errors }}</div>
+        {% endfor %}
+
+        <div class="buttons">
+            <a href="#" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Create</a>
+            <a href="{% url 'groups' %}">Cancel</a>
+        </div>
+    </form>
+<!-- </div> -->
+{% endblock %}

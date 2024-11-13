@@ -22,7 +22,7 @@
             {% if user.is_authenticated %}
                 <a href="{% url 'words' %}">My Dictionary</a>
                 <a href="{% url 'addword' %}">Add word</a>
-                <a href="#">Word Categories</a>
+                <a href="{% url 'groups' %}">Word Categories</a>
             {% else %}
                 <a href="{% url 'login' %}">My Dictionary</a>
                 <a href="{% url 'login' %}">Add word</a>

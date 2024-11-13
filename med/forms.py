@@ -62,3 +62,12 @@ class WordForm(forms.ModelForm):
         widgets = {
             'example': forms.Textarea(attrs={'rows': 3})
         }
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = WordGroup
+        fields = ['name']
+        labels = {
+            'name': 'Group name',
+        }

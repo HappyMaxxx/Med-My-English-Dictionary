@@ -12,4 +12,7 @@ urlpatterns = [
     path('logout/', views.logout_user, name='logout'),
     path('edit_word/<int:word_id>/', views.EditWordView.as_view(), name='edit_word'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('groups/', views.GroupListView.as_view(), name='groups'),
+    path('groups/<int:group_id>/', views.GroupWordsView.as_view(), name='group_words'),
+    path('create_group/', views.CreateGroupView.as_view(), name='create_group'),
 ]

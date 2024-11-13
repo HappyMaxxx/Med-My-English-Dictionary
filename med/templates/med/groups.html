@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-groups">
+    <div class="group-container">
+        <div class="group-list">
+            <h2>{{ title }}</h2>
+            <div class="group-blocks">
+                {% for group in groups %}
+                <a href="{% url 'group_words' group.id %}">
+                    <div class="group-block">
+                        <p>{{ group.name }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <a href="{% url 'create_group' %}" class="buttons">Create New Group</a>
+        </div>
+        <div class="word-list-container">
+            <h2>{{ title1 }}</h2>
+            {% if words %}
+                <table class="word_table">
+                    <thead>
+                        <tr>
+                            <th>Word</th>
+                            <th>Translation</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for word in words %}
+                            <tr>
+                                <td>{{ word.word }}</td>
+                                <td>{{ word.translation }}</td>
+                                <td>{{ word.example }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No words in this group.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

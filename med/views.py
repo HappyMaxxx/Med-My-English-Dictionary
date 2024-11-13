@@ -1,7 +1,7 @@
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from med.forms import AddWordForm, RegisterUserForm, LoginUserForm, WordForm
+from med.forms import AddWordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm
 
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
@@ -94,7 +94,6 @@ class WordListView(ListView):
     model = Word
     template_name = 'med/words.html'
     context_object_name = 'words'
-    extra_context = {'title': "'s dictionary"}
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -104,6 +103,53 @@ class WordListView(ListView):
     def get_queryset(self):
         return Word.objects.filter(user=self.request.user)
 
+
+class GroupListView(ListView):
+    model = WordGroup
+    template_name = 'med/groups.html'
+    context_object_name = 'groups'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Groups"
+        context['title1'] = "Words"
+        return context
+
+    def get_queryset(self):
+        return WordGroup.objects.filter(user=self.request.user)
+
+class GroupWordsView(ListView):
+    model = Word
+    template_name = 'med/groups.html'
+    context_object_name = 'words'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Groups"
+        context['title1'] = "Words"
+        context['groups'] = WordGroup.objects.filter(user=self.request.user)
+        return context
+
+    def get_queryset(self):
+        group_id = self.kwargs.get('group_id')
+        group = get_object_or_404(WordGroup, id=group_id, user=self.request.user)
+        return group.words.all()
+
+@method_decorator(login_required, name='dispatch')
+class CreateGroupView(View):
+    def get(self, request, *args, **kwargs):
+        form = GroupForm()
+        return render(request, 'med/create_group.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            group = form.save(commit=False)
+            group.user = request.user
+            group.save()
+            return redirect('groups')
+        return render(request, 'med/create_group.html', {'form': form})
+    
 
 class RegisterUser(CreateView):
     form_class = RegisterUserForm
