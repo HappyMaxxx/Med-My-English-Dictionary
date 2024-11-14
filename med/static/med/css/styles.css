@@ -364,15 +364,6 @@ form p a {
     box-shadow: var(--feature-shadow);
 }
 
-/* Стиль для таблиці */
-.word_table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 1em;
-    color: var(--text-color);
-    border: 1px solid var(--dark-card-border);
-}
-
 /* Заголовки таблиці */
 .word_table thead th {
     background-color: var(--button-background);
@@ -712,17 +703,46 @@ form p a {
     border-radius: 10px;
 }
 
-.delete-button {
+.groups-buttons {
+    display: flex;
+    justify-content: space-between; /* вирівнює елементи по горизонталі */
+    align-items: center; 
+}
+
+.buttons .add_word {
+    display: inline-block;
+    text-align: left;
+    width: auto; 
+}
+
+.buttons .delete-button {
     text-align: right;
     margin-top: 15px;
+    width: auto;
 }
 
 .delete-button a{
     background-color: rgb(224, 16, 16);
 }
 
+
+.add-word-button {
+    text-decoration: none;
+    color: var(--button-text-color);
+    background-color: var(--button-background);
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
 .group-list {
     text-align: center;
+}
+
+.word_table{
+    margin-bottom: 30px;
 }
 
 /* Адаптивні стилі */

@@ -73,12 +73,21 @@
             <p>No words in this group.</p>
         {% endif %}
         {% endif %}
-        {% if not is_main %}
-            {% if is_group %}
-            <div class="buttons delete-button">
-                <a href="{% url 'confirm_delete' %}?group_id={{ group_id }}">Delete Group</a>
+        {% if is_group %}
+        <div class="buttons groups-buttons">
+            <div class="add_word">
+                {% if is_main %}
+                <a href="{% url 'addword' %}" class="add-word-button">Add Word</a>
+                {% else %}
+                <a href="#" class="add-word-button">Add Word</a>
+                {% endif %}
+            </div>
+            {% if not is_main %}
+            <div class="delete-button">
+                <a href="{% url 'confirm_delete' %}?group_id={{ group_id }}" class="delete-group-button">Delete Group</a>
             </div>
             {% endif %}
+        </div>
         {% endif %}
     </div>
 </div>

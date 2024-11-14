@@ -21,11 +21,12 @@
 
         <div class="buttons">
             <a href="#" onclick="document.forms[0].submit(); return false;">Confirm Deletion</a>
-            <a href="{% url 'words' %}">Cancel</a>
             {% if is_group %}
+                <a href="{% url 'groups' %}{{group_id}}">Cancel</a>
                 <input type="hidden" name="group_id" value="{{ group_id }}">
             {% else %}
                 {% for word_id in word_ids %}
+                    <a href="{% url 'words' %}">Cancel</a>
                     <input type="hidden" name="word_ids" value="{{ word_id }}">
                 {% endfor %}
             {% endif %}

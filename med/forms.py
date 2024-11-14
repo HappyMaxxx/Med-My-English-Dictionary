@@ -71,3 +71,4 @@ class GroupForm(forms.ModelForm):
         labels = {
             'name': 'Group name',
         }
+        
