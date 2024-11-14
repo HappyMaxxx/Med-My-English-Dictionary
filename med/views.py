@@ -49,31 +49,48 @@ class AddWordView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-
 @method_decorator(login_required, name='dispatch')
-class ConfirmDeleteWordsView(View):
+class ConfirmDeleteView(View):
     def get(self, request, *args, **kwargs):
         word_ids = request.GET.getlist('word_ids')
+        group_id = request.GET.get('group_id')
+        
+        if group_id:
+            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
+            return render(request, 'med/confirm_delete.html', {
+                'is_group': True,
+                'group_name': group.name,
+                'group_id': group_id,
+                'text': 'Are you sure you want to delete this group?'
+            })
 
-        if not word_ids:
-            return redirect('words')
+        elif word_ids:
+            words = Word.objects.filter(id__in=word_ids, user=request.user)
+            if not words:
+                return redirect('words')
+            return render(request, 'med/confirm_delete.html', {
+                'is_group': False,
+                'words': words,
+                'word_ids': word_ids,
+                'text': 'Are you sure you want to delete these words?' if len(words) > 1 else 'Are you sure you want to delete this word?'
+            })
 
-        words = Word.objects.filter(id__in=word_ids, user=request.user)
-
-        if not words:
-            return redirect('words')
-
-        return render(request, 'med/confirm_delete.html', {
-            'words': words,
-            'word_ids': word_ids
-        })
+        return redirect('words') 
 
     def post(self, request, *args, **kwargs):
         word_ids = request.POST.getlist('word_ids')
-        if word_ids:
-            Word.objects.filter(id__in=word_ids, user=request.user).delete()
-        return redirect('words')
+        group_id = request.POST.get('group_id')
 
+        if group_id:
+            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
+            group.delete()
+            return redirect('groups')
+        
+        elif word_ids:
+            Word.objects.filter(id__in=word_ids, user=request.user).delete()
+            return redirect('words')
+
+        return redirect('words')
 
 @method_decorator(login_required, name='dispatch')
 class EditWordView(View):

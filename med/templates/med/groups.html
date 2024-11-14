@@ -76,7 +76,7 @@
         {% if not is_main %}
             {% if is_group %}
             <div class="buttons delete-button">
-                <a href="#">Delete Group</a>
+                <a href="{% url 'confirm_delete' %}?group_id={{ group_id }}">Delete Group</a>
             </div>
             {% endif %}
         {% endif %}

@@ -89,7 +89,7 @@ function deleteSelectedWords() {
         }
     }
     if (wordIds.length > 0) {
-        window.location.href = "{% url 'confirm_delete_words' %}?word_ids=" + wordIds.join('&word_ids=');
+        window.location.href = "{% url 'confirm_delete' %}?word_ids=" + wordIds.join('&word_ids=');
     }
 }
 </script>
