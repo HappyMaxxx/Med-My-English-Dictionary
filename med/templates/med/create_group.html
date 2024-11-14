@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- <div class="container"> -->
     <h1>Create New Group</h1>
     <form method="post">
         {% csrf_token %}
@@ -16,5 +15,4 @@
             <a href="{% url 'groups' %}">Cancel</a>
         </div>
     </form>
-<!-- </div> -->
 {% endblock %}

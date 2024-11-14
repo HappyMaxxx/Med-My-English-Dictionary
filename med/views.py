@@ -12,6 +12,8 @@ from django.utils.decorators import method_decorator
 
 from django.db import transaction
 
+from django.core.paginator import Paginator
+
 from django.contrib.auth import logout, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from med.models import *
@@ -35,9 +37,10 @@ class AddWordView(LoginRequiredMixin, CreateView):
         word.user = self.request.user
         word.save() 
 
-        group_name = f"All {self.request.user.username} words"
+        group_name = f"All {self.request.user.username}'s "
         group, created = WordGroup.objects.get_or_create(
-            name=group_name, 
+            name=group_name,
+            is_main=True,
             user=self.request.user
         )
 
@@ -106,6 +109,7 @@ class WordListView(ListView):
 
 class GroupListView(ListView):
     model = WordGroup
+    # paginate_by = 5
     template_name = 'med/groups.html'
     context_object_name = 'groups'
 
@@ -113,6 +117,7 @@ class GroupListView(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = "Groups"
         context['title1'] = "Words"
+        context['is_group'] = False
         return context
 
     def get_queryset(self):
@@ -123,11 +128,23 @@ class GroupWordsView(ListView):
     template_name = 'med/groups.html'
     context_object_name = 'words'
 
+    def is_main(self):
+        group_id = self.kwargs.get('group_id')
+        is_main = get_object_or_404(WordGroup, id=group_id, user=self.request.user).is_main
+        return is_main
+
+    def get_name(self): 
+        group_id = self.kwargs.get('group_id')
+        name = get_object_or_404(WordGroup, id=group_id, user=self.request.user).name
+        return name
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = "Groups"
-        context['title1'] = "Words"
+        context['title1'] = f"{self.get_name()} Words"
         context['groups'] = WordGroup.objects.filter(user=self.request.user)
+        context['is_main'] = self.is_main()
+        context['is_group'] = True
         return context
 
     def get_queryset(self):
@@ -139,7 +156,8 @@ class GroupWordsView(ListView):
 class CreateGroupView(View):
     def get(self, request, *args, **kwargs):
         form = GroupForm()
-        return render(request, 'med/create_group.html', {'form': form})
+
+        return render(request, 'med/create_group.html', {'form': form,})
 
     def post(self, request, *args, **kwargs):
         form = GroupForm(request.POST)

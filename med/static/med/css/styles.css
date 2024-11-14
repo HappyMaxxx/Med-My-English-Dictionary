@@ -702,6 +702,15 @@ form p a {
     border-radius: 10px;
 }
 
+.delete-button {
+    text-align: right;
+    margin-top: 15px;
+}
+
+.delete-button a{
+    background-color: rgb(224, 16, 16);
+}
+
 /* Адаптивні стилі */
 @media (max-width: 768px) {
     .container h1 {
