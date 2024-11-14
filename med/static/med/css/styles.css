@@ -579,15 +579,25 @@ form p a {
     display: flex;
     gap: 20px;
     margin-top: 20px;
+    text-align: left;
+    align-items: flex-start; /* Вирівнювання контейнерів зверху */
 }
 
 .group-list {
+    flex: 0 0 300px;
+    background-color: var(--feature-background);
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+    padding: 20px;
+}
+
+.word-list-container {
     flex: 1;
     background-color: var(--feature-background);
     border-radius: 10px;
     box-shadow: var(--feature-shadow);
     padding: 20px;
-    max-width: 300px;
+    text-align: center;
 }
 
 .group-list h2 {
@@ -642,14 +652,6 @@ form p a {
     background-color: #555;
 }
 
-.word-list-container {
-    flex: 2;
-    background-color: var(--feature-background);
-    border-radius: 10px;
-    box-shadow: var(--feature-shadow);
-    padding: 20px;
-}
-
 .word-list-container h2 {
     font-size: 1.5em;
     color: var(--text-color);
@@ -659,6 +661,14 @@ form p a {
 .word-list-container p {
     font-size: 1em;
     color: var(--list-text-color);
+}
+
+.group-block-selected {
+    background-color: var(--button-background);
+}
+
+.group-block-selected p {
+    color: var(--button-text-color);
 }
 
 /* Стиль для таблиці */
@@ -709,6 +719,10 @@ form p a {
 
 .delete-button a{
     background-color: rgb(224, 16, 16);
+}
+
+.group-list {
+    text-align: center;
 }
 
 /* Адаптивні стилі */

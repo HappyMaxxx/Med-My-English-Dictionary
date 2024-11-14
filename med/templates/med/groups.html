@@ -1,79 +1,85 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-groups">
-    <div class="group-container">
-        <div class="group-list">
-            <h2>{{ title }}</h2>
-            <div class="group-blocks">
-                {% for group in groups %}
+<div class="group-container">
+    <div class="group-list">
+        <h2>{{ title }}</h2>
+        <div class="group-blocks">
+            {% for group in groups %}
+            {% if group.id == group_id %}
+                <div class="group-block group-block-selected">
+                    <p>{{ group.name }}</p>
+                </div>
+            {% else %}
                 <a href="{% url 'group_words' group.id %}">
                     <div class="group-block">
                         <p>{{ group.name }}</p>
                     </div>
                 </a>
-                {% endfor %}
-            </div>
-            <a href="{% url 'create_group' %}" class="buttons">Create New Group</a>
-            <!-- {% if paginator.num_pages > 1 %}
-            <nav class="list-pages"> 
-                <ul>
-                    {% if page_obj.has_previous %}
-                    <li class="page-num">
-                        <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
-                    </li>
-                    {% endif %}
-
-                    {% for p in paginator.page_range %}
-                        {% if page_obj.number == p %}
-                        <li class="page-num page-num-selected">{{ p }}</li>
-                        {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
-                        <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if page_obj.has_next %}
-                    <li class="page-num">
-                        <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %} -->
-        </div>
-        <div class="word-list-container">
-            <h2>{{ title1 }}</h2>
-
-            {% if words %}
-                <table class="word_table">
-                    <thead>
-                        <tr>
-                            <th>Word</th>
-                            <th>Translation</th>
-                            <th>Example</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for word in words %}
-                            <tr>
-                                <td>{{ word.word }}</td>
-                                <td>{{ word.translation }}</td>
-                                <td>{{ word.example }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>No words in this group.</p>
             {% endif %}
-            {% if not is_main %}
-                {% if is_group %}
-                <div class="buttons delete-button">
-                    <a href="#">Delete Group</a>
-                </div>
+            {% endfor %}
+        </div>
+        <a href="{% url 'create_group' %}" class="buttons">Create New Group</a>
+        <!-- {% if paginator.num_pages > 1 %}
+        <nav class="list-pages"> 
+            <ul>
+                {% if page_obj.has_previous %}
+                <li class="page-num">
+                    <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+                </li>
                 {% endif %}
+
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                    <li class="page-num page-num-selected">{{ p }}</li>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                    <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-num">
+                    <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %} -->
+    </div>
+    <div class="word-list-container">
+        <h2>{{ title1 }}</h2>
+
+        {% if is_group %}
+        {% if words %}
+            <table class="word_table">
+                <thead>
+                    <tr>
+                        <th>Word</th>
+                        <th>Translation</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for word in words %}
+                        <tr>
+                            <td>{{ word.word }}</td>
+                            <td>{{ word.translation }}</td>
+                            <td>{{ word.example }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No words in this group.</p>
+        {% endif %}
+        {% endif %}
+        {% if not is_main %}
+            {% if is_group %}
+            <div class="buttons delete-button">
+                <a href="#">Delete Group</a>
+            </div>
             {% endif %}
-        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

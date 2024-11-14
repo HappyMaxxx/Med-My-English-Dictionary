@@ -144,6 +144,7 @@ class GroupWordsView(ListView):
         context['title1'] = f"{self.get_name()} Words"
         context['groups'] = WordGroup.objects.filter(user=self.request.user)
         context['is_main'] = self.is_main()
+        context['group_id'] = self.kwargs.get('group_id')
         context['is_group'] = True
         return context
 
