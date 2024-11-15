@@ -75,7 +75,7 @@ class ConfirmDeleteView(View):
                 'text': 'Are you sure you want to delete these words?' if len(words) > 1 else 'Are you sure you want to delete this word?'
             })
 
-        return redirect('words') 
+        return redirect('profile') 
 
     def post(self, request, *args, **kwargs):
         word_ids = request.POST.getlist('word_ids')
@@ -90,7 +90,7 @@ class ConfirmDeleteView(View):
             Word.objects.filter(id__in=word_ids, user=request.user).delete()
             return redirect('words')
 
-        return redirect('words')
+        return redirect('profile')
 
 @method_decorator(login_required, name='dispatch')
 class EditWordView(View):
