@@ -55,7 +55,19 @@ class ConfirmDeleteView(View):
         word_ids = request.GET.getlist('word_ids')
         group_id = request.GET.get('group_id')
         
-        if group_id:
+        if group_id and word_ids:
+            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
+            words = group.words.filter(id__in=word_ids)
+            return render(request, 'med/confirm_delete.html', {
+                'is_group': True,
+                'words': words,
+                'word_ids': word_ids,
+                'group_name': group.name,
+                'group_id': group_id,
+                'text': f'Are you sure you want to delete these words from group {group.name}?' if len(words) > 1 else f'Are you sure you want to delete this word from group {group.name}?'
+            })
+
+        elif group_id and not word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
             return render(request, 'med/confirm_delete.html', {
                 'is_group': True,
@@ -64,7 +76,7 @@ class ConfirmDeleteView(View):
                 'text': 'Are you sure you want to delete this group?'
             })
 
-        elif word_ids:
+        elif word_ids and not group_id:
             words = Word.objects.filter(id__in=word_ids, user=request.user)
             if not words:
                 return redirect('words')
@@ -81,16 +93,25 @@ class ConfirmDeleteView(View):
         word_ids = request.POST.getlist('word_ids')
         group_id = request.POST.get('group_id')
 
-        if group_id:
+        if group_id and not word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
             group.delete()
             return redirect('groups')
         
-        elif word_ids:
+        elif word_ids and not group_id:
             Word.objects.filter(id__in=word_ids, user=request.user).delete()
             return redirect('words')
 
+        elif group_id and word_ids:
+            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
+            words = group.words.filter(id__in=word_ids)
+            for word in words:
+                group.words.remove(word)
+
+            return redirect('group_words', group_id=group_id)
+
         return redirect('profile')
+
 
 @method_decorator(login_required, name='dispatch')
 class EditWordView(View):
@@ -163,6 +184,7 @@ class GroupWordsView(ListView):
         context['is_main'] = self.is_main()
         context['group_id'] = self.kwargs.get('group_id')
         context['is_group'] = True
+        context['words_f_g'] = True
         return context
 
     def get_queryset(self):
@@ -217,6 +239,38 @@ class ProfileView(View):
         word_count = Word.objects.filter(user=request.user).count()
         group_count = WordGroup.objects.filter(user=request.user).count()
         return render(request, 'med/profile.html', {'recent_words': recent_words, 'word_count': word_count, 'group_count': group_count})
+
+
+class SelectGroupView(View):
+    def get(self, request):
+        word_ids = request.GET.getlist('word_ids')
+        if not word_ids:
+            return redirect('words')
+        words = Word.objects.filter(id__in=word_ids)
+        groups = WordGroup.objects.filter(user=request.user, is_main=False)
+        return render(request, 'med/select_group.html', {
+            'words': words,
+            'word_ids': word_ids,
+            'groups': groups,
+        })
+
+    def post(self, request, *args, **kwargs):
+        word_ids = request.POST.getlist('word_ids')
+        group_id = request.POST.get('group')
+
+        if group_id:
+            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
+        else:
+            redirect('words')
+        
+        group_words = group.words.all()
+        words = Word.objects.filter(id__in=word_ids, user=request.user)
+
+        for word in words:
+            if word not in group_words:
+                group.words.add(word)
+
+        return redirect('group_words', group_id=group_id)
     
 
 def logout_user(request):

@@ -9,26 +9,40 @@
     <form method="post">
         {% csrf_token %}
         <ul class="word-list">
-            {% if not is_group %}
+            {% if is_group and not words %}
+                {{ group_name }}
+            {% elif words and not is_group %}
                 {% for word in words %}
                     {{ word.word }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
-            {% else %}
-                    {{ group_name }}
+            {% elif is_group and words %}
+                {% for word in words %}
+                    {{ word.word }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
             {% endif %}
         </ul>
 
         <div class="buttons">
             <a href="#" onclick="document.forms[0].submit(); return false;">Confirm Deletion</a>
-            {% if is_group %}
+
+            {% if is_group and not words%}
                 <a href="{% url 'groups' %}{{group_id}}">Cancel</a>
                 <input type="hidden" name="group_id" value="{{ group_id }}">
-            {% else %}
+
+            {% elif words and not is_group %}
                 <a href="{% url 'words' %}">Cancel</a>
                 {% for word_id in word_ids %}
                     <input type="hidden" name="word_ids" value="{{ word_id }}">
                 {% endfor %}
+
+            {% elif is_group and words %}
+                <a href="{% url 'groups' %}{{group_id}}">Cancel</a>
+                <input type="hidden" name="group_id" value="{{ group_id }}">
+                {% for word_id in word_ids %}
+                    <input type="hidden" name="word_ids" value="{{ word_id }}">
+                {% endfor %}
             {% endif %}
+            
         </div>
     </form>
 </div>

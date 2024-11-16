@@ -741,8 +741,16 @@ form p a {
     text-align: center;
 }
 
-.word_table{
+.group-table{
     margin-bottom: 30px;
+}
+
+.add-to-gr {
+    margin-top: 30px;
+}
+
+.group-w-list {
+    margin-top: 15px;
 }
 
 /* Адаптивні стилі */

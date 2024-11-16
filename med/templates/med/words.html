@@ -8,6 +8,7 @@
 <div class="word_table_container">
     <div class="buttons">
         <a href="#" onclick="selectAllWords(); return false;">Select All Words</a>
+        <a href="#" onclick="addWordsToGroup(); return false;">Add To The Group</a>
         <a href="#" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
         <a href="{% url 'addword' %}">Add New Word</a>
     </div>
@@ -90,6 +91,21 @@ function deleteSelectedWords() {
     }
     if (wordIds.length > 0) {
         window.location.href = "{% url 'confirm_delete' %}?word_ids=" + wordIds.join('&word_ids=');
+    }
+}
+</script>
+
+<script>
+function addWordsToGroup() {
+    var checkboxes = document.getElementsByName('word_checkbox');
+    var wordIds = [];
+    for (var checkbox of checkboxes) {
+        if (checkbox.checked) {
+            wordIds.push(checkbox.value);
+        }
+    }
+    if (wordIds.length > 0) {
+        window.location.href = "{% url 'select_group' %}?word_ids=" + wordIds.join('&word_ids=');
     }
 }
 </script>

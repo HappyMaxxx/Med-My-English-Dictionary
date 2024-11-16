@@ -15,4 +15,5 @@ urlpatterns = [
     path('groups/', views.GroupListView.as_view(), name='groups'),
     path('groups/<int:group_id>/', views.GroupWordsView.as_view(), name='group_words'),
     path('create_group/', views.CreateGroupView.as_view(), name='create_group'),
+    path('select_group/', views.SelectGroupView.as_view(), name='select_group'),
 ]

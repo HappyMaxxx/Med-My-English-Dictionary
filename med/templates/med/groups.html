@@ -51,9 +51,12 @@
 
         {% if is_group %}
         {% if words %}
-            <table class="word_table">
+            <table class="word_table group-table">
                 <thead>
                     <tr>
+                        {% if not is_main %}
+                        <th class="checboxes">#</th>
+                        {% endif %}
                         <th>Word</th>
                         <th>Translation</th>
                         <th>Example</th>
@@ -62,6 +65,9 @@
                 <tbody>
                     {% for word in words %}
                         <tr>
+                            {% if not is_main %}
+                            <td><input type="checkbox" name="word_checkbox" value="{{ word.id }}"></td>
+                            {% endif %}
                             <td>{{ word.word }}</td>
                             <td>{{ word.translation }}</td>
                             <td>{{ word.example }}</td>
@@ -79,7 +85,8 @@
                 {% if is_main %}
                 <a href="{% url 'addword' %}" class="add-word-button">Add Word</a>
                 {% else %}
-                <a href="#" class="add-word-button">Add Word</a>
+                <a href="{% url 'words' %}" class="add-word-button">Add Word</a>
+                <a href="#" class="add-word-button" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
                 {% endif %}
             </div>
             {% if not is_main %}
@@ -91,4 +98,19 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function deleteSelectedWords() {
+    var checkboxes = document.getElementsByName('word_checkbox');
+    var wordIds = [];
+    for (var checkbox of checkboxes) {
+        if (checkbox.checked) {
+            wordIds.push(checkbox.value);
+        }
+    }
+    if (wordIds.length > 0) {
+        window.location.href = "{% url 'confirm_delete' %}?group_id={{ group_id }}&word_ids=" + wordIds.join('&word_ids=');
+    }
+}
+</script>
 {% endblock %}

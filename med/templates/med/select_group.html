@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Select Group</h1>
+
+<form method="post" class="form-style">
+    {% csrf_token %}
+
+    <h2>Selected Words:</h2>
+    <ul class="word-list group-w-list">
+        {% for word in words %}
+                {{ word.word }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </ul> 
+    {% for word_id in word_ids %}
+        <input type="hidden" name="word_ids" value="{{ word_id }}">
+    {% endfor %}
+    <div class="form-group">
+        {% if groups %}
+        <label for="group"><b>Choose a Group:</b></label>
+        <select name="group" id="group" class="form-control" required>
+            {% for group in groups %}
+                <option value="{{ group.id }}">{{ group.name }}</option>
+            {% endfor %}
+        </select>
+        {% else %}
+            <p>You don't have any groups yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="buttons add-to-gr">
+        {% if groups %}
+        <a href="#" onclick="document.forms[0].submit(); return false;">Add To Group</a>
+        {% else %}
+        <a href="{% url 'create_group' %}" class="btn btn-primary">Create New Group</a>
+        {% endif %}
+        <a href="{% url 'words' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
