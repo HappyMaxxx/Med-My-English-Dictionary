@@ -19,6 +19,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from med.models import *
 
 def index(request):
+    if request.user.is_authenticated:
+        return redirect('profile')
     return render(request, 'med/index.html')
 
 def about(request):

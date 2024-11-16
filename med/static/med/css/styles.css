@@ -753,71 +753,27 @@ form p a {
     margin-top: 15px;
 }
 
-/* Адаптивні стилі */
-@media (max-width: 768px) {
-    .container h1 {
-        font-size: 2em;
-    }
-    .container p {
-        font-size: 1em;
-    }
-    .buttons a {
-        padding: 10px 20px;
-        margin: 5px;
-        font-size: 0.9em;
-    }
-    .image-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    header nav {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .word_table_container {
-        padding: 15px;
-    }
-
-    .word_table thead {
-        display: none;
-    }
-
-    .word_table tbody td {
-        display: block;
-        width: 100%;
-        padding: 8px;
-        text-align: right;
-        position: relative;
-    }
-
-    .word_table tbody td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0;
-        padding-left: 10px;
-        font-weight: bold;
-    }
-
-    .word_table tbody tr {
-        display: block;
-        margin-bottom: 10px;
-        border-bottom: 2px solid var(--dark-card-border);
-        border-radius: 8px;
-        padding: 10px;
-    }
+select {
+    background-color: var(--feature-background);
+    color: var(--text-color);
+    border: 1px solid var(--button-background);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1em;
+    box-shadow: var(--feature-shadow);
+    transition: background-color 0.3s, color 0.3s;
 }
 
-@media (max-width: 480px) {
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    header img {
-        margin-bottom: 10px;
-    }
-    .container {
-        padding: 40px 10px;
-    }
-    .image-grid {
-        grid-template-columns: 1fr;
-    }
+select:focus {
+    outline: none;
+    border-color: var(--button-background);
+    background-color: var(--background-color);
+}
+
+option {
+    background-color: var(--feature-background);
+    color: var(--text-color);
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 5px;
 }
