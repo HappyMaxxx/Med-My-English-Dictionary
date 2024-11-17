@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>Edit Profile</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ profile_form.as_p }}
+        <input type="hidden" name="update_profile" value="update_profile">
+        <div class="buttons edit-buttons">
+            <a href="#" onclick="this.closest('form').submit();" name="update_profile" class="btn">Update Profile Info</a>
+        </div>
+    </form>
+
+    <h2>Update Avatar</h2>
+    <form method="post" enctype="multipart/form-data" class="avatar-form">
+        {% csrf_token %}
+        {{ avatar_form.as_p }}
+        <input type="hidden" name="update_avatar" value="update_avatar">
+        <div class="buttons edit-buttons">
+            <a href="#" onclick="this.closest('form').submit();" name="update_avatar" class="btn">Update Avatar Image</a>
+        </div>
+    </form>
+
+    <h2>Change Password</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ password_form.as_p }}
+        <input type="hidden" name="change_password" value="change_password">
+        <div class="buttons edit-buttons">
+            <a href="#" onclick="this.closest('form').submit();" name="change_password" class="btn">Change Password</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

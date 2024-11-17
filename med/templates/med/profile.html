@@ -4,18 +4,19 @@
 {% block content %}
 <div class="profile-container">
     <div class="profile-info">
-        {% if not user.profile.avatar %}
-        <img class="profile-avatar" src="{% static 'med/img/base/default_avatar.png' %}" alt="User Avatar">
-        {% else %}
-        <img class="profile-avatar" src="{{ user.profile.avatar.url }}" alt="User Avatar">
-        {% endif %}
+        <img class="profile-avatar" src="{{ user_profile.get_avatar_url }}" alt="User Avatar">
         <div class="profile-details">
             <p><strong>Username:</strong> {{ user.username }}</p>
+            {% if user.first_name and user.last_name %}
+            <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            {% elif user.first_name and not user.last_name %}
+            <p><strong>Name:</strong> {{ user.first_name }} </p>
+            {% endif %}
             <p><strong>Email:</strong> {{ user.email }}</p>
             <p><strong>Join Date:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
         </div>
     </div>
-    
+
     <div class="stats">
         <div class="stat-item">
             <a href="{% url 'words' %}">
@@ -38,9 +39,7 @@
     </div>
 
     <div class="buttons">
-        <!-- TODO: make edit profile and change password -->
-        <a href="#">Edit Profile</a>
-        <a href="#">Change Password</a>
+        <a href="{% url 'edit_profile' %}">Edit Profile</a>
     </div>
 
     <div class="last5words">

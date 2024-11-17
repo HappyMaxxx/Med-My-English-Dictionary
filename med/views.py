@@ -1,11 +1,11 @@
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from med.forms import AddWordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm
-
+from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
 from django.views import View
+from django.core.files.storage import default_storage
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -14,8 +14,9 @@ from django.db import transaction
 
 from django.core.paginator import Paginator
 
-from django.contrib.auth import logout, login
+from django.contrib.auth import logout, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
+import os
 from med.models import *
 
 def index(request):
@@ -237,11 +238,18 @@ class LoginUser(LoginView):
 @method_decorator(login_required, name='dispatch')
 class ProfileView(View):
     def get(self, request, *args, **kwargs):
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+
         recent_words = Word.objects.filter(user=request.user)[:5]
         word_count = Word.objects.filter(user=request.user).count()
         group_count = WordGroup.objects.filter(user=request.user).count()
-        return render(request, 'med/profile.html', {'recent_words': recent_words, 'word_count': word_count, 'group_count': group_count})
 
+        return render(request, 'med/profile.html', {
+            'recent_words': recent_words,
+            'word_count': word_count,
+            'group_count': group_count,
+            'user_profile': user_profile
+        })
 
 class SelectGroupView(View):
     def get(self, request):
@@ -274,6 +282,62 @@ class SelectGroupView(View):
 
         return redirect('group_words', group_id=group_id)
     
+
+@method_decorator(login_required, name='dispatch')
+class EditProfileView(View):
+    def get(self, request, *args, **kwargs):
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        profile_form = EditProfileForm(instance=request.user)
+        avatar_form = AvatarUpdateForm(instance=user_profile)
+        password_form = ChengePasswordForm(user=request.user)
+        return render(request, 'med/edit_profile.html', {
+            'profile_form': profile_form,
+            'avatar_form': avatar_form,
+            'password_form': password_form,
+        })
+
+    def post(self, request, *args, **kwargs):
+        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        if 'update_profile' in request.POST:
+            profile_form = EditProfileForm(request.POST, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                return redirect('profile')
+
+        if 'update_avatar' in request.POST:
+            if request.POST.get('avatar') == '' and not request.POST.get('avatar-clear'):
+                return redirect('edit_profile')
+
+            old_avatar_path = None
+
+            if user_profile.avatar:
+                old_avatar_path = user_profile.avatar.path  
+
+            avatar_form = AvatarUpdateForm(request.POST, request.FILES, instance=user_profile)
+            if avatar_form.is_valid():
+                avatar_form.save()
+                if old_avatar_path:
+                    if os.path.isfile(old_avatar_path):
+                        default_storage.delete(old_avatar_path)
+                return redirect('profile')
+            
+        if 'change_password' in request.POST:
+            password_form = ChengePasswordForm(user=request.user, data=request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, request.user)
+                return redirect('profile')
+
+        profile_form = EditProfileForm(instance=request.user)
+        avatar_form = AvatarUpdateForm(instance=user_profile)
+        password_form = ChengePasswordForm(user=request.user)
+
+        return render(request, 'med/edit_profile.html', {
+            'profile_form': profile_form,
+            'avatar_form': avatar_form,
+            'password_form': password_form,
+        })
 
 def logout_user(request):
     logout(request)

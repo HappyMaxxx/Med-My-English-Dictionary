@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
@@ -16,4 +18,5 @@ urlpatterns = [
     path('groups/<int:group_id>/', views.GroupWordsView.as_view(), name='group_words'),
     path('create_group/', views.CreateGroupView.as_view(), name='create_group'),
     path('select_group/', views.SelectGroupView.as_view(), name='select_group'),
-]
+    path('edit_profile/', views.EditProfileView.as_view(), name='edit_profile'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

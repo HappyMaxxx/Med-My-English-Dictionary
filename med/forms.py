@@ -1,7 +1,7 @@
 import re
 from django import forms
 from django.urls import reverse_lazy
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from .models import *
 
@@ -71,4 +71,30 @@ class GroupForm(forms.ModelForm):
         labels = {
             'name': 'Group name',
         }
-        
+
+class EditProfileForm(forms.ModelForm):
+    email = forms.EmailField(label='Email', widget=forms.EmailInput())
+    first_name = forms.CharField(label='First Name', required=False, widget=forms.TextInput())
+    last_name = forms.CharField(label='Last Name', required=False, widget=forms.TextInput())
+
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name']
+
+class AvatarUpdateForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['avatar']
+
+class ChengePasswordForm(PasswordChangeForm):
+    old_password = forms.CharField(label='Old password', widget=forms.PasswordInput())
+    new_password1 = forms.CharField(label='New password', widget=forms.PasswordInput())
+    new_password2 = forms.CharField(label='New password confirmation', widget=forms.PasswordInput())
+    class Meta:
+        model = User
+        fields = ['old_password', 'new_password1', 'new_password2']
+        labels = {
+            'old_password': 'Old password',
+            'new_password1': 'New password',
+            'new_password2': 'New password confirmation'
+        }

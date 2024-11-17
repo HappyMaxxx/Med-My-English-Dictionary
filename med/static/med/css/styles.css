@@ -777,3 +777,48 @@ option {
     font-size: 1em;
     border-radius: 5px;
 }
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-weight: bold;
+    color: var(--text-color);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--button-background);
+    border-radius: 5px;
+    background-color: var(--feature-background);
+    color: var(--text-color);
+}
+
+form .avatar-form p {
+    padding-top: 0;
+}
+
+.btn{
+    padding-top: 15px;
+}
+
+form .edit-buttons {
+    margin-top: 20px; /* Відступ зверху між кнопками та іншими елементами */
+    display: flex;
+    justify-content: center; /* Центрує кнопки горизонтально */
+    gap: 15px; /* Відступ між кнопками */
+}
+
+form .edit-buttons a {
+    padding: 12px 24px; /* Відступи всередині кнопки */
+    margin: 0; /* Прибирає відступи між кнопками */
+    border-radius: 5px;
+    font-size: 1em;
+    text-align: center;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.3s;
+}
