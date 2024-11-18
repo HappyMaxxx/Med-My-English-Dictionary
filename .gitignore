@@ -1,3 +1,2 @@
-/media
+media/avatars/*
 !media/avatars/.gitkeep
-db.sqlite3
