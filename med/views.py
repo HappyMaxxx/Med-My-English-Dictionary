@@ -223,7 +223,7 @@ class RegisterUser(CreateView):
         user = form.save()
 
         login(self.request, user)
-        return redirect('profile')
+        return redirect('profile', user_name=user.username)
 
 
 class LoginUser(LoginView):
@@ -232,29 +232,63 @@ class LoginUser(LoginView):
     extra_context = {'title': 'Log in'}
 
     def get_success_url(self):
-        return reverse_lazy('profile')
+        return reverse_lazy('profile', kwargs={'user_name': self.request.user.username})
 
 
 @method_decorator(login_required, name='dispatch')
 class ProfileView(View):
-    def get(self, request, *args, **kwargs):
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    def get(self, request, user_name, **kwargs):
+        curent_loged_user_name = request.user.username
+        profile_user = user_name
 
-        if user_profile.what_type_show == 'fav':
-            recent_words = Word.objects.filter(user=request.user, is_favourite=True)[:user_profile.words_num_in_prof]
+        print(curent_loged_user_name)
+        print(profile_user)
+
+        if curent_loged_user_name == profile_user:
+            user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+            if user_profile.what_type_show == 'fav':
+                recent_words = Word.objects.filter(user=request.user, is_favourite=True)[:user_profile.words_num_in_prof]
+            else:
+                recent_words = Word.objects.filter(user=request.user)[:user_profile.words_num_in_prof]
+
+            word_count = Word.objects.filter(user=request.user).count()
+            group_count = WordGroup.objects.filter(user=request.user).count()
+
+            return render(request, 'med/profile.html', {
+                'user': request.user,
+                'recent_words': recent_words,
+                'word_count': word_count,
+                'group_count': group_count,
+                'is_favorite': True if user_profile.what_type_show == 'fav' else False,
+                'user_profile': user_profile,
+                'is_my_profile': True,
+                'is_profile': True
+            })
+        
         else:
-            recent_words = Word.objects.filter(user=request.user)[:user_profile.words_num_in_prof]
+            user = get_object_or_404(User, username=user_name)
+            user_profile, created = UserProfile.objects.get_or_create(user=user)
 
-        word_count = Word.objects.filter(user=request.user).count()
-        group_count = WordGroup.objects.filter(user=request.user).count()
+            if user_profile.what_type_show == 'fav':
+                recent_words = Word.objects.filter(user=user, is_favourite=True)[:user_profile.words_num_in_prof]
+            else:
+                recent_words = Word.objects.filter(user=user)[:user_profile.words_num_in_prof]
 
-        return render(request, 'med/profile.html', {
-            'recent_words': recent_words,
-            'word_count': word_count,
-            'group_count': group_count,
-            'is_favorite': True if user_profile.what_type_show == 'fav' else False,
-            'user_profile': user_profile
-        })
+            word_count = Word.objects.filter(user=user).count()
+            group_count = WordGroup.objects.filter(user=user).count()
+
+            return render(request, 'med/profile.html', {
+                'user': user,
+                'logged_user': request.user,
+                'recent_words': recent_words,
+                'word_count': word_count,
+                'group_count': group_count,
+                'is_favorite': True if user_profile.what_type_show == 'fav' else False,
+                'user_profile': user_profile,
+                'is_my_profile': False,
+                'is_profile': True
+            })
 
 class SelectGroupView(View):
     def get(self, request):
@@ -353,19 +387,23 @@ class EditProfileView(View):
             'avatar_form': avatar_form,
             'password_form': password_form,
         })
+        
 
 def logout_user(request):
     logout(request)
     return redirect('login')
 
 def make_favourite(request, word_id):
-    word = get_object_or_404(Word, id=word_id, user=request.user)
-    print(word)
-    print(word.is_favourite)
-    word.is_favourite = not word.is_favourite
-    print(word.is_favourite)
-    word.save()
-    return redirect('words')
+    try:
+        word = get_object_or_404(Word, id=word_id, user=request.user)
+        print(word)
+        print(word.is_favourite)
+        word.is_favourite = not word.is_favourite
+        print(word.is_favourite)
+        word.save()
+        return redirect('words')
+    except:
+        return redirect('login')
 
 def page_not_found(request, exception):
     return HttpResponseNotFound("<h1>404 Page Not Found</h1>")

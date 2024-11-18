@@ -1,1 +1,3 @@
 /media
+!media/avatars/.gitkeep
+db.sqlite3
