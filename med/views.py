@@ -239,7 +239,12 @@ class LoginUser(LoginView):
 class ProfileView(View):
     def get(self, request, *args, **kwargs):
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-        recent_words = Word.objects.filter(user=request.user)[:user_profile.words_num_in_prof]
+
+        if user_profile.what_type_show == 'fav':
+            recent_words = Word.objects.filter(user=request.user, is_favourite=True)[:user_profile.words_num_in_prof]
+        else:
+            recent_words = Word.objects.filter(user=request.user)[:user_profile.words_num_in_prof]
+
         word_count = Word.objects.filter(user=request.user).count()
         group_count = WordGroup.objects.filter(user=request.user).count()
 
@@ -247,6 +252,7 @@ class ProfileView(View):
             'recent_words': recent_words,
             'word_count': word_count,
             'group_count': group_count,
+            'is_favorite': True if user_profile.what_type_show == 'fav' else False,
             'user_profile': user_profile
         })
 
@@ -351,6 +357,15 @@ class EditProfileView(View):
 def logout_user(request):
     logout(request)
     return redirect('login')
+
+def make_favourite(request, word_id):
+    word = get_object_or_404(Word, id=word_id, user=request.user)
+    print(word)
+    print(word.is_favourite)
+    word.is_favourite = not word.is_favourite
+    print(word.is_favourite)
+    word.save()
+    return redirect('words')
 
 def page_not_found(request, exception):
     return HttpResponseNotFound("<h1>404 Page Not Found</h1>")

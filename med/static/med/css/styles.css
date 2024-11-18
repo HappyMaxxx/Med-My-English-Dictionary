@@ -411,11 +411,19 @@ form p a {
     margin: 5px 2px 5px 5px;
 }
 
-.word_table_container .edit_img {
+.word_table_container .edit_img, .f_img, .th_f {
     width: 20px;
     height: 20px;
     cursor: pointer;
     display: inline-block;
+}
+
+.word_table_container .th_f {
+    cursor: auto;
+}
+
+.profile_f {
+    vertical-align:-3px;
 }
 
 .word_table_container .img_td {

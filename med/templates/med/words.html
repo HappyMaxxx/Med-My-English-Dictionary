@@ -20,6 +20,7 @@
                 <th>Word</th>
                 <th>Translation</th>
                 <th>Example</th>
+                <th><img class="th_f" src="{% static 'med/img/base/f_dark.png' %}" alt="Favourite_img"></th>
                 <th class="edit">Edit</th>
             </tr>
         </thead>
@@ -30,6 +31,13 @@
                     <td>{{ word.word }}</td>
                     <td>{{ word.translation }}</td>
                     <td>{{ word.example }}</td>
+
+                    {% if word.is_favourite %}
+                    <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/f_light.png' %}" data-light-src="{% static 'med/img/base/f_light.png' %}" data-dark-src="{% static 'med/img/base/f_dark.png' %}" alt="Favourite img"></a></td>
+                    {% else %}
+                    <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/no_f_light.png' %}" data-light-src="{% static 'med/img/base/no_f_light.png' %}" data-dark-src="{% static 'med/img/base/no_f_dark.png' %}" alt="Not Favourite img"></a></td>
+                    {% endif %}
+
                     <td class="img_td"><a href="{% url 'edit_word' word.id %}"><img class="edit_img" src="{% static 'med/img/features/edit_light.png' %}" data-light-src="{% static 'med/img/features/edit_light.png' %}" data-dark-src="{% static 'med/img/features/edit_dark.png' %}" alt="Edit img"></a></td>
                 </tr>
             {% endfor %}
