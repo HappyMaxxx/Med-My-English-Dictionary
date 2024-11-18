@@ -38,13 +38,13 @@
         </div>
     </div>
 
-    <div class="buttons">
+    <div class="buttons profile-buttons">
         <a href="{% url 'edit_profile' %}">Edit Profile</a>
     </div>
 
+    {% if recent_words %}
     <div class="last5words">
-        {% if recent_words %}
-        <table class="word_table">
+        <table class="word_table profile-words">
             <thead>
                 <tr>
                     <th colspan="2" class="center-table">Last Words</th>
@@ -63,7 +63,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% endif %}
     </div>
+    {% endif %}
 </div>
 {% endblock %}

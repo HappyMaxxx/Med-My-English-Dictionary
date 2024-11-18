@@ -11,6 +11,24 @@
             <a href="#" onclick="this.closest('form').submit();" name="update_profile" class="btn">Update Profile Info</a>
         </div>
     </form>
+    
+    <h2>Display Of Words</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="words_select">
+            {{ words_show_form.words_num_in_prof.label_tag }}
+            {{ words_show_form.words_num_in_prof }}
+        </div>
+        <div class="words_select">
+            {{ words_show_form.what_type_show.label_tag }}
+            {{ words_show_form.what_type_show }}
+        </div>
+
+        <input type="hidden" name="update_words_show" value="update_words_show">
+        <div class="buttons edit-buttons">
+            <a href="#" onclick="this.closest('form').submit();" name="update_words_show" class="btn">Update Words Show</a>
+        </div>
+    </form>
 
     <h2>Update Avatar</h2>
     <form method="post" enctype="multipart/form-data" class="avatar-form">

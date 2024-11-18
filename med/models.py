@@ -35,9 +35,22 @@ class WordGroup(models.Model):
             models.Index(fields=['name'])
         ]
 
+
 class UserProfile(models.Model):
+    class Types(models.TextChoices):
+        favourite = 'fav', 'Favourite'
+        learning = 'learn', 'Learning'
+
+    class NumberWords(models.IntegerChoices):
+        five = 5, '5'
+        three = 3, '3'
+        one = 1, '1'
+        zero = 0, '0'
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    words_num_in_prof = models.IntegerField(choices=NumberWords.choices, default=NumberWords.five)
+    what_type_show = models.CharField(max_length=10, choices=Types.choices, default=Types.learning)
 
     def __str__(self):
         return self.user.username
@@ -48,10 +61,12 @@ class UserProfile(models.Model):
         return '/static/med/img/base/default_avatar.png'
     
     def save(self, *args, **kwargs):
-        if self.avatar and not self._state.adding:  
-            extension = self.avatar.name.split('.')[-1]
-            new_name = f"{self.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{self.user.id}.{extension}"
+        if not self._state.adding: 
+            old_instance = UserProfile.objects.filter(pk=self.pk).first()
+            if old_instance and old_instance.avatar != self.avatar:
+                if self.avatar:
+                    extension = self.avatar.name.split('.')[-1]
+                    new_name = f"{self.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{self.user.id}.{extension}"
+                    self.avatar.name = new_name
 
-            self.avatar.name = new_name
-        
         super().save(*args, **kwargs)

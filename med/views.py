@@ -1,7 +1,7 @@
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm
+from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm, WordsShowForm
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
 from django.views import View
@@ -239,8 +239,7 @@ class LoginUser(LoginView):
 class ProfileView(View):
     def get(self, request, *args, **kwargs):
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-
-        recent_words = Word.objects.filter(user=request.user)[:5]
+        recent_words = Word.objects.filter(user=request.user)[:user_profile.words_num_in_prof]
         word_count = Word.objects.filter(user=request.user).count()
         group_count = WordGroup.objects.filter(user=request.user).count()
 
@@ -288,10 +287,12 @@ class EditProfileView(View):
     def get(self, request, *args, **kwargs):
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
         profile_form = EditProfileForm(instance=request.user)
+        words_show_form = WordsShowForm(instance=user_profile)
         avatar_form = AvatarUpdateForm(instance=user_profile)
         password_form = ChengePasswordForm(user=request.user)
         return render(request, 'med/edit_profile.html', {
             'profile_form': profile_form,
+            'words_show_form': words_show_form,
             'avatar_form': avatar_form,
             'password_form': password_form,
         })
@@ -303,6 +304,12 @@ class EditProfileView(View):
             profile_form = EditProfileForm(request.POST, instance=request.user)
             if profile_form.is_valid():
                 profile_form.save()
+                return redirect('profile')
+
+        if 'update_words_show' in request.POST:
+            words_show_form = WordsShowForm(request.POST, instance=user_profile)
+            if words_show_form.is_valid():
+                words_show_form.save()
                 return redirect('profile')
 
         if 'update_avatar' in request.POST:
@@ -330,11 +337,13 @@ class EditProfileView(View):
                 return redirect('profile')
 
         profile_form = EditProfileForm(instance=request.user)
+        words_show_form = WordsShowForm(instance=user_profile)
         avatar_form = AvatarUpdateForm(instance=user_profile)
         password_form = ChengePasswordForm(user=request.user)
 
         return render(request, 'med/edit_profile.html', {
             'profile_form': profile_form,
+            'words_show_form': words_show_form,
             'avatar_form': avatar_form,
             'password_form': password_form,
         })

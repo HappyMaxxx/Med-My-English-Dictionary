@@ -81,6 +81,19 @@ class EditProfileForm(forms.ModelForm):
         model = User
         fields = ['email', 'first_name', 'last_name']
 
+class WordsShowForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['words_num_in_prof', 'what_type_show']
+        labels = {
+            'words_num_in_prof': 'Number of words in profile',
+            'what_type_show': 'What type of words to show'
+        }
+        widgets = {
+            'words_num_in_prof': forms.Select(attrs={'class': 'form-select'}),
+            'what_type_show': forms.Select(attrs={'class': 'form-select'}),
+        }
+
 class AvatarUpdateForm(forms.ModelForm):
     class Meta:
         model = UserProfile

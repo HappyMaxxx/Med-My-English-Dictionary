@@ -527,7 +527,6 @@ form p a {
 
 .profile-container .buttons {
     text-align: right;
-    margin-bottom: 35px;
     padding-left: 0;
     width: 100%;
 }
@@ -807,18 +806,30 @@ form .avatar-form p {
 }
 
 form .edit-buttons {
-    margin-top: 20px; /* Відступ зверху між кнопками та іншими елементами */
+    margin-top: 20px; 
     display: flex;
-    justify-content: center; /* Центрує кнопки горизонтально */
-    gap: 15px; /* Відступ між кнопками */
+    justify-content: center;
+    gap: 15px; 
 }
 
 form .edit-buttons a {
-    padding: 12px 24px; /* Відступи всередині кнопки */
-    margin: 0; /* Прибирає відступи між кнопками */
+    padding: 12px 24px; 
+    margin: 0; 
     border-radius: 5px;
     font-size: 1em;
     text-align: center;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.3s;
+}
+
+.words_select {
+    margin-top: 20px;
+}
+
+.profile-words {
+    margin-top: 25px;
+}
+
+.buttons .profile-buttons{
+    margin-bottom: 0px;
 }
