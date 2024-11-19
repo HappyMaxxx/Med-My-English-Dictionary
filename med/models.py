@@ -48,10 +48,17 @@ class UserProfile(models.Model):
         one = 1, '1'
         zero = 0, '0'
 
+    class WordsType(models.TextChoices):
+        everybody = 'every', 'Everybody'
+        friends = 'friends', 'Friends'
+        only_me = 'only', 'Only me'
+
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     words_num_in_prof = models.IntegerField(choices=NumberWords.choices, default=NumberWords.five)
     what_type_show = models.CharField(max_length=10, choices=Types.choices, default=Types.learning)
+    access_dictionary = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.everybody)
 
     def __str__(self):
         return self.user.username

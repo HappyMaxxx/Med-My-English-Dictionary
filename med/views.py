@@ -21,7 +21,7 @@ from med.models import *
 
 def index(request):
     if request.user.is_authenticated:
-        return redirect('profile')
+        return redirect('profile', user_name=request.user.username)
     return render(request, 'med/index.html')
 
 def about(request):
@@ -90,7 +90,7 @@ class ConfirmDeleteView(View):
                 'text': 'Are you sure you want to delete these words?' if len(words) > 1 else 'Are you sure you want to delete this word?'
             })
 
-        return redirect('profile') 
+        return redirect('profile', user_name=request.user.username) 
 
     def post(self, request, *args, **kwargs):
         word_ids = request.POST.getlist('word_ids')
@@ -113,7 +113,7 @@ class ConfirmDeleteView(View):
 
             return redirect('group_words', group_id=group_id)
 
-        return redirect('profile')
+        return redirect('profile', user_name=request.user.username)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -134,18 +134,30 @@ class EditWordView(View):
 
 @method_decorator(login_required, name='dispatch')
 class WordListView(ListView):
-    paginate_by = 25
     model = Word
     template_name = 'med/words.html'
     context_object_name = 'words'
+    paginate_by = 25
+
+    def get_queryset(self):
+        user_name = self.kwargs['user_name']
+        user = get_object_or_404(User, username=user_name)
+
+        if user == self.request.user:
+            self.is_my_dict = True
+        else:
+            self.is_my_dict = False
+
+        return Word.objects.filter(user=user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = f"{self.request.user.username}'s Dictionary"
+        context['user_name'] = self.kwargs['user_name']
+        context['user'] = get_object_or_404(User, username=self.kwargs['user_name'])
+        context['title'] = f"{self.kwargs['user_name']}'s Dictionary"
+        context['is_my_dict'] = getattr(self, 'is_my_dict', False)
+        context['access'] = UserProfile.objects.get(user=context['user']).access_dictionary
         return context
-
-    def get_queryset(self):
-        return Word.objects.filter(user=self.request.user)
 
 
 class GroupListView(ListView):
@@ -241,9 +253,6 @@ class ProfileView(View):
         curent_loged_user_name = request.user.username
         profile_user = user_name
 
-        print(curent_loged_user_name)
-        print(profile_user)
-
         if curent_loged_user_name == profile_user:
             user_profile, created = UserProfile.objects.get_or_create(user=request.user)
 
@@ -263,7 +272,7 @@ class ProfileView(View):
                 'is_favorite': True if user_profile.what_type_show == 'fav' else False,
                 'user_profile': user_profile,
                 'is_my_profile': True,
-                'is_profile': True
+                'is_profile': True,
             })
         
         else:
@@ -287,14 +296,14 @@ class ProfileView(View):
                 'is_favorite': True if user_profile.what_type_show == 'fav' else False,
                 'user_profile': user_profile,
                 'is_my_profile': False,
-                'is_profile': True
+                'is_profile': True,
             })
 
 class SelectGroupView(View):
     def get(self, request):
         word_ids = request.GET.getlist('word_ids')
         if not word_ids:
-            return redirect('words')
+            return redirect('words', user_name=request.user.username)
         words = Word.objects.filter(id__in=word_ids)
         groups = WordGroup.objects.filter(user=request.user, is_main=False)
         return render(request, 'med/select_group.html', {
@@ -310,7 +319,7 @@ class SelectGroupView(View):
         if group_id:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
         else:
-            redirect('words')
+            redirect('words', user_name=request.user.username)
         
         group_words = group.words.all()
         words = Word.objects.filter(id__in=word_ids, user=request.user)
@@ -344,13 +353,13 @@ class EditProfileView(View):
             profile_form = EditProfileForm(request.POST, instance=request.user)
             if profile_form.is_valid():
                 profile_form.save()
-                return redirect('profile')
+                return redirect('profile', user_name=request.user.username)
 
         if 'update_words_show' in request.POST:
             words_show_form = WordsShowForm(request.POST, instance=user_profile)
             if words_show_form.is_valid():
                 words_show_form.save()
-                return redirect('profile')
+                return redirect('profile', user_name=request.user.username)
 
         if 'update_avatar' in request.POST:
             if request.POST.get('avatar') == '' and not request.POST.get('avatar-clear'):
@@ -367,14 +376,14 @@ class EditProfileView(View):
                 if old_avatar_path:
                     if os.path.isfile(old_avatar_path):
                         default_storage.delete(old_avatar_path)
-                return redirect('profile')
+                return redirect('profile', user_name=request.user.username)
             
         if 'change_password' in request.POST:
             password_form = ChengePasswordForm(user=request.user, data=request.POST)
             if password_form.is_valid():
                 password_form.save()
                 update_session_auth_hash(request, request.user)
-                return redirect('profile')
+                return redirect('profile', user_name=request.user.username)
 
         profile_form = EditProfileForm(instance=request.user)
         words_show_form = WordsShowForm(instance=user_profile)
@@ -401,7 +410,7 @@ def make_favourite(request, word_id):
         word.is_favourite = not word.is_favourite
         print(word.is_favourite)
         word.save()
-        return redirect('words')
+        return redirect('words', user_name=request.user.username)
     except:
         return redirect('login')
 

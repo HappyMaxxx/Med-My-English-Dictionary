@@ -6,14 +6,17 @@
 <h1>{{title}}</h1>
 
 <div class="word_table_container">
+    {% if is_my_dict %}
     <div class="buttons">
         <a href="#" onclick="selectAllWords(); return false;">Select All Words</a>
         <a href="#" onclick="addWordsToGroup(); return false;">Add To The Group</a>
         <a href="#" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
         <a href="{% url 'addword' %}">Add New Word</a>
     </div>
+    {% endif %}
 
     <table class="word_table">
+        {% if is_my_dict or access == 'every' %}
         <thead>
             <tr>
                 <th class="checboxes">#</th>
@@ -42,6 +45,10 @@
                 </tr>
             {% endfor %}
         </tbody>
+        {% else %}
+        <p> </p>
+        <p><b>{{ user_name }} has a private dictionary</b></p>
+        {% endif %}
     </table>
 
     {% if paginator.num_pages > 1 %}

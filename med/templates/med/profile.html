@@ -19,7 +19,7 @@
 
     <div class="stats">
         <div class="stat-item">
-            <a href="{% url 'words' %}">
+            <a href="{% url 'words' user.username %}">
                 <p><strong>Words</strong></p>
                 <p>{{ word_count }}</p>
             </a>

@@ -84,14 +84,16 @@ class EditProfileForm(forms.ModelForm):
 class WordsShowForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['words_num_in_prof', 'what_type_show']
+        fields = ['words_num_in_prof', 'what_type_show', 'access_dictionary']
         labels = {
             'words_num_in_prof': 'Number of words in profile',
-            'what_type_show': 'What type of words to show'
+            'what_type_show': 'What type of words to show',
+            'access_dictionary': 'Who can see your dictionary'
         }
         widgets = {
             'words_num_in_prof': forms.Select(attrs={'class': 'form-select'}),
             'what_type_show': forms.Select(attrs={'class': 'form-select'}),
+            'access_dictionary': forms.Select(attrs={'class': 'form-select'})
         }
 
 class AvatarUpdateForm(forms.ModelForm):
