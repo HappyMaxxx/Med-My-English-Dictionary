@@ -35,7 +35,7 @@ class AddWordForm(forms.ModelForm):
     
 
 class RegisterUserForm(UserCreationForm):
-    username = forms.CharField(label='Username', widget=forms.TextInput())
+    username = forms.CharField(label='Username', widget=forms.TextInput(attrs={'id': 'id_username'}))
     email = forms.EmailField(label='Email', widget=forms.EmailInput())
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput())
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput())
@@ -43,6 +43,12 @@ class RegisterUserForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('This username is already taken.')
+        return username
 
 
 class LoginUserForm(AuthenticationForm):

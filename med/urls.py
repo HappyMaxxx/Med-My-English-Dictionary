@@ -20,4 +20,5 @@ urlpatterns = [
     path('select_group/', views.SelectGroupView.as_view(), name='select_group'),
     path('edit_profile/', views.EditProfileView.as_view(), name='edit_profile'),
     path('make_favourite/<int:word_id>', views.make_favourite, name='make_favourite'),
+    path('check-username/', views.check_username, name='check_username'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

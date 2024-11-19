@@ -11,14 +11,48 @@
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
             {{ field }}
         </p>
-        <div class="form-error">{{ field.errors }}</div>
+        <div class="form-error" id="{{ field.id_for_label }}-error">
+            {{ field.errors }}
+        </div>
     {% endfor %}
 
-    <div class="buttons">
+    <div class="buttons l-r-but">
         <a href="#" class="register-button" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Register</a>
     </div>
 
     <p>Alredy have an account? <a href="{% url 'login' %}">Login now</a></p>
 </form>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const usernameInput = document.getElementById('id_username');
+        const usernameError = document.getElementById('id_username-error');
+
+        usernameInput.addEventListener('blur', function () {
+            const username = usernameInput.value;
+
+            if (username) {
+                fetch('{% url "check_username" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ username: username })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        usernameError.textContent = data.error; 
+                        usernameError.style.color = 'red';
+                    } else {
+                        usernameError.textContent = ''; 
+                    }
+                });
+            } else {
+                usernameError.textContent = '';
+            }
+        });
+    });
+</script>
 {% endblock %}

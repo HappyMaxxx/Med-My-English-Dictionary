@@ -12,6 +12,9 @@ from django.utils.decorators import method_decorator
 
 from django.db import transaction
 
+from django.http import JsonResponse
+import json
+
 from django.core.paginator import Paginator
 
 from django.contrib.auth import logout, login, update_session_auth_hash
@@ -416,3 +419,13 @@ def make_favourite(request, word_id):
 
 def page_not_found(request, exception):
     return HttpResponseNotFound("<h1>404 Page Not Found</h1>")
+
+def check_username(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username', None)
+
+        if username and User.objects.filter(username=username).exists():
+            return JsonResponse({'error': 'This username is already taken.'}, status=200)
+        
+    return JsonResponse({'error': 'Invalid request'}, status=400)

@@ -315,8 +315,8 @@ form textarea:focus {
     list-style: none; 
     color: red;
     font-size: 0.9em;
-    margin-top: -15px;
-    margin-bottom: 25px;
+    /* margin-top: -15px; */
+    /* margin-bottom: 25px; */
 
 }
 
@@ -840,4 +840,8 @@ form .edit-buttons a {
 
 .buttons .profile-buttons{
     margin-bottom: 0px;
+}
+
+.l-r-but {
+    margin-top: 20px;
 }
