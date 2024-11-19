@@ -427,5 +427,4 @@ def check_username(request):
 
         if username and User.objects.filter(username=username).exists():
             return JsonResponse({'error': 'This username is already taken.'}, status=200)
-        
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+        return JsonResponse({'error': ''}, status=200)

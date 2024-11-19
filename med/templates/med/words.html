@@ -15,33 +15,42 @@
     </div>
     {% endif %}
 
+    {% if words %}
     <table class="word_table">
         {% if is_my_dict or access == 'every' %}
         <thead>
             <tr>
+                {% if is_my_dict %}
                 <th class="checboxes">#</th>
+                {% endif %}
                 <th>Word</th>
                 <th>Translation</th>
                 <th>Example</th>
+                {% if is_my_dict %}
                 <th class="edit"><img class="th_f" src="{% static 'med/img/base/f_dark.png' %}" alt="Favourite_img"></th>
                 <th class="edit">Edit</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for word in words %}
                 <tr>
+                    {% if is_my_dict %}
                     <td><input type="checkbox" name="word_checkbox" value="{{ word.id }}"></td>
+                    {% endif %}
                     <td>{{ word.word }}</td>
                     <td>{{ word.translation }}</td>
                     <td>{{ word.example }}</td>
 
-                    {% if word.is_favourite %}
-                    <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/f_light.png' %}" data-light-src="{% static 'med/img/base/f_light.png' %}" data-dark-src="{% static 'med/img/base/f_dark.png' %}" alt="Favourite img"></a></td>
-                    {% else %}
-                    <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/no_f_light.png' %}" data-light-src="{% static 'med/img/base/no_f_light.png' %}" data-dark-src="{% static 'med/img/base/no_f_dark.png' %}" alt="Not Favourite img"></a></td>
-                    {% endif %}
+                    {% if is_my_dict %}
+                        {% if word.is_favourite %}
+                        <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/f_light.png' %}" data-light-src="{% static 'med/img/base/f_light.png' %}" data-dark-src="{% static 'med/img/base/f_dark.png' %}" alt="Favourite img"></a></td>
+                        {% else %}
+                        <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/no_f_light.png' %}" data-light-src="{% static 'med/img/base/no_f_light.png' %}" data-dark-src="{% static 'med/img/base/no_f_dark.png' %}" alt="Not Favourite img"></a></td>
+                        {% endif %}
 
-                    <td class="img_td"><a href="{% url 'edit_word' word.id %}"><img class="edit_img" src="{% static 'med/img/features/edit_light.png' %}" data-light-src="{% static 'med/img/features/edit_light.png' %}" data-dark-src="{% static 'med/img/features/edit_dark.png' %}" alt="Edit img"></a></td>
+                        <td class="img_td"><a href="{% url 'edit_word' word.id %}"><img class="edit_img" src="{% static 'med/img/features/edit_light.png' %}" data-light-src="{% static 'med/img/features/edit_light.png' %}" data-dark-src="{% static 'med/img/features/edit_dark.png' %}" alt="Edit img"></a></td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         </tbody>
@@ -49,6 +58,10 @@
         <p> </p>
         <p><b>{{ user_name }} has a private dictionary</b></p>
         {% endif %}
+    {% else %}
+    <p> </p>
+    <p><b>There are no words yet</b></p>
+    {% endif %}
     </table>
 
     {% if paginator.num_pages > 1 %}
