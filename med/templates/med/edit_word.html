@@ -19,7 +19,7 @@
 
     <div class="buttons">
         <a href="#" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Save Changes</a>
-        <a href="{% url 'words' %}">Cancel</a>
+        <a href="{% url 'words' request.user.username %}">Cancel</a>
     </div>
 </form>
 

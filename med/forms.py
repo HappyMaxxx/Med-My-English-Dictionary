@@ -28,7 +28,7 @@ class AddWordForm(forms.ModelForm):
             raise forms.ValidationError('Example is too long, max 1000 characters.')
         
         word = self.cleaned_data.get('word')
-        if not re.match("^[a-zA-Z]+$", word):
+        if not re.match("^[a-zA-Z ]+$", word) or re.match("^[ ]+$", word):
             raise forms.ValidationError("Word can contain only Latin characters.")
         
         return example

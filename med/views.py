@@ -35,13 +35,15 @@ def about(request):
 class AddWordView(LoginRequiredMixin, CreateView):
     form_class = AddWordForm
     template_name = 'med/addword.html'
-    success_url = reverse_lazy('words')
     extra_context = {'title': 'Add Word'}
+
+    def get_success_url(self):
+        return reverse_lazy('words', kwargs={'user_name': self.request.user.username})
 
     def form_valid(self, form):
         word = form.save(commit=False)
         word.user = self.request.user
-        word.save() 
+        word.save()
 
         group_name = f"All {self.request.user.username}'s "
         group, created = WordGroup.objects.get_or_create(
@@ -106,7 +108,7 @@ class ConfirmDeleteView(View):
         
         elif word_ids and not group_id:
             Word.objects.filter(id__in=word_ids, user=request.user).delete()
-            return redirect('words')
+            return redirect('words', user_name=request.user.username)
 
         elif group_id and word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)

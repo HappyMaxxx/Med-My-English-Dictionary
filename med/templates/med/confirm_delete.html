@@ -30,7 +30,7 @@
                 <input type="hidden" name="group_id" value="{{ group_id }}">
 
             {% elif words and not is_group %}
-                <a href="{% url 'words' %}">Cancel</a>
+                <a href="{% url 'words' request.user.username %}">Cancel</a>
                 {% for word_id in word_ids %}
                     <input type="hidden" name="word_ids" value="{{ word_id }}">
                 {% endfor %}

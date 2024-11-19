@@ -85,7 +85,7 @@
                 {% if is_main %}
                 <a href="{% url 'addword' %}" class="add-word-button">Add Word</a>
                 {% else %}
-                <a href="{% url 'words' %}" class="add-word-button">Add Word</a>
+                <a href="{% url 'words' request.user.username %}" class="add-word-button">Add Word</a>
                 <a href="#" class="add-word-button" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
                 {% endif %}
             </div>

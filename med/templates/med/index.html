@@ -7,7 +7,7 @@
     {% if not request.user.is_authenticated %}
     <a href="{% url 'login' %}">Get Started</a>
     {% else %}
-    <a href="{% url 'words' %}">Your Words</a>
+    <a href="{% url 'words' request.user.username %}">Your Words</a>
     {% endif %}
     <a href="{% url 'about' %}">Learn More</a>
 </div>

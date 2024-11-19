@@ -34,7 +34,7 @@
         {% else %}
         <a href="{% url 'create_group' %}" class="btn btn-primary">Create New Group</a>
         {% endif %}
-        <a href="{% url 'words' %}" class="btn btn-secondary">Cancel</a>
+        <a href="{% url 'words' request.user.username %}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
 {% endblock %}
