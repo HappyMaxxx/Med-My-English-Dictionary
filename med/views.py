@@ -161,6 +161,8 @@ class WordListView(ListView):
         context['user'] = get_object_or_404(User, username=self.kwargs['user_name'])
         context['title'] = f"{self.kwargs['user_name']}'s Dictionary"
         context['is_my_dict'] = getattr(self, 'is_my_dict', False)
+        context['is_dict'] = True
+        context['logged_user'] = self.request.user
         context['access'] = UserProfile.objects.get(user=context['user']).access_dictionary
         return context
 

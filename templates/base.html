@@ -50,8 +50,8 @@
         {% if request.user.is_authenticated %}
         <div class="buttons">
             
-            {% if is_profile %}
-                {% if is_my_profile %}
+            {% if is_profile or is_dict %}
+                {% if is_my_profile or is_my_dict %}
                 <a href="{% url 'profile' user.username %}">{{request.user.username}}</a>
                 {% else %}
                 <a href="{% url 'profile' logged_user.username %}">{{request.user.username}}</a>
