@@ -14,8 +14,8 @@
 <header>
     {% if user.is_authenticated %}
 
-        {% if is_profile %}
-            {% if is_my_profile %}
+        {% if is_profile or is_dict %}
+            {% if is_my_profile or is_my_dict %}
             <a href="{% url 'profile' user.username %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
             {% else %}
             <a href="{% url 'profile' logged_user.username %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
