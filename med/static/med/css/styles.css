@@ -47,7 +47,10 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
     background-color: var(--header-background);
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -61,10 +64,15 @@ header .nav-items {
 
 header .nav-center {
     display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-grow: 1;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: left;
+    width: 100%;
+    gap: 20px; 
+}
+
+header .nav-left {
+    min-width: 250px;
+    margin-right: 15px;
 }
 
 header .buttons {
@@ -77,6 +85,12 @@ header .buttons {
 header #logo_img {
     height: 50px;
     cursor: pointer;
+    float:inherit;
+}
+
+header .logo_container {
+    min-width: 150px;
+    height: 50px;
 }
 
 header .nav-center a {
@@ -92,6 +106,16 @@ header .nav-center a:hover {
     color: var(--nav-link-hover-color);
     background-color: var(--nav-link-hover-bg);
     border-radius: 4px;
+}
+
+header .buttons {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center; 
+    gap: 10px; 
+    margin-left: 0; 
+    width: auto;
+    min-width: 200px;
 }
 
 header .buttons a {
@@ -271,7 +295,7 @@ header .buttons a:hover {
     border-radius: 5px;
 }
 
-form {
+.container form {
     max-width: 600px;
     margin: 20px auto;
     padding: 20px;
@@ -280,17 +304,17 @@ form {
     box-shadow: var(--feature-shadow);
 }
 
-form .form-label {
+.container form .form-label {
     display: block;
     font-weight: bold;
     color: var(--text-color);
     margin-bottom: 5px;
 }
 
-form input[type="text"],
-form input[type="email"],
-form input[type="password"],
-form textarea {
+.container form input[type="text"],
+.container form input[type="email"],
+.container form input[type="password"],
+.container form textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
@@ -303,10 +327,10 @@ form textarea {
     max-height: 150px;
 }
 
-form input[type="text"]:focus,
-form input[type="email"]:focus,
-form input[type="password"]:focus,
-form textarea:focus {
+.container form input[type="text"]:focus,
+.container form input[type="email"]:focus,
+.container form input[type="password"]:focus,
+.container form textarea:focus {
     border-color: var(--button-background);
     outline: none;
 }
@@ -348,7 +372,7 @@ form .buttons a:hover {
     margin: 0px;
 }
 
-form p a {
+.container form p a {
     color: var(--link-color);
     font-weight: bold;
     text-decoration: none;
@@ -844,4 +868,162 @@ form .edit-buttons a {
 
 .l-r-but {
     margin-top: 20px;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 30px;
+}
+
+.search-input {
+    flex-grow: 1;
+    width: 150px;
+    padding: 8px 12px;
+    border: 1px solid var(--button-background);
+    border-radius: 5px;
+    font-size: 1em;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--button-background);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.search-link {
+    text-decoration: none;
+    color: var(--button-text-color);
+    background-color: var(--button-background);
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    display: inline-block;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.search-link:hover {
+    background-color: #444;
+    transform: scale(1.05);
+}
+
+.search-users-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: var(--feature-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+    color: var(--text-color);
+}
+
+.search-users-container h1 {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.search-users-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+.search-form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    /* margin-bottom: 20px; */
+}
+
+.search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--button-background);
+    border-radius: 5px;
+    font-size: 1em;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.search-link {
+    text-decoration: none;
+    color: var(--button-text-color);
+    background-color: var(--button-background);
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.search-link:hover {
+    background-color: #444;
+}
+
+.user-list {
+    list-style: none;
+    padding: 0;
+}
+
+.user-item {
+    margin-bottom: 15px;
+}
+
+.user-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+    border: 1px solid var(--button-background);
+    border-radius: 5px;
+    background-color: var(--background-color);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.user-name {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.user-email {
+    font-size: 0.9em;
+    color: var(--feature-text-color);
+}
+
+.no-results {
+    text-align: center;
+    font-size: 1.2em;
+    color: var(--feature-text-color);
+}
+
+.user-card p {
+    margin: 0px;
 }

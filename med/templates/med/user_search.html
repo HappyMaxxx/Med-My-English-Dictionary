@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="search-users-container">
+    <h1>Search Users</h1>
+    
+    <form method="get" action="{% url 'user_search' %}" class="search-form">
+        <input type="text" name="q" placeholder="Enter name" value="{{ query }}" class="search-input">
+        <a href="#" class="search-link" onclick="this.closest('form').submit();">Search</a>
+    </form>
+
+    {% if query %}
+        <h2>Results for "{{ query }}":</h2>
+        {% if users %}
+            <ul class="user-list">
+            {% for user in users %}
+                <li class="user-item">
+                    <a href="{% url 'profile' user.username %}" class="user-link">
+                        <div class="user-card">
+                            <img src="{{ user.userprofile.get_avatar_url }}" alt="{{ user.username }}'s avatar" class="user-avatar">
+                            <div class="user-info">
+                                <p class="user-name">{{ user.username }}</p>
+                                <p class="user-email">{{ user.email }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-results">No users found.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -14,23 +14,46 @@
 <header>
     {% if user.is_authenticated %}
 
+    <div class="logo_container">
         {% if is_profile or is_dict %}
             {% if is_my_profile or is_my_dict %}
-            <a href="{% url 'profile' user.username %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
+                <a href="{% url 'profile' user.username %}">
+                    <img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" 
+                         data-light-src="{% static 'med/img/base/light_logo.png' %}" 
+                         data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo">
+                </a>
             {% else %}
-            <a href="{% url 'profile' logged_user.username %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
+                <a href="{% url 'profile' logged_user.username %}">
+                    <img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" 
+                         data-light-src="{% static 'med/img/base/light_logo.png' %}" 
+                         data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo">
+                </a>
             {% endif %}
         {% else %}
-            <a href="{% url 'profile' user.username %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
+            <a href="{% url 'profile' user.username %}">
+                <img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" 
+                     data-light-src="{% static 'med/img/base/light_logo.png' %}" 
+                     data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo">
+            </a>
         {% endif %}
+    </div>
 
     {% else %}
+    <div class="logo_container">
         <a href="{% url 'home' %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
+    </div>
     {% endif %}
     <nav class="nav-items">
-        <div class="nav-center">
             {% if user.is_authenticated %}
-            
+                <div class="nav-left">
+                {% if not is_search %}
+                <form method="get" action="{% url 'user_search' %}" class="search-form">
+                    <input type="text" name="q" placeholder="Enter name" required class="search-input">
+                    <a href="#" class="search-link" onclick="this.closest('form').submit();">Search</a>
+                </form>
+                {% endif %}
+                </div>
+        <div class="nav-center">
                 {% if is_my_dict %}
                 <a href="{% url 'words' user.username %}">My Dictionary</a>
                 {% else %}
@@ -40,13 +63,15 @@
                 <a href="{% url 'addword' %}">Add word</a>
                 <a href="{% url 'groups' %}">Word Categories</a>
             {% else %}
+            <div class="nav-left"></div>
+            <div class="nav-center">
                 <a href="{% url 'login' %}">My Dictionary</a>
                 <a href="{% url 'login' %}">Add word</a>
                 <a href="#">Word Categories</a>
-            {% endif %}
-            <a href="#" id="theme-toggle-light">Light Mode</a>
-            <a href="#" id="theme-toggle-dark">Dark Mode</a>
-        </div>
+                {% endif %}
+                <a href="#" id="theme-toggle-light">Light Mode</a>
+                <a href="#" id="theme-toggle-dark">Dark Mode</a>
+            </div>
         {% if request.user.is_authenticated %}
         <div class="buttons">
             

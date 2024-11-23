@@ -432,3 +432,8 @@ def check_username(request):
         if username and User.objects.filter(username=username).exists():
             return JsonResponse({'error': 'This username is already taken.'}, status=200)
         return JsonResponse({'error': ''}, status=200)
+
+def user_search(request):
+    query = request.GET.get('q')
+    users = User.objects.filter(username__icontains=query) if query else [] 
+    return render(request, 'med/user_search.html', {'users': users, 'query': query, 'is_search': True})
