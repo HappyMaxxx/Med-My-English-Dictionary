@@ -25,10 +25,15 @@
             </a>
         </div>
         <div class="stat-item">
+            {% if is_my_profile %}
             <a href="{% url 'groups' %}">
                 <p><strong>Groups</strong></p>
                 <p> {{ group_count }} </p>
             </a>
+            {% else %}
+                <p><strong>Groups</strong></p>
+                <p> {{ group_count }} </p>
+            {% endif %}
         </div>
         <div class="stat-item">
             <a href="#">

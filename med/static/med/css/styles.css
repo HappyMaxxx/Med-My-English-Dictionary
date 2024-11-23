@@ -1024,6 +1024,10 @@ form .edit-buttons a {
     color: var(--feature-text-color);
 }
 
+.search-users-container p {
+    margin-bottom: 0px;
+}
+
 .user-card p {
     margin: 0px;
 }
