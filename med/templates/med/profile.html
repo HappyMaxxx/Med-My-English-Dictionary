@@ -36,9 +36,9 @@
             {% endif %}
         </div>
         <div class="stat-item">
-            <a href="#">
+            <a href="{% url 'friends_list' user.username %}">
                 <p><strong>Friends</strong></p>
-                <p> 0 </p>
+                <p> {{ friend_count }} </p>
             </a>
         </div>
     </div>
@@ -47,6 +47,12 @@
     <div class="buttons profile-buttons">
         <a href="{% url 'edit_profile' %}">Edit Profile</a>
     </div>
+    {% else %}
+    {% if not is_friends %}
+    <div class="buttons profile-buttons">
+        <a href="{% url 'add_friend' user.username %}" class="add-friend-link">Add Friend</a>
+    </div>
+    {% endif %}
     {% endif %}
 
     {% if recent_words %}

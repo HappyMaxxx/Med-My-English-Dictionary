@@ -15,14 +15,21 @@
             <ul class="user-list">
             {% for user in users %}
                 <li class="user-item">
-                    <a href="{% url 'profile' user.username %}" class="user-link">
-                        <div class="user-card">
-                            <img src="{{ user.userprofile.get_avatar_url }}" alt="{{ user.username }}'s avatar" class="user-avatar">
+                    <div class="user-card">
+                        <a href="{% url 'profile' user.username %}" class="user-link">
                             <div class="user-info">
+                                <img src="{{ user.userprofile.get_avatar_url }}" alt="{{ user.username }}'s avatar" class="user-avatar">
                                 <p class="user-name">{{ user.username }}</p>
                             </div>
+                        </a>
+                        {% if user != request.user %}
+                        {% if user not in friends %}
+                        <div class="buttons">
+                            <a href="{% url 'add_friend' user.username %}" class="add-friend-link">Add Friend</a>
                         </div>
-                    </a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
                 </li>
             {% endfor %}
             </ul>

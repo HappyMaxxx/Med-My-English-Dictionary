@@ -8,9 +8,11 @@ from django.views import View
 from django.core.files.storage import default_storage
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.utils.decorators import method_decorator
 
 from django.db import transaction
+from django.db.models import Q
 
 from django.http import JsonResponse
 import json
@@ -271,20 +273,31 @@ class ProfileView(View):
             word_count = Word.objects.filter(user=request.user).count()
             group_count = WordGroup.objects.filter(user=request.user).count()
 
+            friends = User.objects.filter(
+                Q(friendship_requests_sent__receiver=request.user, friendship_requests_sent__status='accepted') |
+                Q(friendship_requests_received__sender=request.user, friendship_requests_received__status='accepted')
+            ).distinct()
+
+            friend_requests = Friendship.objects.filter(receiver=request.user, status='pending')
+
             return render(request, 'med/profile.html', {
                 'user': request.user,
                 'recent_words': recent_words,
                 'word_count': word_count,
                 'group_count': group_count,
+                'friend_count': friends.count(), 
+                'friend_requests': friend_requests,
                 'is_favorite': True if user_profile.what_type_show == 'fav' else False,
                 'user_profile': user_profile,
                 'is_my_profile': True,
                 'is_profile': True,
+                'friends': friends,
             })
         
         else:
             user = get_object_or_404(User, username=user_name)
             user_profile, created = UserProfile.objects.get_or_create(user=user)
+            is_friends = False
 
             if user_profile.what_type_show == 'fav':
                 recent_words = Word.objects.filter(user=user, is_favourite=True)[:user_profile.words_num_in_prof]
@@ -294,16 +307,27 @@ class ProfileView(View):
             word_count = Word.objects.filter(user=user).count()
             group_count = WordGroup.objects.filter(user=user).count()
 
+            friends = User.objects.filter(
+                Q(friendship_requests_sent__receiver=user, friendship_requests_sent__status='accepted') |
+                Q(friendship_requests_received__sender=user, friendship_requests_received__status='accepted')
+            ).distinct()
+
+            if request.user in friends:
+                is_friends = True
+
             return render(request, 'med/profile.html', {
                 'user': user,
                 'logged_user': request.user,
                 'recent_words': recent_words,
                 'word_count': word_count,
                 'group_count': group_count,
+                'friend_count': friends.count(),
                 'is_favorite': True if user_profile.what_type_show == 'fav' else False,
                 'user_profile': user_profile,
                 'is_my_profile': False,
                 'is_profile': True,
+                'is_friends': is_friends,
+                'friends': friends,
             })
 
 class SelectGroupView(View):
@@ -435,5 +459,52 @@ def check_username(request):
 
 def user_search(request):
     query = request.GET.get('q')
-    users = User.objects.filter(username__icontains=query) if query else [] 
-    return render(request, 'med/user_search.html', {'users': users, 'query': query, 'is_search': True})
+    users = User.objects.filter(username__icontains=query) if query else []
+    friends = User.objects.filter(
+                Q(friendship_requests_sent__receiver=request.user, friendship_requests_sent__status='accepted') |
+                Q(friendship_requests_received__sender=request.user, friendship_requests_received__status='accepted')
+            ).distinct()
+    return render(request, 'med/user_search.html', {'users': users, 'query': query, 'is_search': True, 'friends': friends})
+
+@login_required
+def send_friend_request(request, username):
+    receiver = get_object_or_404(User, username=username)
+    if receiver == request.user:
+        messages.error(request, "You cannot send a friend request to yourself.")
+        return redirect('profile', user_name=request.user.username)
+    
+    friendship, created = Friendship.objects.get_or_create(sender=request.user, receiver=receiver)
+    if created:
+        messages.success(request, "Friend request sent.")
+    else:
+        messages.warning(request, "Friend request already sent.")
+    return redirect('profile', user_name=request.user.username)
+
+@login_required
+def respond_to_friend_request(request, friendship_id, response):
+    friendship = get_object_or_404(Friendship, id=friendship_id, receiver=request.user)
+    if response == 'accept':
+        friendship.status = 'accepted'
+        friendship.save()
+        messages.success(request, "Friend request accepted.")
+    elif response == 'reject':
+        friendship.status = 'rejected'
+        friendship.save()
+        messages.info(request, "Friend request rejected.")
+    return redirect('friends_list', user_name=request.user.username)
+
+@login_required
+def friends_list_view(request, user_name):
+    user = get_object_or_404(User, username=user_name)
+    friendships = Friendship.objects.filter(
+        Q(sender=user, status='accepted') |
+        Q(receiver=user, status='accepted')
+    )
+
+    friends = [friendship.sender if friendship.receiver == user else friendship.receiver for friendship in friendships]
+
+    friend_requests = Friendship.objects.filter(receiver=user, status='pending')
+    return render(request, 'med/friends_list.html', {
+        'friends': friends, 
+        'friend_requests': friend_requests,
+    })

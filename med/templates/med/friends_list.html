@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="friends-container">
+    <h1>Your Friends</h1>
+
+    <h2>Friend List:</h2>
+    {% if friends %}
+        <ul class="user-list">
+        {% for friend in friends %}
+        <li class="user-item">
+            <div class="user-card">
+                <a href="{% url 'profile' friend.username %}" class="user-link">
+                    <div class="user-info">
+                        <img src="{{ friend.userprofile.get_avatar_url }}" alt="{{ friend.username }}'s avatar" class="user-avatar">
+                        <p class="user-name">{{ friend.username }}</p>
+                    </div>
+                </a>
+            </div>
+        </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>You don't have any friends yet.</p>
+    {% endif %}
+
+    <h2>Friend Requests:</h2>
+    {% if friend_requests %}
+        <ul class="user-list">
+        {% for request in friend_requests %}
+            <li class="user-item">
+                <div class="user-card">
+                    <a href="{% url 'profile' request.sender.username %}" class="user-link">
+                        <div class="user-info">
+                            <img src="{{ request.sender.userprofile.get_avatar_url }}" alt="{{ request.sender.username }}'s avatar" class="user-avatar">
+                            <p class="user-name">{{ request.sender.username }}</p>
+                        </div>
+                    </a>
+
+                    <div class="buttons">
+                        <a href="{% url 'respond_friend_request' request.id 'accept' %}" class="btn accept">Accept</a>
+                        <a href="{% url 'respond_friend_request' request.id 'reject' %}" class="btn reject">Reject</a>
+                    </div>
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No pending friend requests.</p>
+    {% endif %}
+</div>
+{% endblock %}
