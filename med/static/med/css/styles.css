@@ -867,11 +867,11 @@ form .edit-buttons a {
 }
 
 .profile-words {
-    margin-top: 25px;
+    margin-top: 20px;
 }
 
-.buttons .profile-buttons{
-    margin-bottom: 0px;
+.buttons .profile-buttons a{
+    margin-bottom: 10px;
 }
 
 .l-r-but {
@@ -888,7 +888,7 @@ form .edit-buttons a {
 .search-input {
     flex-grow: 1;
     width: 100%;
-    max-width: 150px;
+    /* max-width: 150px; */
     padding: 8px 12px;
     border: 1px solid var(--button-background);
     border-radius: 5px;
@@ -999,24 +999,23 @@ form .edit-buttons a {
 }
 
 .user-card:hover {
-    transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 10px; /* Відстань між аватаркою та іменем */
+    gap: 10px;
 }
 
 .user-avatar {
-    width: 50px; /* Розмір аватарки */
+    width: 50px;
     height: 50px;
     border-radius: 50%;
 }
 
 .user-name {
-    font-size: 1.2em; /* Розмір тексту імені */
+    font-size: 1.2em;
     color: var(--text-color);
 }
 
@@ -1042,7 +1041,7 @@ form .edit-buttons a {
     text-decoration: none;
     color: var(--button-text-color);
     background-color: var(--button-background);
-    padding: 8px 12px;
+    padding: 12px 24px;
     border-radius: 5px;
     font-size: 0.9em;
     font-weight: bold;
@@ -1095,4 +1094,24 @@ form .edit-buttons a {
 
 .buttons .reject {
     background-color: red;
+}
+
+.highlight-green {
+    color: #00ff00;
+    font-weight: bold;
+    text-align: center; 
+    text-shadow: 
+      0 0 5px #00ff00,  
+      0 0 10px #00ff00,
+      0 0 20px #00ff00;
+}
+
+.highlight-blue {
+    color: #0065ff;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 
+      0 0 5px #0065ff, 
+      0 0 10px #0065ff,
+      0 0 20px #0065ff;
 }

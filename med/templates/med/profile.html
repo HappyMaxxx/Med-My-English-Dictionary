@@ -49,8 +49,23 @@
     </div>
     {% else %}
     {% if not is_friends %}
+    {% if is_requests_in %}
+        <div class="buttons">
+            <a href="{% url 'respond_friend_request_a' user.id request.user.id 'accept' %}" class="add-friend-link">Accept</a>
+            <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Reject</a>
+        </div>
+    {% elif is_requests_out %}
+        <div class="buttons">
+            <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Cancel</a> 
+        </div>
+    {% else %}
     <div class="buttons profile-buttons">
         <a href="{% url 'add_friend' user.username %}" class="add-friend-link">Add Friend</a>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="buttons profile-buttons">
+        <a href="{% url 'delete_friend' friendship_id=user.friendship_id %}" class="remove-friend-link">Remove Friend</a>
     </div>
     {% endif %}
     {% endif %}

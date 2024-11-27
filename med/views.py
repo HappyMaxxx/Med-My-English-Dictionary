@@ -64,8 +64,7 @@ class ConfirmDeleteView(View):
     def get(self, request, *args, **kwargs):
         word_ids = request.GET.getlist('word_ids')
         group_id = request.GET.get('group_id')
-        frenship_id = request.GET.get('frenship_id')
-        
+
         if group_id and word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
             words = group.words.filter(id__in=word_ids)
@@ -96,17 +95,6 @@ class ConfirmDeleteView(View):
                 'words': words,
                 'word_ids': word_ids,
                 'text': 'Are you sure you want to delete these words?' if len(words) > 1 else 'Are you sure you want to delete this word?'
-            })
-        
-        elif frenship_id:
-            frend = Friendship.objects.filter(id=frenship_id, user=request.user)
-
-            # TODO: Надсилання іммені друга якого видаляємо
-
-            return render(request, 'med/confirm_delete.html', {
-                'is_group': False,
-                'frenship_id': frenship_id,
-                'text': "Are you sure you want to delete this friend?"
             })
 
         return redirect('profile', user_name=request.user.username) 
@@ -162,22 +150,32 @@ class WordListView(ListView):
         user_name = self.kwargs['user_name']
         user = get_object_or_404(User, username=user_name)
 
-        if user == self.request.user:
-            self.is_my_dict = True
-        else:
-            self.is_my_dict = False
+        self.is_my_dict = user == self.request.user
 
         return Word.objects.filter(user=user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['user_name'] = self.kwargs['user_name']
-        context['user'] = get_object_or_404(User, username=self.kwargs['user_name'])
-        context['title'] = f"{self.kwargs['user_name']}'s Dictionary"
-        context['is_my_dict'] = getattr(self, 'is_my_dict', False)
-        context['is_dict'] = True
-        context['logged_user'] = self.request.user
-        context['access'] = UserProfile.objects.get(user=context['user']).access_dictionary
+        user = get_object_or_404(User, username=self.kwargs['user_name'])
+        request_user = self.request.user
+
+        friends = User.objects.filter(
+            Q(friendship_requests_sent__receiver=user, friendship_requests_sent__status='accepted') |
+            Q(friendship_requests_received__sender=user, friendship_requests_received__status='accepted')
+        ).distinct()
+
+        is_friends = request_user in friends
+
+        context.update({
+            'user_name': self.kwargs['user_name'],
+            'user': user,
+            'title': f"{self.kwargs['user_name']}'s Dictionary",
+            'is_my_dict': getattr(self, 'is_my_dict', False),
+            'is_dict': True,
+            'logged_user': request_user,
+            'access': UserProfile.objects.get(user=user).access_dictionary,
+            'is_friends': is_friends,
+        })
         return context
 
 
@@ -273,50 +271,15 @@ class LoginUser(LoginView):
 @method_decorator(login_required, name='dispatch')
 class ProfileView(View):
     def get(self, request, user_name, **kwargs):
-        curent_loged_user_name = request.user.username
-        profile_user = user_name
-
-        if curent_loged_user_name == profile_user:
-            user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-
-            if user_profile.what_type_show == 'fav':
-                recent_words = Word.objects.filter(user=request.user, is_favourite=True)[:user_profile.words_num_in_prof]
-            else:
-                recent_words = Word.objects.filter(user=request.user)[:user_profile.words_num_in_prof]
-
-            word_count = Word.objects.filter(user=request.user).count()
-            group_count = WordGroup.objects.filter(user=request.user).count()
-
-            friends = User.objects.filter(
-                Q(friendship_requests_sent__receiver=request.user, friendship_requests_sent__status='accepted') |
-                Q(friendship_requests_received__sender=request.user, friendship_requests_received__status='accepted')
-            ).distinct()
-
-            friend_requests = Friendship.objects.filter(receiver=request.user, status='pending')
-
-            return render(request, 'med/profile.html', {
-                'user': request.user,
-                'recent_words': recent_words,
-                'word_count': word_count,
-                'group_count': group_count,
-                'friend_count': friends.count(), 
-                'friend_requests': friend_requests,
-                'is_favorite': True if user_profile.what_type_show == 'fav' else False,
-                'user_profile': user_profile,
-                'is_my_profile': True,
-                'is_profile': True,
-                'friends': friends,
-            })
-        
-        else:
-            user = get_object_or_404(User, username=user_name)
+        def get_user_data(user):
             user_profile, created = UserProfile.objects.get_or_create(user=user)
-            is_friends = False
+            is_favorite = user_profile.what_type_show == 'fav'
 
-            if user_profile.what_type_show == 'fav':
+            if is_favorite:
                 recent_words = Word.objects.filter(user=user, is_favourite=True)[:user_profile.words_num_in_prof]
             else:
                 recent_words = Word.objects.filter(user=user)[:user_profile.words_num_in_prof]
+
 
             word_count = Word.objects.filter(user=user).count()
             group_count = WordGroup.objects.filter(user=user).count()
@@ -326,23 +289,47 @@ class ProfileView(View):
                 Q(friendship_requests_received__sender=user, friendship_requests_received__status='accepted')
             ).distinct()
 
-            if request.user in friends:
-                is_friends = True
-
-            return render(request, 'med/profile.html', {
-                'user': user,
-                'logged_user': request.user,
+            return {
+                'user_profile': user_profile,
                 'recent_words': recent_words,
                 'word_count': word_count,
                 'group_count': group_count,
-                'friend_count': friends.count(),
-                'is_favorite': True if user_profile.what_type_show == 'fav' else False,
-                'user_profile': user_profile,
-                'is_my_profile': False,
-                'is_profile': True,
-                'is_friends': is_friends,
                 'friends': friends,
-            })
+                'friend_count': friends.count(),
+                'is_favorite': is_favorite,
+            }
+
+        profile_user = get_object_or_404(User, username=user_name)
+        is_my_profile = profile_user == request.user
+
+        profile_data = get_user_data(profile_user)
+
+        is_requests_in = True if Friendship.objects.filter(receiver=request.user, sender=profile_user, status='pending').values_list('sender', flat=True) else False
+        is_requests_out = True if Friendship.objects.filter(sender=request.user, receiver=profile_user, status='pending').values_list('receiver', flat=True) else False
+
+        if not is_my_profile:
+            profile_data['is_friends'] = request.user in profile_data['friends']
+        else:
+            profile_data['friend_requests'] = Friendship.objects.filter(receiver=request.user, status='pending')
+
+        friendships = Friendship.objects.filter(
+            Q(sender=profile_user, status='accepted') |
+            Q(receiver=profile_user, status='accepted')
+        )
+
+        if not is_my_profile and profile_data['is_friends']:
+            friendship = friendships.filter(sender=profile_user, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=profile_user).first()
+            profile_user.friendship_id = friendship.id if friendship else None
+
+        return render(request, 'med/profile.html', {
+            **profile_data,
+            'user': profile_user,
+            'logged_user': request.user,
+            'is_my_profile': is_my_profile,
+            'is_profile': True,
+            'is_requests_in': is_requests_in,
+            'is_requests_out': is_requests_out,
+        })
 
 class SelectGroupView(View):
     def get(self, request):
@@ -475,10 +462,31 @@ def user_search(request):
     query = request.GET.get('q')
     users = User.objects.filter(username__icontains=query) if query else []
     friends = User.objects.filter(
-                Q(friendship_requests_sent__receiver=request.user, friendship_requests_sent__status='accepted') |
-                Q(friendship_requests_received__sender=request.user, friendship_requests_received__status='accepted')
-            ).distinct()
-    return render(request, 'med/user_search.html', {'users': users, 'query': query, 'is_search': True, 'friends': friends})
+        Q(friendship_requests_sent__receiver=request.user, friendship_requests_sent__status='accepted') |
+        Q(friendship_requests_received__sender=request.user, friendship_requests_received__status='accepted')
+    ).distinct()
+
+    friendships = Friendship.objects.filter(
+        (Q(sender=request.user) & Q(receiver__in=friends)) | (Q(receiver=request.user) & Q(sender__in=friends))
+    )
+
+    friend_requests_in = Friendship.objects.filter(receiver=request.user, status='pending').values_list('sender', flat=True)
+    friend_requests_out = Friendship.objects.filter(sender=request.user, status='pending').values_list('receiver', flat=True)
+
+    for user in users:
+        friendship = friendships.filter(sender=user, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=user).first()
+        user.friendship_id = friendship.id if friendship else None
+
+    return render(request, 'med/user_search.html', {
+        'users': users,
+        'query': query,
+        'is_search': True,
+        'friends': friends,
+        'friendships': friendships,
+        'friend_requests_in': friend_requests_in,
+        'friend_requests_out': friend_requests_out
+    })
+
 
 @login_required
 def send_friend_request(request, username):
@@ -496,35 +504,95 @@ def send_friend_request(request, username):
 
 @login_required
 def respond_to_friend_request(request, friendship_id, response):
-    friendship = get_object_or_404(Friendship, id=friendship_id, receiver=request.user)
+
+    friendship = get_object_or_404(Friendship, id=friendship_id)
+
     if response == 'accept':
         friendship.status = 'accepted'
         friendship.save()
         messages.success(request, "Friend request accepted.")
+
     elif response == 'reject':
         friendship.status = 'rejected'
         friendship.delete()
         messages.info(request, "Friend request rejected.")
+
+    elif friendship.sender == request.user and friendship.status == 'pending':
+        if response == 'reject':
+            friendship.delete()
+            messages.info(request, "Friend request canceled.")
+
+    return redirect('friends_list', user_name=request.user.username)
+
+@login_required
+def respond_to_friend_request_a(request, user1_id, user2_id, response):
+    user1 = get_object_or_404(User, id=user1_id)
+    user2 = get_object_or_404(User, id=user2_id)
+
+    friendship = Friendship.objects.filter(
+        (Q(sender=user1) & Q(receiver=user2)) | (Q(sender=user2) & Q(receiver=user1)),
+        status='pending' 
+    ).first()
+
+    if friendship:
+        if friendship.receiver == request.user:
+            if response == 'accept':
+                friendship.status = 'accepted'
+                friendship.save()
+                messages.success(request, "Friend request accepted.")
+            elif response == 'reject':
+                friendship.status = 'rejected'
+                friendship.delete()
+                messages.info(request, "Friend request rejected.")
+
+        elif friendship.sender == request.user:
+            if response == 'reject':  
+                friendship.delete()
+                messages.info(request, "Friend request canceled.")
+                
+    else:
+        messages.error(request, "No pending friend request found.")
+    
+    return redirect('friends_list', user_name=request.user.username)
+
+
+
+def delete_friend(request, friendship_id):
+    friendship = get_object_or_404(Friendship, id=friendship_id)
+
+    if friendship.sender == request.user or friendship.receiver == request.user:
+        friendship.delete()
+        messages.success(request, "Friendship deleted successfully.")
+    else:
+        messages.error(request, "You do not have permission to delete this friendship.")
+
     return redirect('friends_list', user_name=request.user.username)
 
 @login_required
 def friends_list_view(request, user_name):
-    is_my_friends = False
     user = get_object_or_404(User, username=user_name)
+    is_my_friends = user == request.user
 
-    if user == request.user:
-        is_my_friends = True
     friendships = Friendship.objects.filter(
         Q(sender=user, status='accepted') |
         Q(receiver=user, status='accepted')
     )
 
-    friends = [friendship.sender if friendship.receiver == user else friendship.receiver for friendship in friendships]
+    friends = [
+        friendship.sender if friendship.receiver == user else friendship.receiver
+        for friendship in friendships
+    ]
 
-    friend_requests = Friendship.objects.filter(receiver=user, status='pending')
+    friend_requests_in = Friendship.objects.filter(receiver=user, status='pending')
+    friend_requests_out = Friendship.objects.filter(sender=user, status='pending')
+
+    for user in friends:
+        friendship = friendships.filter(sender=user, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=user).first()
+        user.friendship_id = friendship.id if friendship else None
 
     return render(request, 'med/friends_list.html', {
         'friends': friends, 
-        'friend_requests': friend_requests,
+        'friend_requests_in': friend_requests_in,
+        'friend_requests_out': friend_requests_out,
         'is_my_friends': is_my_friends,
     })

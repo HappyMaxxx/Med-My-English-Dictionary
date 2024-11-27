@@ -3,7 +3,7 @@
 {% block content %}
 <div class="search-users-container">
     <h1>Search Users</h1>
-    
+
     <form method="get" action="{% url 'user_search' %}" class="search-form">
         <input type="text" name="q" placeholder="Enter name" value="{{ query }}" class="search-input">
         <a href="#" class="search-link" onclick="this.closest('form').submit();">Search</a>
@@ -19,15 +19,31 @@
                         <a href="{% url 'profile' user.username %}" class="user-link">
                             <div class="user-info">
                                 <img src="{{ user.userprofile.get_avatar_url }}" alt="{{ user.username }}'s avatar" class="user-avatar">
-                                <p class="user-name">{{ user.username }}</p>
+                                <p class="user-name">{{ user.username }}
+                                    <!-- {% if user.is_staff %}
+                                    <span class="highlight-blue">A</span>
+                                    {% endif %}
+                                    {% if user in friends %}
+                                    <span class="highlight-green">F</span> 
+                                    {% endif %}-->
+                                </p>
                             </div>
                         </a>
                         {% if user != request.user %}
-                        {% if user not in friends %}
                         <div class="buttons">
-                            <a href="{% url 'add_friend' user.username %}" class="add-friend-link">Add Friend</a>
+                            {% if user in friends %}
+                                {% if user.friendship_id %}
+                                    <a href="{% url 'delete_friend' friendship_id=user.friendship_id %}" class="add-friend-link">Delete Friend</a>
+                                {% endif %}
+                            {% elif user.id in friend_requests_in %}
+                                <a href="{% url 'respond_friend_request_a' user.id request.user.id 'accept' %}" class="add-friend-link">Accept</a>
+                                <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Reject</a>
+                            {% elif user.id in friend_requests_out %}
+                                <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Cancel</a> 
+                            {% else %}
+                                <a href="{% url 'add_friend' user.username %}" class="add-friend-link">Add Friend</a>
+                            {% endif %}
                         </div>
-                        {% endif %}
                         {% endif %}
                     </div>
                 </li>

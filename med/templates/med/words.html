@@ -17,7 +17,7 @@
 
     {% if words %}
     <table class="word_table">
-        {% if is_my_dict or access == 'every' %}
+        {% if is_my_dict or access == 'every' or access == 'friends' and is_friends %}
         <thead>
             <tr>
                 {% if is_my_dict %}
