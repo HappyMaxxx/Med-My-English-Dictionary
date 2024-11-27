@@ -64,6 +64,7 @@ class ConfirmDeleteView(View):
     def get(self, request, *args, **kwargs):
         word_ids = request.GET.getlist('word_ids')
         group_id = request.GET.get('group_id')
+        frenship_id = request.GET.get('frenship_id')
         
         if group_id and word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
@@ -95,6 +96,17 @@ class ConfirmDeleteView(View):
                 'words': words,
                 'word_ids': word_ids,
                 'text': 'Are you sure you want to delete these words?' if len(words) > 1 else 'Are you sure you want to delete this word?'
+            })
+        
+        elif frenship_id:
+            frend = Friendship.objects.filter(id=frenship_id, user=request.user)
+
+            # TODO: Надсилання іммені друга якого видаляємо
+
+            return render(request, 'med/confirm_delete.html', {
+                'is_group': False,
+                'frenship_id': frenship_id,
+                'text': "Are you sure you want to delete this friend?"
             })
 
         return redirect('profile', user_name=request.user.username) 
@@ -242,7 +254,9 @@ class RegisterUser(CreateView):
     @transaction.atomic
     def form_valid(self, form):
         user = form.save()
-
+        print(form.cleaned_data)
+        raw_password = form.cleaned_data.get('password1')
+        print("Введений пароль:", raw_password)
         login(self.request, user)
         return redirect('profile', user_name=user.username)
 
@@ -489,13 +503,17 @@ def respond_to_friend_request(request, friendship_id, response):
         messages.success(request, "Friend request accepted.")
     elif response == 'reject':
         friendship.status = 'rejected'
-        friendship.save()
+        friendship.delete()
         messages.info(request, "Friend request rejected.")
     return redirect('friends_list', user_name=request.user.username)
 
 @login_required
 def friends_list_view(request, user_name):
+    is_my_friends = False
     user = get_object_or_404(User, username=user_name)
+
+    if user == request.user:
+        is_my_friends = True
     friendships = Friendship.objects.filter(
         Q(sender=user, status='accepted') |
         Q(receiver=user, status='accepted')
@@ -504,7 +522,9 @@ def friends_list_view(request, user_name):
     friends = [friendship.sender if friendship.receiver == user else friendship.receiver for friendship in friendships]
 
     friend_requests = Friendship.objects.filter(receiver=user, status='pending')
+
     return render(request, 'med/friends_list.html', {
         'friends': friends, 
         'friend_requests': friend_requests,
+        'is_my_friends': is_my_friends,
     })

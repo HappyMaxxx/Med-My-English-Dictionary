@@ -49,7 +49,6 @@
                 {% if not is_search %}
                 <form method="get" action="{% url 'user_search' %}" class="search-form">
                     <input type="text" name="q" placeholder="Enter name" required class="search-input">
-                    <a href="#" class="search-link" onclick="this.closest('form').submit();">Search</a>
                 </form>
                 {% endif %}
                 </div>
