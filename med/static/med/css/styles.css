@@ -10,6 +10,10 @@
     --feature-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
     --feature-text-color: #666;
     --list-text-color: #666;
+    --tab-background: #f9f9f9;
+    --tab-active-background: #ffffff;
+    --tab-hover-background: #e0e0e0;
+    --tab-border-color: #ccc;
 }
 
 /* Темна тема */
@@ -24,6 +28,10 @@ body.dark-theme {
     --feature-shadow: 0px 8px 16px rgba(255, 255, 255, 0.05);
     --feature-text-color: #ddd;
     --list-text-color: #ddd;
+    --tab-background: #3a3a3a;
+    --tab-active-background: #4a4a4a;
+    --tab-hover-background: #5a5a5a;
+    --tab-border-color: #555;
 }
 
 body {
@@ -1114,4 +1122,39 @@ form .edit-buttons a {
       0 0 5px #0065ff, 
       0 0 10px #0065ff,
       0 0 20px #0065ff;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 2px solid var(--tab-border-color);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px 15px;
+    background: var(--tab-background);
+    color: var(--text-color);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    transition: background 0.3s;
+}
+
+.tab-btn.active {
+    background: var(--tab-active-background);
+    border-bottom: 2px solid var(--tab-active-background);
+    font-weight: bold;
+}
+
+.tab-btn:not(.active):hover {
+    background: var(--tab-hover-background);
+}
+
+.tab-content {
+    padding: 20px;
+}
+
+.tab-content.hidden {
+    display: none;
 }

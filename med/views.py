@@ -437,10 +437,7 @@ def logout_user(request):
 def make_favourite(request, word_id):
     try:
         word = get_object_or_404(Word, id=word_id, user=request.user)
-        print(word)
-        print(word.is_favourite)
         word.is_favourite = not word.is_favourite
-        print(word.is_favourite)
         word.save()
         return redirect('words', user_name=request.user.username)
     except:
