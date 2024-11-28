@@ -19,14 +19,7 @@
                         <a href="{% url 'profile' user.username %}" class="user-link">
                             <div class="user-info">
                                 <img src="{{ user.userprofile.get_avatar_url }}" alt="{{ user.username }}'s avatar" class="user-avatar">
-                                <p class="user-name">{{ user.username }}
-                                    <!-- {% if user.is_staff %}
-                                    <span class="highlight-blue">A</span>
-                                    {% endif %}
-                                    {% if user in friends %}
-                                    <span class="highlight-green">F</span> 
-                                    {% endif %}-->
-                                </p>
+                                <p class="user-name">{{ user.username }}</p>
                             </div>
                         </a>
                         {% if user != request.user %}
@@ -49,6 +42,34 @@
                 </li>
             {% endfor %}
             </ul>
+
+            {% if paginator.num_pages > 1 %}
+            <nav class="list-pages">
+                <ul>
+                    {% if users.has_previous %}
+                        <li class="page-num">
+                            <a href="?q={{ query }}&page={{ users.previous_page_number }}">&lt;</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in users.paginator.page_range %}
+                        {% if users.number == num %}
+                            <li class="page-num page-num-selected">{{ num }}</li>
+                        {% elif num >= users.number|add:-2 and num <= users.number|add:2 %}
+                            <li class="page-num">
+                                <a href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if users.has_next %}
+                        <li class="page-num">
+                            <a href="?q={{ query }}&page={{ users.next_page_number }}">&gt;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
         {% else %}
             <p class="no-results">No users found.</p>
         {% endif %}

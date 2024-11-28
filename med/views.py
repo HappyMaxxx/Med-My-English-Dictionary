@@ -467,89 +467,61 @@ def user_search(request):
         (Q(sender=request.user) & Q(receiver__in=friends)) | (Q(receiver=request.user) & Q(sender__in=friends))
     )
 
-    friend_requests_in = Friendship.objects.filter(receiver=request.user, status='pending').values_list('sender', flat=True)
-    friend_requests_out = Friendship.objects.filter(sender=request.user, status='pending').values_list('receiver', flat=True)
+    friend_requests_in = Friendship.objects.filter(receiver=request.user, status='pending').values_list('sender_id', flat=True)
+    friend_requests_out = Friendship.objects.filter(sender=request.user, status='pending').values_list('receiver_id', flat=True)
 
     for user in users:
         friendship = friendships.filter(sender=user, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=user).first()
         user.friendship_id = friendship.id if friendship else None
 
-    return render(request, 'med/user_search.html', {
-        'users': users,
-        'query': query,
-        'is_search': True,
-        'friends': friends,
-        'friendships': friendships,
-        'friend_requests_in': friend_requests_in,
-        'friend_requests_out': friend_requests_out
-    })
+    paginator = Paginator(users, 15)
+    page_number = request.GET.get('page')
+    paginated_users = paginator.get_page(page_number)
 
+    return render(request, 'med/user_search.html', {
+        'users': paginated_users,
+        'query': query,
+        'friends': friends,
+        'friend_requests_in': friend_requests_in,
+        'friend_requests_out': friend_requests_out,
+        'paginator': paginator,
+    })
 
 @login_required
 def send_friend_request(request, username):
     receiver = get_object_or_404(User, username=username)
     if receiver == request.user:
-        messages.error(request, "You cannot send a friend request to yourself.")
         return redirect('profile', user_name=request.user.username)
     
     friendship, created = Friendship.objects.get_or_create(sender=request.user, receiver=receiver)
-    if created:
-        messages.success(request, "Friend request sent.")
-    else:
-        messages.warning(request, "Friend request already sent.")
+
     return redirect('profile', user_name=request.user.username)
 
 @login_required
-def respond_to_friend_request(request, friendship_id, response):
+def respond_to_friend_request(request, friendship_id=None, user1_id=None, user2_id=None, response=None):
+    if friendship_id:
+        friendship = get_object_or_404(Friendship, id=friendship_id)
+    elif user1_id and user2_id:
+        user1 = get_object_or_404(User, id=user1_id)
+        user2 = get_object_or_404(User, id=user2_id)
+        friendship = Friendship.objects.filter(
+            (Q(sender=user1) & Q(receiver=user2)) | 
+            (Q(sender=user2) & Q(receiver=user1)), 
+            status='pending'
+        ).first()
+        if not friendship:
+            return redirect('friends_list', user_name=request.user.username)
+    else:
+        return redirect('friends_list', user_name=request.user.username)
 
-    friendship = get_object_or_404(Friendship, id=friendship_id)
-
-    if response == 'accept':
+    if friendship.receiver == request.user and response == 'accept':
         friendship.status = 'accepted'
         friendship.save()
-        messages.success(request, "Friend request accepted.")
-
-    elif response == 'reject':
-        friendship.status = 'rejected'
+    elif (friendship.receiver == request.user or friendship.sender == request.user) and response == 'reject':
         friendship.delete()
-        messages.info(request, "Friend request rejected.")
-
-    elif friendship.sender == request.user and friendship.status == 'pending':
-        if response == 'reject':
-            friendship.delete()
-            messages.info(request, "Friend request canceled.")
-
-    return redirect('friends_list', user_name=request.user.username)
-
-@login_required
-def respond_to_friend_request_a(request, user1_id, user2_id, response):
-    user1 = get_object_or_404(User, id=user1_id)
-    user2 = get_object_or_404(User, id=user2_id)
-
-    friendship = Friendship.objects.filter(
-        (Q(sender=user1) & Q(receiver=user2)) | (Q(sender=user2) & Q(receiver=user1)),
-        status='pending' 
-    ).first()
-
-    if friendship:
-        if friendship.receiver == request.user:
-            if response == 'accept':
-                friendship.status = 'accepted'
-                friendship.save()
-                messages.success(request, "Friend request accepted.")
-            elif response == 'reject':
-                friendship.status = 'rejected'
-                friendship.delete()
-                messages.info(request, "Friend request rejected.")
-
-        elif friendship.sender == request.user:
-            if response == 'reject':  
-                friendship.delete()
-                messages.info(request, "Friend request canceled.")
-                
     else:
-        messages.error(request, "No pending friend request found.")
-    
+        pass
+
     return redirect('friends_list', user_name=request.user.username)
 
 
@@ -559,9 +531,6 @@ def delete_friend(request, friendship_id):
 
     if friendship.sender == request.user or friendship.receiver == request.user:
         friendship.delete()
-        messages.success(request, "Friendship deleted successfully.")
-    else:
-        messages.error(request, "You do not have permission to delete this friendship.")
 
     return redirect('friends_list', user_name=request.user.username)
 
