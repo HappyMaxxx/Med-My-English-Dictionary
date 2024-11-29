@@ -20,31 +20,6 @@
             {% endfor %}
         </div>
         <a href="{% url 'create_group' %}" class="buttons">Create New Group</a>
-        <!-- {% if paginator.num_pages > 1 %}
-        <nav class="list-pages"> 
-            <ul>
-                {% if page_obj.has_previous %}
-                <li class="page-num">
-                    <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
-                </li>
-                {% endif %}
-
-                {% for p in paginator.page_range %}
-                    {% if page_obj.number == p %}
-                    <li class="page-num page-num-selected">{{ p }}</li>
-                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
-                    <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <li class="page-num">
-                    <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %} -->
     </div>
     <div class="word-list-container">
         <h2>{{ title1 }}</h2>
@@ -79,6 +54,7 @@
             <p>No words in this group.</p>
         {% endif %}
         {% endif %}
+
         {% if is_group %}
         <div class="buttons groups-buttons">
             <div class="add_word">
@@ -96,6 +72,33 @@
             {% endif %}
         </div>
         {% endif %}
+
+        {% if paginator.num_pages > 1 %}
+        <nav class="list-pages"> 
+            <ul>
+                {% if page_obj.has_previous %}
+                <li class="page-num">
+                    <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+                </li>
+                {% endif %}
+
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                    <li class="page-num page-num-selected">{{ p }}</li>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                    <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-num">
+                    <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
     </div>
 </div>
 

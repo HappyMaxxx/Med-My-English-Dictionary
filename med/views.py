@@ -6,6 +6,7 @@ from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
 from django.views import View
 from django.core.files.storage import default_storage
+from django.views.decorators.cache import cache_page
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -24,11 +25,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import os
 from med.models import *
 
+@cache_page(60 * 15)
 def index(request):
     if request.user.is_authenticated:
         return redirect('profile', user_name=request.user.username)
     return render(request, 'med/index.html')
 
+@cache_page(60 * 15)
 def about(request):
     return render(request, 'med/about.html')
 
@@ -181,7 +184,6 @@ class WordListView(ListView):
 
 class GroupListView(ListView):
     model = WordGroup
-    # paginate_by = 5
     template_name = 'med/groups.html'
     context_object_name = 'groups'
 
@@ -199,6 +201,7 @@ class GroupWordsView(ListView):
     model = Word
     template_name = 'med/groups.html'
     context_object_name = 'words'
+    paginate_by = 25
 
     def is_main(self):
         group_id = self.kwargs.get('group_id')
