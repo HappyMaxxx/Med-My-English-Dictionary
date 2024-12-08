@@ -155,7 +155,7 @@ header .buttons a:hover {
     max-width: 1200px;
     margin: 0 auto;
     text-align: center;
-    padding: 30px 10px;
+    padding: 20px 10px;
 }
 
 .container h1 {
@@ -897,6 +897,7 @@ form .edit-buttons a {
     flex-grow: 1;
     width: 100%;
     /* max-width: 150px; */
+    min-width: 111px;
     padding: 8px 12px;
     border: 1px solid var(--button-background);
     border-radius: 5px;
@@ -1157,4 +1158,87 @@ form .edit-buttons a {
 
 .tab-content.hidden {
     display: none;
+}
+
+.burger-menu {
+    display: none;
+    cursor: pointer;
+}
+
+.burger-icon span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-color);
+    margin: 5px auto;
+    transition: all 0.3s ease;
+}
+
+/* Mobile Navigation Styles */
+@media (max-width: 768px) {
+    .burger-menu {
+        display: block;
+    }
+
+    .nav-items {
+        display: none;
+        flex-direction: column;
+        background-color: var(--header-background);
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        gap: 30px;
+        border-radius: 0px 0px 10px 10px;
+        box-shadow: var(--feature-shadow);
+        padding-top: 10px;
+    }
+
+
+    .nav-items {
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .nav-items.active {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .nav-items a {
+        padding: 10px 20px;
+        text-align: center;
+        border-bottom: 1px solid var(--tab-border-color);
+        text-decoration: none;
+    }
+
+    .nav-items .nav-left {
+        width: 95%;
+        max-width: 500px;
+        margin-top: 10px;
+    }
+
+    .nav-items .search-form {
+        width: 100%;
+    }
+
+    .nav-items .search-input {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-items .buttons {
+        flex-direction: row;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .nav-items .buttons a {
+        margin: 10px 0;
+    }
 }

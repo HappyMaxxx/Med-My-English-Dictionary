@@ -43,7 +43,8 @@
         <a href="{% url 'home' %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
     </div>
     {% endif %}
-    <nav class="nav-items">
+
+    <nav class="nav-items" id="nav-items">
             {% if user.is_authenticated %}
                 <div class="nav-left">
                 {% if not is_search %}
@@ -55,19 +56,23 @@
         
         <div class="nav-center">
                 {% if is_my_dict %}
-                <a href="{% url 'words' user.username %}">My Dictionary</a>
+                <a href="{% url 'words' user.username %}">Dictionary</a>
                 {% else %}
-                <a href="{% url 'words' request.user.username %}">My Dictionary</a>
+                <a href="{% url 'words' request.user.username %}">Dictionary</a>
                 {% endif %}
 
-                <a href="{% url 'addword' %}">Add word</a>
+                <!-- ! Add pravtice page -->
+                <a href="#">Practice</a>
+
                 <a href="{% url 'groups' %}">Word Categories</a>
             {% else %}
             <div class="nav-left"></div>
             <div class="nav-center">
-                <a href="{% url 'login' %}">My Dictionary</a>
-                <a href="{% url 'login' %}">Add word</a>
-                <a href="#">Word Categories</a>
+                <a href="{% url 'login' %}">Dictionary</a>
+
+                <a href="{% url 'login' %}">Practice</a>
+
+                <a href="{% url 'login' %}">Word Categories</a>
                 {% endif %}
                 <a href="#" id="theme-toggle-light">Light Mode</a>
                 <a href="#" id="theme-toggle-dark">Dark Mode</a>
@@ -94,6 +99,13 @@
         </div>
         {% endif %}
     </nav>
+    <div class="burger-menu" id="burger-menu">
+        <div class="burger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
 </header>
 
 <div class="container">
@@ -104,5 +116,26 @@
 </div>
 
 <script src="{% static 'med/js/script.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const burgerMenu = document.getElementById('burger-menu');
+    const navItems = document.getElementById('nav-items');
+
+    burgerMenu.addEventListener('click', function() {
+        navItems.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function(event) {
+        if (!navItems.contains(event.target) && !burgerMenu.contains(event.target)) {
+            navItems.classList.remove('active');
+        }
+    });
+
+    navItems.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+});
+
+</script>
 </body>
 </html>

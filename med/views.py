@@ -105,9 +105,7 @@ class ConfirmDeleteView(View):
     def post(self, request, *args, **kwargs):
         word_ids = request.POST.getlist('word_ids')
         group_id = request.POST.get('group_id')
-
-        print("POST Data:", word_ids, group_id)
-
+        
         if group_id and not word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
             group.delete()
