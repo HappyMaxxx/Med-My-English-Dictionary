@@ -6,7 +6,7 @@
 
     <p>{{text}}</p>
 
-    <form method="post">
+    <form method="post" id="deletting_form">
         {% csrf_token %}
         <ul class="word-list">
             {% if is_group and not words %}
@@ -23,7 +23,7 @@
         </ul>
 
         <div class="buttons">
-            <a href="#" onclick="document.forms[0].submit(); return false;">Confirm Deletion</a>
+            <a href="#" onclick="document.getElementById('deletting_form').submit(); return false;">Confirm Deletion</a>
 
             {% if is_group and not words%}
                 <a href="{% url 'groups' %}{{group_id}}">Cancel</a>
