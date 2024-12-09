@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Select Group</h1>
 
-<form method="post" class="form-style">
+<form method="post" class="form-style" id="add_form">
     {% csrf_token %}
 
     <h2>Selected Words:</h2>
@@ -30,7 +30,7 @@
 
     <div class="buttons add-to-gr">
         {% if groups %}
-        <a href="#" onclick="document.forms[0].submit(); return false;">Add To Group</a>
+        <a href="#" onclick="document.getElementById('add_form').submit(); return false;">Add To Group</a>
         {% else %}
         <a href="{% url 'create_group' %}" class="btn btn-primary">Create New Group</a>
         {% endif %}

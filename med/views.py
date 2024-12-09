@@ -25,6 +25,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import os
 from med.models import *
 
+MAX_GROUP_COUNT = 10
+
 @cache_page(60 * 15)
 def index(request):
     if request.user.is_authenticated:
@@ -185,17 +187,18 @@ class WordListView(ListView):
 class GroupListView(ListView):
     model = WordGroup
     template_name = 'med/groups.html'
-    context_object_name = 'groups'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = "Groups"
         context['title1'] = "Words"
         context['is_group'] = False
+        context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
+        context['len_groups'] = context['groups'].count()
+        context['max_group_count'] = MAX_GROUP_COUNT
         return context
 
-    def get_queryset(self):
-        return WordGroup.objects.filter(user=self.request.user)
+
 
 class GroupWordsView(ListView):
     model = Word
@@ -217,11 +220,13 @@ class GroupWordsView(ListView):
         context = super().get_context_data(**kwargs)
         context['title'] = "Groups"
         context['title1'] = f"{self.get_name()} Words"
-        context['groups'] = WordGroup.objects.filter(user=self.request.user)
+        context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
+        context['len_groups'] = context['groups'].count()
         context['is_main'] = self.is_main()
         context['group_id'] = self.kwargs.get('group_id')
         context['is_group'] = True
         context['words_f_g'] = True
+        context['max_group_count'] = MAX_GROUP_COUNT
         return context
 
     def get_queryset(self):
@@ -229,22 +234,33 @@ class GroupWordsView(ListView):
         group = get_object_or_404(WordGroup, id=group_id, user=self.request.user)
         return group.words.all()
 
+
 @method_decorator(login_required, name='dispatch')
 class CreateGroupView(View):
     def get(self, request, *args, **kwargs):
-        form = GroupForm()
 
-        return render(request, 'med/create_group.html', {'form': form,})
+        len_groups = WordGroup.objects.filter(user=request.user).count()
+        if len_groups >= MAX_GROUP_COUNT:
+            return redirect('groups')
+        
+        form = GroupForm()
+        return render(request, 'med/create_group.html', {'form': form})
 
     def post(self, request, *args, **kwargs):
         form = GroupForm(request.POST)
         if form.is_valid():
+            group_name = form.cleaned_data['name']
+            if WordGroup.objects.filter(name=group_name, user=request.user).exists():
+                form.add_error('name', "Group with this name already exists")
+                return render(request, 'med/create_group.html', {'form': form})
+
             group = form.save(commit=False)
             group.user = request.user
             group.save()
             return redirect('groups')
+
         return render(request, 'med/create_group.html', {'form': form})
-    
+
 
 class RegisterUser(CreateView):
     form_class = RegisterUserForm
@@ -567,5 +583,6 @@ def friends_list_view(request, user_name):
         'is_my_friends': is_my_friends,
     })
 
+@cache_page(60 * 15)
 def practice_view(request):
     return render(request, 'med/practice.html')

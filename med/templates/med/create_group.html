@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1>Create New Group</h1>
-    <form method="post">
+    <form method="post" id="add_form">
         {% csrf_token %}
 
         {% for field in form %}
@@ -11,7 +11,7 @@
         {% endfor %}
 
         <div class="buttons l-r-but">
-            <a href="#" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Create</a>
+            <a href="#" onclick="document.getElementById('add_form').submit(); return false;">Create</a>
             <a href="{% url 'groups' %}">Cancel</a>
         </div>
     </form>

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="group-container">
     <div class="group-list">
-        <h2>{{ title }}</h2>
+        <h2>{{ title }} ({{ len_groups }} / {{ max_group_count }}) </h2>
         <div class="group-blocks">
             {% for group in groups %}
             {% if group.id == group_id %}
@@ -19,7 +19,9 @@
             {% endif %}
             {% endfor %}
         </div>
-        <a href="{% url 'create_group' %}" class="buttons">Create New Group</a>
+        {% if len_groups < max_group_count %}
+            <a href="{% url 'create_group' %}" class="buttons">Create New Group</a>
+        {% endif %}
     </div>
     <div class="word-list-container">
         <h2>{{ title1 }}</h2>
