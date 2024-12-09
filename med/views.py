@@ -487,6 +487,7 @@ def user_search(request):
         'friends': friends,
         'friend_requests_in': friend_requests_in,
         'friend_requests_out': friend_requests_out,
+        'is_search': True,
         'paginator': paginator,
     })
 
@@ -565,3 +566,6 @@ def friends_list_view(request, user_name):
         'friend_requests_out': friend_requests_out,
         'is_my_friends': is_my_friends,
     })
+
+def practice_view(request):
+    return render(request, 'med/practice.html')

@@ -18,7 +18,8 @@ function setTheme(theme) {
     const logo = document.querySelector("header img");
     const edit_imgs = document.querySelectorAll(".edit_img");
     const f_img = document.querySelectorAll(".f_img");
-    
+    const cards = document.querySelectorAll(".card-image");
+
     if (logo) {
         if (theme === "dark") {
             logo.setAttribute("src", logo.getAttribute("data-dark-src"));
@@ -36,6 +37,14 @@ function setTheme(theme) {
     });
 
     f_img.forEach(img => {
+        if (theme === "dark") {
+            img.setAttribute("src", img.getAttribute("data-dark-src"));
+        } else {
+            img.setAttribute("src", img.getAttribute("data-light-src"));
+        }
+    });
+
+    cards.forEach(img => {
         if (theme === "dark") {
             img.setAttribute("src", img.getAttribute("data-dark-src"));
         } else {

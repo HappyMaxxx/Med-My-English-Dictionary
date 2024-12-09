@@ -28,4 +28,5 @@ urlpatterns = [
     path("respond_friend_request_a/<int:user1_id>/<int:user2_id>/<str:response>/", views.respond_to_friend_request, name='respond_friend_request_a'),
     path('friends/<slug:user_name>/', views.friends_list_view, name='friends_list'),
     path('delete_friend/<int:friendship_id>/', views.delete_friend, name='delete_friend'),
+    path('practice/', views.practice_view, name='practice'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

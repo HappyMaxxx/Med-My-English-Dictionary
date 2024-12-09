@@ -61,10 +61,9 @@
                 <a href="{% url 'words' request.user.username %}">Dictionary</a>
                 {% endif %}
 
-                <!-- ! Add pravtice page -->
-                <a href="#">Practice</a>
+                <a href="{% url 'practice' %}">Practice</a>
 
-                <a href="{% url 'groups' %}">Word Categories</a>
+                <a href="{% url 'groups' %}">Word Groups</a>
             {% else %}
             <div class="nav-left"></div>
             <div class="nav-center">
@@ -72,7 +71,7 @@
 
                 <a href="{% url 'login' %}">Practice</a>
 
-                <a href="{% url 'login' %}">Word Categories</a>
+                <a href="{% url 'login' %}">Word Groups</a>
                 {% endif %}
                 <a href="#" id="theme-toggle-light">Light Mode</a>
                 <a href="#" id="theme-toggle-dark">Dark Mode</a>

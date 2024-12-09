@@ -57,8 +57,8 @@ header {
     align-items: center;
     padding-top: 5px;
     padding-bottom: 5px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
     background-color: var(--header-background);
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -541,7 +541,8 @@ form .buttons a:hover {
 }
 
 .profile-container {
-    max-width: 600px;
+    max-width: 650px;
+    min-width: 350px;
     margin: 0 auto;
     padding: 20px;
     background-color: var(--feature-background);
@@ -615,14 +616,14 @@ form .buttons a:hover {
 
 .group-container {
     display: flex;
-    gap: 20px;
+    gap: 10px;
     margin-top: 20px;
     text-align: left;
     align-items: flex-start; /* Вирівнювання контейнерів зверху */
 }
 
 .group-list {
-    flex: 0 0 300px;
+    flex: 0 0 25%;
     background-color: var(--feature-background);
     border-radius: 10px;
     box-shadow: var(--feature-shadow);
@@ -1160,6 +1161,61 @@ form .edit-buttons a {
     display: none;
 }
 
+
+.practice-container {
+    max-width: 650px;
+    min-width: 350px;
+    width: auto;
+    margin: 0 auto;
+    padding: 20px 50px;
+    background-color: var(--feature-background);
+    color: var(--text-color);
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    justify-items: center;
+}
+
+.card {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    max-width: 200px;
+    padding: 20px 10px 20px 10px;
+    background-color: var(--secondary-background);
+    border-radius: 10px;
+    border: solid;
+    border-width: 2px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.card p {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.card-image {
+    max-width: 90%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.card-text {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
 .burger-menu {
     display: none;
     cursor: pointer;
@@ -1174,8 +1230,7 @@ form .edit-buttons a {
     transition: all 0.3s ease;
 }
 
-/* Mobile Navigation Styles */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .burger-menu {
         display: block;
     }
@@ -1192,7 +1247,7 @@ form .edit-buttons a {
         gap: 30px;
         border-radius: 0px 0px 10px 10px;
         box-shadow: var(--feature-shadow);
-        padding-top: 10px;
+        /* padding-top: 10px; */
     }
 
 
@@ -1219,7 +1274,7 @@ form .edit-buttons a {
     .nav-items .nav-left {
         width: 95%;
         max-width: 500px;
-        margin-top: 10px;
+        margin-top: 20px;
     }
 
     .nav-items .search-form {
@@ -1241,4 +1296,13 @@ form .edit-buttons a {
     .nav-items .buttons a {
         margin: 10px 0;
     }
+
+    .word_table_container .buttons {
+        width: 100%;
+    }
+
+    .word_table_container .buttons a{
+        width: 100%;
+    }
+
 }
