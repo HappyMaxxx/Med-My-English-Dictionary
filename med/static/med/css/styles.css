@@ -1174,7 +1174,7 @@ form .edit-buttons a {
     box-shadow: var(--feature-shadow);
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 10%;
     justify-items: center;
 }
 
@@ -1217,6 +1217,26 @@ form .edit-buttons a {
     color: var(--text-color);
 }
 
+
+.reading-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: var(--feature-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+    color: var(--text-color);
+}
+
+.make-text-btn {
+    margin: 10px 0px 20px 10px;
+    text-align: right;
+}
+
+.make-text-btn a{
+    margin-right: 0px;
+}
+
 .burger-menu {
     display: none;
     cursor: pointer;
@@ -1250,7 +1270,6 @@ form .edit-buttons a {
         box-shadow: var(--feature-shadow);
         /* padding-top: 10px; */
     }
-
 
     .nav-items {
         visibility: hidden;
@@ -1306,4 +1325,7 @@ form .edit-buttons a {
         width: 100%;
     }
 
+    .reading-item {
+        font-size: 80%;
+    }
 }

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Reading</h1>
+
+<div class="reading-container">
+    {% if request.user.is_superuser %}
+    <div class="buttons make-text-btn">
+        <!-- ! MAKE CREATING FORM -->
+        <a href="#">Create New Text</a>
+    </div>
+    {% endif %}
+
+    {% if texts %}
+    <ul class="user-list">
+        {% for text in texts %}
+        <li class="user-item">
+            <!-- ! MAKE TEXT PAGE -->
+            <a href="#">
+            <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+
+                <div class="user-title" style="flex: 1; text-align: left; margin-left: 15px;">
+                    <p class="user-name"><strong>{{ text.title }}</strong></p>
+                </div>
+
+                <div class="user-stats" style="display: flex; gap: 20px; text-align: center; margin-right: 15px;">
+                    <div class="stat-item reading-item">
+                        <p>Words</p>
+                        <p>{{ text.word_count }}</p>
+                    </div>
+                    <div class="stat-item reading-item">
+                        <p>Time</p>
+                        <p>{{ text.time_to_read }} min</p>
+                    </div>
+                    <div class="stat-item reading-item">
+                        <p>Level</p>
+                        <p>{{ text.get_eng_level_display }}</p>
+                    </div>
+                </div>
+            </div>
+            </a>
+        </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+    <p>No texts available.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

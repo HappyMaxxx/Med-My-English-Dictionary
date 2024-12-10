@@ -194,10 +194,9 @@ class GroupListView(ListView):
         context['title1'] = "Words"
         context['is_group'] = False
         context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
-        context['len_groups'] = context['groups'].count()
+        context['len_groups'] = max(context['groups'].count() - 1, 0)
         context['max_group_count'] = MAX_GROUP_COUNT
         return context
-
 
 
 class GroupWordsView(ListView):
@@ -221,7 +220,7 @@ class GroupWordsView(ListView):
         context['title'] = "Groups"
         context['title1'] = f"{self.get_name()} Words"
         context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
-        context['len_groups'] = context['groups'].count()
+        context['len_groups'] = max(context['groups'].count() - 1, 0)
         context['is_main'] = self.is_main()
         context['group_id'] = self.kwargs.get('group_id')
         context['is_group'] = True
@@ -240,7 +239,8 @@ class CreateGroupView(View):
     def get(self, request, *args, **kwargs):
 
         len_groups = WordGroup.objects.filter(user=request.user).count()
-        if len_groups >= MAX_GROUP_COUNT:
+
+        if len_groups >= MAX_GROUP_COUNT + 1:
             return redirect('groups')
         
         form = GroupForm()
@@ -583,6 +583,11 @@ def friends_list_view(request, user_name):
         'is_my_friends': is_my_friends,
     })
 
-@cache_page(60 * 15)
+
+# @cache_page(60 * 15)
 def practice_view(request):
     return render(request, 'med/practice.html')
+
+def reading_view(request):
+    texts = ReadingText.objects.all()
+    return render(request, 'med/reading.html', {'texts': texts})

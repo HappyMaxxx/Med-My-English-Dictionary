@@ -29,4 +29,5 @@ urlpatterns = [
     path('friends/<slug:user_name>/', views.friends_list_view, name='friends_list'),
     path('delete_friend/<int:friendship_id>/', views.delete_friend, name='delete_friend'),
     path('practice/', views.practice_view, name='practice'),
+    path('practice/reading/', views.reading_view, name='practice_reading'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

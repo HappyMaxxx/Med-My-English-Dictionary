@@ -6,13 +6,20 @@
 <h1>Practice</h1>
 
 <div class="practice-container">
+    
+    <a href="#">
     <div class="card">
         <img src="{% static 'med/img/practice/dice_light.png' %}" alt="Test" class="card-image" data-light-src="{% static 'med/img/practice/dice_light.png' %}" data-dark-src="{% static 'med/img/practice/dice_dark.png' %}">
         <p class="card-text" id="card-text">Test</p>
     </div>
+    </a>
+
+    <a href="{% url 'practice_reading' %}">
     <div class="card">
         <img src="{% static 'med/img/practice/read_light.png' %}" alt="Reading" class="card-image" data-light-src="{% static 'med/img/practice/read_light.png' %}" data-dark-src="{% static 'med/img/practice/read_dark.png' %}">
         <p class="card-text">Reading</p>
     </div>
+    </a>
+
 </div>
 {% endblock %}
