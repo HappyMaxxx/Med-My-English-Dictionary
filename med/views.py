@@ -3,7 +3,7 @@ import string
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm, WordsShowForm
+from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm, WordsShowForm, TextForm
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
 from django.views import View
@@ -144,7 +144,7 @@ class EditWordView(View):
         form = WordForm(request.POST, instance=word)
         if form.is_valid():
             form.save()
-            return redirect('words')
+            return redirect('words', user_name=request.user.username)
         return render(request, 'med/edit_word.html', {'form': form, 'word': word})
     
 
@@ -643,9 +643,52 @@ def reading_text_view(request, text_id):
 
 def word_detail_view(request, word, text_id):
     text = get_object_or_404(ReadingText, content__icontains=word, id=text_id)
-    translation = text.words_with_translations.get(word, 'Перекладу немає')
+    translation = text.words_with_translations.get(word.lower(), 'The translation is not found')
 
-    sentences = re.split(r'(?<=[.!?]) +', text.content)
-    example_sentence = next((sentence for sentence in sentences if word in sentence), 'Приклад не знайдено')
+    sentences = re.split(r'(?<=[.!?])[\s\n]+', text.content)
+    example_sentence = next((sentence for sentence in sentences if word in sentence), 'The example sentence is not found')
 
     return render(request, 'med/word_detail.html', {'word': word, 'translation': translation, 'example': example_sentence, 'text_id': text_id})
+
+def word_couner(text):
+    words = text.split()
+    return len(words)
+
+def time_counter(words):
+    return round(words / 60)
+
+def text_add_view(request):
+    form = TextForm()
+
+    if request.method == 'POST':
+        form = TextForm(request.POST)
+        word_count = word_couner(form.data['content'])
+        time_count = time_counter(word_count)
+        if form.is_valid():
+            form.instance.word_count = word_count
+            form.instance.time_to_read = time_count
+            form.save()
+            return redirect('practice_reading')
+        
+    return render(request, 'med/add_text.html', {'form': form})
+
+
+@method_decorator(login_required, name='dispatch')
+class EditTextView(View):
+    def get(self, request, text_id, *args, **kwargs):
+        text = get_object_or_404(ReadingText, id=text_id)
+        form = TextForm(instance=text)
+        return render(request, 'med/edit_text.html', {'form': form, 'text': text})
+
+    def post(self, request, text_id, *args, **kwargs):
+        text = get_object_or_404(ReadingText, id=text_id)
+        form = TextForm(request.POST, instance=text)
+        word_count = word_couner(form.data['content'])
+        time_count = time_counter(word_count)
+        if form.is_valid():
+            form.instance.word_count = word_count
+            form.instance.time_to_read = time_count
+            form.save()
+            return redirect('reading_text', text_id=text_id)
+        return render(request, 'med/edit_text.html', {'form': form, 'text': text})
+        

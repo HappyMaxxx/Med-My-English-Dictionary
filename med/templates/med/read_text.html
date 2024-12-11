@@ -5,12 +5,11 @@
 <h1>{{ text.title }}</h1>
 
 <div class="reading-content">
-    <div class="buttons make-text-btn">
+    <div class="buttons make-text-btn read-btn">
         <a href="{% url 'practice_reading' %}">&lt;</a>
         
-        <!-- ! MAKE EDITING FORM -->
         {% if request.user.is_superuser %}
-        <a href="#">Edit Text</a>
+        <a href="{% url 'edit_text' text_id=text.id%}">Edit Text</a>
         {% endif %}
     </div>
 

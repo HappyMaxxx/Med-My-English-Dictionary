@@ -32,4 +32,6 @@ urlpatterns = [
     path('practice/reading/', views.reading_view, name='practice_reading'),
     path('practice/reading/<int:text_id>/', views.reading_text_view, name='reading_text'),
     path('word/<int:text_id>/<str:word>/', views.word_detail_view, name='word_detail'),
+    path('add_text/', views.text_add_view, name='add_text'),
+    path('edit_text/<int:text_id>/', views.EditTextView.as_view(), name='edit_text'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

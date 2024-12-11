@@ -70,6 +70,29 @@ class WordForm(forms.ModelForm):
         }
 
 
+class TextForm(forms.ModelForm):
+    class Meta:
+        model = ReadingText
+        fields = ['title', 'eng_level', 'content', 'words_with_translations', 'auth', 'is_auth_a']
+        labels = {
+            'title': 'Title',
+            'eng_level': 'English level',
+            'content': 'Text',
+            'words_with_translations': 'Words with translations',
+            'auth': 'Author',
+            'is_auth_a': 'Author is anonymous'
+        }
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 10}),
+            'eng_level': forms.Select(attrs={'class': 'form-select'}),
+            'words_with_translations': forms.Textarea(),
+            'is_auth_a': forms.CheckboxInput()
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['eng_level'].initial = 'A1' 
+
 class GroupForm(forms.ModelForm):
     class Meta:
         model = WordGroup

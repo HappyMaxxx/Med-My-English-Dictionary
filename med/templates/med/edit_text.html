@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Edit Text '{{text.title}}'</h1>
+
+<form method="post" id="edit">
+    {% csrf_token %}
+
+    <p><label class="form-label" for="{{ form.title.id_for_label }}">{{ form.title.label }}: </label>{{ form.title }}</p>
+    <div class="form-error">{{ form.title.errors }}</div>
+
+    <p><label class="form-label" for="{{ form.eng_level.id_for_label }}">{{ form.eng_level.label }}: </label>{{ form.eng_level }}</p>
+    <div class="form-error">{{ form.eng_level.errors }}</div>
+
+    <p><label class="form-label" for="{{ form.content.id_for_label }}">{{ form.content.label }}: </label>{{ form.content }}</p>
+    <div class="form-error">{{ form.content.errors }}</div>
+
+    <p><label class="form-label" for="{{ form.words_with_translations.id_for_label }}">{{ form.words_with_translations.label }}: </label>{{ form.words_with_translations }}</p>
+    <div class="form-error">{{ form.words_with_translations.errors }}</div>
+
+    <p><label class="form-label" for="{{ form.auth.id_for_label }}">{{ form.auth.label }}: </label>{{ form.auth }}</p>
+    <div class="form-error">{{ form.auth.errors }}</div>
+
+    <p><label class="form-check-label" for="{{ form.is_auth_a.id_for_label }}">{{ form.is_auth_a.label }}: </label>{{ form.is_auth_a }}</p>
+    <div class="form-error">{{ form.is_auth_a.errors }}</div>
+
+    <div class="buttons add-text">
+        <a href="#" onclick="document.getElementById('edit').submit(); return false;">Save Changes</a>
+        <a href="{% url 'reading_text' text_id=text.id %}">Cancel</a>
+    </div>
+</form>
+
+{% endblock %}

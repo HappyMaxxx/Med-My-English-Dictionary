@@ -109,7 +109,7 @@ class ReadingText(models.Model):
         return self.title
 
     class Meta:
-        ordering = ['eng_level', 'title']
+        ordering = ['eng_level', 'word_count', 'title']
         indexes = [
             models.Index(fields=['eng_level', 'title'])
         ]

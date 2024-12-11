@@ -9,7 +9,7 @@
         <a href="{% url 'practice' %}">&lt;</a>
         <!-- ! MAKE CREATING FORM -->
         {% if request.user.is_superuser %}
-        <a href="#">Create New Text</a>
+        <a href="{% url 'add_text' %}">Create New Text</a>
         {% endif %}
     </div>
 

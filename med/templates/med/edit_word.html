@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Edit Word '{{word}}'</h1>
 
-<form method="post">
+<form method="post" id="edit">
     {% csrf_token %}
     
     <p><label class="form-label" for="{{ form.word.id_for_label }}">{{ form.word.label }}: </label>{{ form.word }}</p>
@@ -17,8 +17,8 @@
 
     <div class="form-error">{{ form.non_field_errors }}</div>
 
-    <div class="buttons">
-        <a href="#" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Save Changes</a>
+    <div class="buttons add-text">
+        <a href="#" onclick="document.getElementById('edit').submit(); return false;">Save Changes</a>
         <a href="{% url 'words' request.user.username %}">Cancel</a>
     </div>
 </form>

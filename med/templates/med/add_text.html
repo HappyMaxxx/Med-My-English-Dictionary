@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Add New Text</h1>
+
+<div class="container">
+    <form method="post" id="adding_form">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <p><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}: </label>{{ field }}</p>
+            <div class="form-error">{{ field.errors }}</div> 
+        {% endfor %}
+        <div class="form-error">{{ form.non_field_errors }}</div>
+        <div class="buttons add-text">
+            <a href="#" onclick="document.getElementById('adding_form').submit(); return false;">Add Text</a>
+            <a href="{% url 'practice_reading' %}">Cansel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
