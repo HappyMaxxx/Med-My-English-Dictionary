@@ -30,4 +30,6 @@ urlpatterns = [
     path('delete_friend/<int:friendship_id>/', views.delete_friend, name='delete_friend'),
     path('practice/', views.practice_view, name='practice'),
     path('practice/reading/', views.reading_view, name='practice_reading'),
+    path('practice/reading/<int:text_id>/', views.reading_text_view, name='reading_text'),
+    path('word/<int:text_id>/<str:word>/', views.word_detail_view, name='word_detail'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

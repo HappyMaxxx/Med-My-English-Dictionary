@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block content %}
+<h1>{{ text.title }}</h1>
+
+<div class="reading-content">
+    <div class="buttons make-text-btn">
+        <a href="{% url 'practice_reading' %}">&lt;</a>
+        
+        <!-- ! MAKE EDITING FORM -->
+        {% if request.user.is_superuser %}
+        <a href="#">Edit Text</a>
+        {% endif %}
+    </div>
+
+    {% for paragraph in content_phrases %}
+        <p>⠀​⠀
+            {% for phrase, translation in paragraph %}
+                {% with cleaned_phrase=phrase|clean_word %}
+                    {% if translation %}
+                        <a href="{% url 'word_detail' word=cleaned_phrase text_id=text.id %}" class="phrase" title="{{ translation }}">{{ phrase }}</a>
+                    {% else %}
+                        <span class="word">{{ phrase }}</span>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+        </p>
+    {% endfor %}
+
+    {% if text.is_auth_a %}
+        <p>Resource: <a href="{{ text.auth }}" target="_blank">{{ base_url }}</a></p>
+    {% else %}
+        <p>Resource: {{ text.auth }}</p>
+    {% endif %}
+</div>
+
+{% endblock %}

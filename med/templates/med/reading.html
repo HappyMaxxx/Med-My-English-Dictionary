@@ -5,19 +5,20 @@
 <h1>Reading</h1>
 
 <div class="reading-container">
-    {% if request.user.is_superuser %}
     <div class="buttons make-text-btn">
+        <a href="{% url 'practice' %}">&lt;</a>
         <!-- ! MAKE CREATING FORM -->
+        {% if request.user.is_superuser %}
         <a href="#">Create New Text</a>
+        {% endif %}
     </div>
-    {% endif %}
 
     {% if texts %}
     <ul class="user-list">
         {% for text in texts %}
         <li class="user-item">
             <!-- ! MAKE TEXT PAGE -->
-            <a href="#">
+            <a href="{% url 'reading_text' text.id %}">
             <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
 
                 <div class="user-title" style="flex: 1; text-align: left; margin-left: 15px;">

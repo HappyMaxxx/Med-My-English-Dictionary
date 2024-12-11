@@ -1229,12 +1229,15 @@ form .edit-buttons a {
 }
 
 .make-text-btn {
-    margin: 10px 0px 20px 10px;
-    text-align: right;
+    margin: 10px 0px 20px 0px;
+    /* justify-content: space-between; */
+    display: flex;
+    gap: 70%;
 }
 
 .make-text-btn a{
     margin-right: 0px;
+    margin-left: 0px;
 }
 
 .burger-menu {
@@ -1249,6 +1252,47 @@ form .edit-buttons a {
     background-color: var(--text-color);
     margin: 5px auto;
     transition: all 0.3s ease;
+}
+
+.phrase,
+.word {
+    /* cursor: pointer; */
+    color: var(--text-color);
+    /* margin-right: 5px; */
+}
+
+.phrase {
+    text-decoration:underline;
+}
+
+.reading-content {
+    max-width: 700px;
+    margin: 20px auto;
+    background-color: var(--feature-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+    color: var(--text-color);
+    text-align:justify;
+}
+
+.reading-content a {
+    margin-right: 0px;
+}
+
+.word-content {
+    text-align:justify;
+}
+
+.word-content .buttons {
+    text-align: center;
+}
+
+.word-content form {
+    background-color: var(--feature-background);
+    padding: 0;
+    margin: 0;
+
 }
 
 @media (max-width: 900px) {

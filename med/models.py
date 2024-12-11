@@ -100,35 +100,16 @@ class ReadingText(models.Model):
     word_count = models.IntegerField()
     eng_level = models.CharField(max_length=2, choices=[('A1', 'A1'), ('A2', 'A2'), ('B1', 'B1'),
                                                         ('B2', 'B2'), ('C1', 'C1'), ('C2', 'C2')])
+    content = models.TextField(blank=True)
+    words_with_translations = models.JSONField(default=dict, blank=True, null=True)
+    auth = models.CharField(max_length=200, blank=True)
+    is_auth_a = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
-    
+
     class Meta:
         ordering = ['eng_level', 'title']
         indexes = [
             models.Index(fields=['eng_level', 'title'])
         ]
-
-
-class ReadingEnglishWords(models.Model):
-    text = models.ForeignKey(ReadingText, related_name='english_words', on_delete=models.CASCADE)
-    word = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.word
-    
-    class Meta:
-        ordering = ['word']
-        indexes = [
-            models.Index(fields=['word'])
-        ]
-
-
-class ReadingTranslatedWords(models.Model):
-    word = models.OneToOneField(ReadingEnglishWords, related_name='translation', on_delete=models.CASCADE)
-    translation = models.CharField(max_length=100, blank=True, null=True)
-
-    def __str__(self):
-        return self.word
-    

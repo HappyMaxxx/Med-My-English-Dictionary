@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>New word</h1>
+
+<div class="reading-content word-content">
+    <p><strong>Word:</strong> {{ word }} </p>
+    <p><strong>Translation:</strong> {{ translation }} </p>
+    <p><strong>Example:</strong> {{ example }} </p>
+
+    <div class="buttons">
+        <form action="{% url 'addword' %}" method="post" style="display:inline;" id="deletting_form">
+            {% csrf_token %}
+            <input type="hidden" name="word" value="{{ word }}">
+            <input type="hidden" name="translation" value="{{ translation }}">
+            <input type="hidden" name="example" value="{{ example }}">
+            <a href="#" onclick="document.getElementById('deletting_form').submit(); return false;">Save</a>
+        </form>
+
+        <a href="{% url 'reading_text' text_id %}">Cancel</a>
+        
+    </div>
+</div>
+{% endblock %}

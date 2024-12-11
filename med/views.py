@@ -1,3 +1,5 @@
+import re
+import string
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -19,6 +21,8 @@ from django.http import JsonResponse
 import json
 
 from django.core.paginator import Paginator
+
+from urllib.parse import urlparse
 
 from django.contrib.auth import logout, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -591,3 +595,57 @@ def practice_view(request):
 def reading_view(request):
     texts = ReadingText.objects.all()
     return render(request, 'med/reading.html', {'texts': texts})
+
+def split_content_by_phrases(content, translations):
+    words = content.split()
+    result = []
+    i = 0
+    lower_translations = {k.lower(): v for k, v in translations.items()}
+
+    def clean_word(word):
+        return word.strip(string.punctuation).lower()
+
+    while i < len(words):
+        match = None
+        for j in range(len(words), i, -1):
+            phrase = " ".join(words[i:j])
+            cleaned_phrase = clean_word(phrase)
+            if cleaned_phrase in lower_translations:
+                match = (phrase, lower_translations[cleaned_phrase])
+                i = j
+                break
+        if match:
+            result.append(match)
+        else:
+            word = words[i]
+            result.append((word, None))
+            i += 1
+    return result
+
+def reading_text_view(request, text_id):
+    text = get_object_or_404(ReadingText, id=text_id)
+    base_url = None
+    if text.is_auth_a:
+        url = text.auth
+        parsed_url = urlparse(url)
+        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/"
+
+    content_phrases = []
+    for paragraph in text.content.splitlines():
+        phrases = split_content_by_phrases(paragraph, text.words_with_translations)
+        content_phrases.append(phrases)
+
+    return render(request, 'med/read_text.html', {
+        'text': text,
+        'base_url': base_url,
+        'content_phrases': content_phrases
+    })
+
+def word_detail_view(request, word, text_id):
+    text = get_object_or_404(ReadingText, content__icontains=word, id=text_id)
+    translation = text.words_with_translations.get(word, 'Перекладу немає')
+
+    sentences = re.split(r'(?<=[.!?]) +', text.content)
+    example_sentence = next((sentence for sentence in sentences if word in sentence), 'Приклад не знайдено')
+
+    return render(request, 'med/word_detail.html', {'word': word, 'translation': translation, 'example': example_sentence, 'text_id': text_id})

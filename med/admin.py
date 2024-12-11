@@ -21,6 +21,13 @@ class FriendshipAdmin(admin.ModelAdmin):
     list_filter = ('status',)
     search_fields = ('sender', 'receiver',)
 
+
+class TextAdmin(admin.ModelAdmin):
+    list_display = ('title',"eng_level",)
+    list_filter = ('title', "eng_level",) 
+    search_fields = ('title',)
+
 admin.site.register(Word, WordAdmin)
 admin.site.register(WordGroup, WordGroupAdmin)
 admin.site.register(Friendship, FriendshipAdmin)
+admin.site.register(ReadingText, TextAdmin)
