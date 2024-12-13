@@ -73,8 +73,18 @@ class ConfirmDeleteView(View):
     def get(self, request, *args, **kwargs):
         word_ids = request.GET.getlist('word_ids')
         group_id = request.GET.get('group_id')
+        text_id = request.GET.get('text_id')
 
-        if group_id and word_ids:
+        if text_id:
+            text = get_object_or_404(ReadingText, id=text_id)
+            return render(request, 'med/confirm_delete.html', {
+                'is_text': True,
+                'text': 'Are you sure you want to delete this text?',
+                'text_id': text_id,
+                'text_title': text.title,
+            })
+
+        elif group_id and word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
             words = group.words.filter(id__in=word_ids)
             return render(request, 'med/confirm_delete.html', {
@@ -111,8 +121,14 @@ class ConfirmDeleteView(View):
     def post(self, request, *args, **kwargs):
         word_ids = request.POST.getlist('word_ids')
         group_id = request.POST.get('group_id')
-        
-        if group_id and not word_ids:
+        text_id = request.POST.get('text_id')
+
+        if text_id:
+            text = get_object_or_404(ReadingText, id=text_id)
+            text.delete()
+            return redirect('practice_reading')
+
+        elif group_id and not word_ids:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
             group.delete()
             return redirect('groups')

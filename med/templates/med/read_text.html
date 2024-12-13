@@ -10,6 +10,7 @@
         
         {% if request.user.is_superuser %}
         <a href="{% url 'edit_text' text_id=text.id%}">Edit Text</a>
+        <a href="{% url 'confirm_delete' %}?text_id={{ text.id }}">Delete Text</a>
         {% endif %}
     </div>
 

@@ -9,7 +9,9 @@
     <form method="post" id="deletting_form">
         {% csrf_token %}
         <ul class="word-list">
-            {% if is_group and not words %}
+            {% if is_text %}
+                {{ text_title }}
+            {% elif is_group and not words %}
                 {{ group_name }}
             {% elif words and not is_group %}
                 {% for word in words %}
@@ -25,10 +27,12 @@
         <div class="buttons">
             <a href="#" onclick="document.getElementById('deletting_form').submit(); return false;">Confirm Deletion</a>
 
-            {% if is_group and not words%}
+            {% if is_text %}
+                <a href="{% url 'reading_text' text_id %}">Cancel</a>
+                <input type="hidden" name="text_id" value="{{ text_id }}">
+            {% elif is_group and not words%}
                 <a href="{% url 'groups' %}{{group_id}}">Cancel</a>
                 <input type="hidden" name="group_id" value="{{ group_id }}">
-
             {% elif words and not is_group %}
                 <a href="{% url 'words' request.user.username %}">Cancel</a>
                 {% for word_id in word_ids %}
