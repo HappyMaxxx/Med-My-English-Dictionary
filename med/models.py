@@ -26,6 +26,7 @@ class WordGroup(models.Model):
     words = models.ManyToManyField(Word, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_main = models.BooleanField(verbose_name='main', default=False)
+    uses_users = models.ManyToManyField(User, blank=True, related_name='uses_of_group')
 
     def __str__(self):
         return self.name

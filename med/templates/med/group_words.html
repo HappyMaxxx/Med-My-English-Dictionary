@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>{{ group.name }} words</h1>
+
+<div class="word_table_container reading-content group_words">
+    <div class="buttons make-text-btn groups-btn">
+        <a href="{% url 'practice_groups' %}">&lt;</a>
+        
+        {% if not is_usses %}
+        {% if request.user.username != 'grouper' %}
+        <a href="{% url 'add_as_uses' group.id %}">Save</a>
+        {% endif %}
+        {% endif %}
+        
+        {% if request.user.username == 'grouper' %}
+        <a href="{% url 'group_words' group.id %}">Edit Group</a>
+        {% endif %}
+    </div>
+
+    {% if words %}
+    <table class="word_table">
+        <thead>
+            <tr>
+                <th>Word</th>
+                <th>Translation</th>
+                <th>Example</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for word in words %}
+                <tr>
+                    <td>{{ word.word }}</td>
+                    <td>{{ word.translation }}</td>
+                    <td>{{ word.example }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    {% else %}
+    <p> </p>
+    <p><b>There are no words yet</b></p>
+    {% endif %}
+    </table>
+
+    {% if paginator.num_pages > 1 %}
+    <nav class="list-pages"> 
+        <ul>
+            {% if page_obj.has_previous %}
+            <li class="page-num">
+                <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+            </li>
+            {% endif %}
+
+            {% for p in paginator.page_range %}
+                {% if page_obj.number == p %}
+                <li class="page-num page-num-selected">{{ p }}</li>
+                {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-num">
+                <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+{% endblock %}

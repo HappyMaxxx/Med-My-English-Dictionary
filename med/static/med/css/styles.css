@@ -1167,14 +1167,17 @@ form .edit-buttons a {
     min-width: 300px;
     width: auto;
     margin: 0 auto;
-    padding: 20px 50px;
+    padding: 30px 50px 0px 50px;
     background-color: var(--feature-background);
     color: var(--text-color);
     border-radius: 10px;
     box-shadow: var(--feature-shadow);
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10%;
+    gap: 15%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     justify-items: center;
 }
 
@@ -1189,9 +1192,10 @@ form .edit-buttons a {
     background-color: var(--secondary-background);
     border-radius: 10px;
     border: solid;
-    border-width: 2px;
+    border-width: 3px;
     box-shadow: var(--card-shadow);
     transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 30px;
 }
 
 .card:hover {
@@ -1249,12 +1253,18 @@ form .edit-buttons a {
     margin-left: 0px;
 }
 
-.read-btn a:first-child{
+.read-btn a:first-child {
     margin-right: 45%;
 }
 
-.texts-btn a:first-child{
-    margin-right: 68%;
+.texts-btn a:first-child {
+    margin-right: 69%;
+}
+
+.groups-btn a:first-child {
+    margin-right: 69%;
+    margin-left: 0px;
+    max-width: 57.35px;
 }
 
 .burger-menu {
@@ -1314,6 +1324,20 @@ form .edit-buttons a {
 
 .add-text a{
     margin-top: 20px;
+}
+
+.practice-container .card {
+    flex: 1 0 calc(50% - 10%);
+    max-width: 200px;
+}
+
+.group_words .buttons a{
+    width: auto
+}
+
+.groups-btn {
+    align-items: flex-start;
+    justify-content: flex-start !important;
 }
 
 @media (max-width: 900px) {

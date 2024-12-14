@@ -1,8 +1,8 @@
 import re
 import string
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm, WordsShowForm, TextForm
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
@@ -29,7 +29,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import os
 from med.models import *
 
-MAX_GROUP_COUNT = 10
+MAX_GROUP_COUNT = 20
 
 @cache_page(60 * 15)
 def index(request):
@@ -214,8 +214,9 @@ class GroupListView(ListView):
         context['title1'] = "Words"
         context['is_group'] = False
         context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
-        context['len_groups'] = max(context['groups'].count() - 1, 0)
-        context['max_group_count'] = MAX_GROUP_COUNT
+        context['used_groups'] = WordGroup.objects.filter(uses_users=self.request.user)
+        context['len_groups'] = max(context['groups'].count() + context['used_groups'].count() - 1, 0)
+        context['max_group_count'] = MAX_GROUP_COUNT if self.request.user.username != 'grouper' else 100
         return context
 
 
@@ -225,32 +226,44 @@ class GroupWordsView(ListView):
     context_object_name = 'words'
     paginate_by = 25
 
-    def is_main(self):
+    def dispatch(self, request, *args, **kwargs):
         group_id = self.kwargs.get('group_id')
-        is_main = get_object_or_404(WordGroup, id=group_id, user=self.request.user).is_main
-        return is_main
+        group = get_object_or_404(WordGroup, id=group_id)
 
-    def get_name(self): 
-        group_id = self.kwargs.get('group_id')
-        name = get_object_or_404(WordGroup, id=group_id, user=self.request.user).name
-        return name
-    
+        if request.user != group.user and request.user not in group.uses_users.all():
+            return HttpResponseRedirect(reverse('groups'))
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        group_id = self.kwargs.get('group_id')
+        group = get_object_or_404(WordGroup, id=group_id)
+        is_my_group = group.user == self.request.user
+        is_uses = False
+
+        if not is_my_group:
+            is_uses = group.uses_users.filter(id=self.request.user.id).exists()
+
+        context['is_my_group'] = is_my_group
+        context['is_uses'] = is_uses
+
         context['title'] = "Groups"
-        context['title1'] = f"{self.get_name()} Words"
+        context['title1'] = f"{group.name} Words ({group.user.username})" if context['is_uses'] == True else f"{group.name} Words"
         context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
-        context['len_groups'] = max(context['groups'].count() - 1, 0)
-        context['is_main'] = self.is_main()
+        context['used_groups'] = WordGroup.objects.filter(uses_users=self.request.user)
+        context['len_groups'] = max(context['groups'].count() + context['used_groups'].count() - 1, 0)
+        context['is_main'] = group.is_main
         context['group_id'] = self.kwargs.get('group_id')
         context['is_group'] = True
+        context['is_my_group'] = self.request.user == get_object_or_404(WordGroup, id=self.kwargs.get('group_id')).user
         context['words_f_g'] = True
-        context['max_group_count'] = MAX_GROUP_COUNT
+        context['max_group_count'] = MAX_GROUP_COUNT if self.request.user.username != 'grouper' else 100
         return context
 
     def get_queryset(self):
         group_id = self.kwargs.get('group_id')
-        group = get_object_or_404(WordGroup, id=group_id, user=self.request.user)
+        group = get_object_or_404(WordGroup, id=group_id)
         return group.words.all()
 
 
@@ -260,7 +273,10 @@ class CreateGroupView(View):
 
         len_groups = WordGroup.objects.filter(user=request.user).count()
 
-        if len_groups >= MAX_GROUP_COUNT + 1:
+        if request.user.username == 'grouper' and len_groups >= 101:
+            return redirect('groups')
+
+        if len_groups >= (MAX_GROUP_COUNT + 1) and request.user.username != 'grouper':
             return redirect('groups')
         
         form = GroupForm()
@@ -612,6 +628,13 @@ def reading_view(request):
     texts = ReadingText.objects.all()
     return render(request, 'med/reading.html', {'texts': texts})
 
+def parct_groups_view(request):
+    user = get_object_or_404(User, username='grouper')
+    groups = WordGroup.objects.filter(user=user).filter(is_main=False)
+    for group in groups:
+        group.words_count = group.words.count()
+    return render(request, 'med/practice_groups.html', {'groups': groups})
+
 def split_content_by_phrases(content, translations):
     words = content.split()
     result = []
@@ -707,4 +730,35 @@ class EditTextView(View):
             form.save()
             return redirect('reading_text', text_id=text_id)
         return render(request, 'med/edit_text.html', {'form': form, 'text': text})
-        
+
+
+@method_decorator(login_required, name='dispatch')
+class PracticeGroupWordsListView(ListView):
+    model = Word
+    template_name = 'med/group_words.html'
+    context_object_name = 'words'
+    paginate_by = 25
+
+    def get_queryset(self):
+        group_id = self.kwargs.get('group_id')
+        group = get_object_or_404(WordGroup, id=group_id)
+
+        return group.words.all()
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        group_id = self.kwargs.get('group_id')
+        group = get_object_or_404(WordGroup, id=group_id)
+        context['group'] = group
+        context['is_usses'] = group.uses_users.filter(id=self.request.user.id).exists()
+        return context
+    
+def add_as_uses(request, group_id):
+    group = get_object_or_404(WordGroup, id=group_id)
+    group.uses_users.add(request.user)
+    return redirect('group_words_practice', group_id=group_id)
+
+def leave_group(request, group_id):
+    group = get_object_or_404(WordGroup, id=group_id)
+    group.uses_users.remove(request.user)
+    return redirect('groups')

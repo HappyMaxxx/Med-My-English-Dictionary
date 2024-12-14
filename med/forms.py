@@ -80,7 +80,7 @@ class TextForm(forms.ModelForm):
             'content': 'Text',
             'words_with_translations': 'Words with translations',
             'auth': 'Author',
-            'is_auth_a': 'Author is anonymous'
+            'is_auth_a': 'Author is a link'
         }
         widgets = {
             'content': forms.Textarea(attrs={'rows': 10}),

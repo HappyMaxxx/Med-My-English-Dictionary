@@ -18,6 +18,20 @@
                 </a>
             {% endif %}
             {% endfor %}
+
+            {% for group in used_groups %}
+            {% if group.id == group_id %}
+                <div class="group-block group-block-selected">
+                    <p>{{ group.name }}</p>
+                </div>
+            {% else %}
+                <a href="{% url 'group_words' group.id %}">
+                    <div class="group-block">
+                        <p>{{ group.name }}</p>
+                    </div>
+                </a>
+            {% endif %}
+            {% endfor %}
         </div>
         {% if len_groups < max_group_count %}
             <a href="{% url 'create_group' %}" class="buttons">Create New Group</a>
@@ -32,7 +46,9 @@
                 <thead>
                     <tr>
                         {% if not is_main %}
+                        {% if not is_uses %}
                         <th class="checboxes">#</th>
+                        {% endif %}
                         {% endif %}
                         <th>Word</th>
                         <th>Translation</th>
@@ -43,7 +59,9 @@
                     {% for word in words %}
                         <tr>
                             {% if not is_main %}
+                            {% if not is_uses %}
                             <td><input type="checkbox" name="word_checkbox" value="{{ word.id }}"></td>
+                            {% endif %}
                             {% endif %}
                             <td>{{ word.word }}</td>
                             <td>{{ word.translation }}</td>
@@ -58,6 +76,7 @@
         {% endif %}
 
         {% if is_group %}
+        {% if not is_uses %}
         <div class="buttons groups-buttons">
             <div class="add_word">
                 {% if is_main %}
@@ -72,6 +91,13 @@
                 <a href="{% url 'confirm_delete' %}?group_id={{ group_id }}" class="delete-group-button">Delete Group</a>
             </div>
             {% endif %}
+        </div>
+        {% else %}
+        <div class="buttons groups-buttons">
+            <div class="delete-button">
+                <a href="{% url 'leave_group' group_id %}" class="delete-group-button">Leave</a>
+            </div>
+        {% endif %}
         </div>
         {% endif %}
 

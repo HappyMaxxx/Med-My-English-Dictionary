@@ -21,5 +21,23 @@
     </div>
     </a>
 
+    <a href="{% url 'practice_groups' %}">
+        <div class="card">
+            <img src="{% static 'med/img/practice/group_light.png' %}" alt="Groups" class="card-image" data-light-src="{% static 'med/img/practice/group_light.png' %}" data-dark-src="{% static 'med/img/practice/group_dark.png' %}">
+            <p class="card-text">Groups</p>
+        </div>
+    </a>
+
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const container = document.querySelector('.practice-container');
+    const cards = container.querySelectorAll('.card');
+
+    if (cards.length === 1) {
+        container.style.justifyContent = 'center';
+    }
+});
+</script>
 {% endblock %}

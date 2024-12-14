@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Community Groups</h1>
+
+<div class="reading-container">
+    <div class="buttons make-text-btn texts-btn">
+        <a href="{% url 'practice' %}">&lt;</a>
+        {% if request.user.username == 'grouper' %}
+        <a href="{% url 'create_group' %}">Create Group</a>
+        {% endif %}
+    </div>
+
+    {% if groups %}
+    <ul class="user-list">
+        {% for group in groups %}
+        <li class="user-item">
+            <a href="{% url 'group_words_practice' group.id %}">
+            <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+
+                <div class="user-title" style="flex: 1; text-align: left; margin-left: 15px;">
+                    <p class="user-name"><strong>{{ group.name }}</strong></p>
+                </div>
+
+                <div class="user-stats" style="display: flex; gap: 20px; text-align: center; margin-right: 15px;">
+                    <div class="stat-item reading-item">
+                        <p>Words</p>
+                        <p>{{ group.words_count }}</p>
+                    </div>
+                </div>
+            </div>
+            </a>
+        </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+    <p>No gtoups available.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
