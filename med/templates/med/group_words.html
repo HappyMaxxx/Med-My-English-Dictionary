@@ -13,6 +13,9 @@
         {% if request.user.username != 'grouper' %}
         <a href="{% url 'add_as_uses' group.id %}">Save</a>
         {% endif %}
+        {% else %}
+        <a href="{% url 'group_words' group.id %}">View</a>
+        <a href="{% url 'leave_group' group_id=group.id fp=1 %}">Leave</a>
         {% endif %}
         
         {% if request.user.username == 'grouper' %}

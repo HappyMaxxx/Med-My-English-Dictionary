@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="group-container">
@@ -48,6 +49,8 @@
                         {% if not is_main %}
                         {% if not is_uses %}
                         <th class="checboxes">#</th>
+                        {% else %}
+                        <th class="edit">Add</th>
                         {% endif %}
                         {% endif %}
                         <th>Word</th>
@@ -61,6 +64,22 @@
                             {% if not is_main %}
                             {% if not is_uses %}
                             <td><input type="checkbox" name="word_checkbox" value="{{ word.id }}"></td>
+                            {% else %}
+                            {% if word.is_saved %}
+                            <td class="img_td">
+                                <!-- <a href="{% url 'words' request.user.username %}"> -->
+                                <img class="f_img cm_img" src="{% static 'med/img/groups/cm_light.png' %}" data-light-src="{% static 'med/img/groups/cm_light.png' %}" data-dark-src="{% static 'med/img/groups/cm_dark.png' %}" alt="IS Saved img">
+                                <!-- </a> -->
+                            </td>
+                            {% else %}
+
+                            <td class="img_td">
+                                <a href="{% url 'save_word' word.id %}">
+                                <img class="f_img" src="{% static 'med/img/groups/add_light.png' %}" data-light-src="{% static 'med/img/groups/add_light.png' %}" data-dark-src="{% static 'med/img/groups/add_dark.png' %}" alt="Add img">
+                                </a>
+                            </td>
+
+                            {% endif %}
                             {% endif %}
                             {% endif %}
                             <td>{{ word.word }}</td>
@@ -95,7 +114,7 @@
         {% else %}
         <div class="buttons groups-buttons">
             <div class="delete-button">
-                <a href="{% url 'leave_group' group_id %}" class="delete-group-button">Leave</a>
+                <a href="{% url 'leave_group' group_id=group_id fp=0 %}" class="delete-group-button">Leave</a>
             </div>
         {% endif %}
         </div>

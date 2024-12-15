@@ -458,6 +458,10 @@ form .buttons a:hover {
     display: inline-block;
 }
 
+.cm_img {
+    cursor: default;
+}
+
 .word_table_container .th_f {
     cursor: auto;
 }
@@ -469,6 +473,13 @@ form .buttons a:hover {
 .word_table_container .img_td {
     text-align: center;
     vertical-align: middle; 
+    /* display:inline-block; */
+}
+
+.word-list-container .img_td {
+    display: grid;
+    justify-content: center;
+    justify-items: center;
 }
 
 /* Стиль для пагінації */
@@ -753,7 +764,7 @@ form .buttons a:hover {
 
 .groups-buttons {
     display: flex;
-    justify-content: space-between; /* вирівнює елементи по горизонталі */
+    justify-content: space-between;
     align-items: center; 
 }
 
@@ -1245,7 +1256,8 @@ form .edit-buttons a {
 }
 
 .read-btn {
-    margin-left:25px;
+    margin: 0px 25px 20px 25px;
+    justify-content: space-between !important;
 }
 
 .make-text-btn a{
@@ -1257,12 +1269,16 @@ form .edit-buttons a {
     margin-right: 45%;
 }
 
+.texts-btn {
+    justify-content: space-between !important;
+}
+
 .texts-btn a:first-child {
     margin-right: 69%;
 }
 
 .groups-btn a:first-child {
-    margin-right: 69%;
+    margin-right: 60%;
     margin-left: 0px;
     max-width: 57.35px;
 }
@@ -1336,8 +1352,7 @@ form .edit-buttons a {
 }
 
 .groups-btn {
-    align-items: flex-start;
-    justify-content: flex-start !important;
+    justify-content: space-between !important;
 }
 
 @media (max-width: 900px) {

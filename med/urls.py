@@ -37,5 +37,6 @@ urlpatterns = [
     path('practice/groups/', views.parct_groups_view, name='practice_groups'),
     path('practice/groups/<int:group_id>/', views.PracticeGroupWordsListView.as_view(), name='group_words_practice'),
     path('add_as_uses/<int:group_id>/', views.add_as_uses, name='add_as_uses'),
-    path('leave_group/<int:group_id>/', views.leave_group, name='leave_group'),
+    path('leave_group/<int:group_id>/<str:fp>/', views.leave_group, name='leave_group'),
+    path('save_word/<int:word_id>/', views.save_word, name='save_word'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

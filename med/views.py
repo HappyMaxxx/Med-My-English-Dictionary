@@ -75,48 +75,41 @@ class ConfirmDeleteView(View):
         group_id = request.GET.get('group_id')
         text_id = request.GET.get('text_id')
 
+        context = {}
         if text_id:
             text = get_object_or_404(ReadingText, id=text_id)
-            return render(request, 'med/confirm_delete.html', {
+            context.update({
                 'is_text': True,
                 'text': 'Are you sure you want to delete this text?',
                 'text_id': text_id,
-                'text_title': text.title,
+                'text_title': text.title
             })
 
-        elif group_id and word_ids:
+        elif group_id:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
-            words = group.words.filter(id__in=word_ids)
-            return render(request, 'med/confirm_delete.html', {
+            words = group.words.filter(id__in=word_ids) if word_ids else []
+            context.update({
                 'is_group': True,
+                'group_name': group.name,
+                'group_id': group_id,
                 'words': words,
-                'word_ids': word_ids,
-                'group_name': group.name,
-                'group_id': group_id,
-                'text': f'Are you sure you want to delete these words from group {group.name}?' if len(words) > 1 else f'Are you sure you want to delete this word from group {group.name}?'
+                'text': self._get_delete_message(words, group.name)
             })
 
-        elif group_id and not word_ids:
-            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
-            return render(request, 'med/confirm_delete.html', {
-                'is_group': True,
-                'group_name': group.name,
-                'group_id': group_id,
-                'text': 'Are you sure you want to delete this group?'
-            })
+            if word_ids:
+                context['word_ids'] = word_ids
 
-        elif word_ids and not group_id:
+        elif word_ids:
             words = Word.objects.filter(id__in=word_ids, user=request.user)
             if not words:
                 return redirect('words')
-            return render(request, 'med/confirm_delete.html', {
+            context.update({
                 'is_group': False,
                 'words': words,
                 'word_ids': word_ids,
-                'text': 'Are you sure you want to delete these words?' if len(words) > 1 else 'Are you sure you want to delete this word?'
+                'text': self._get_delete_message(words)
             })
-
-        return redirect('profile', user_name=request.user.username) 
+        return render(request, 'med/confirm_delete.html', context)
 
     def post(self, request, *args, **kwargs):
         word_ids = request.POST.getlist('word_ids')
@@ -124,28 +117,36 @@ class ConfirmDeleteView(View):
         text_id = request.POST.get('text_id')
 
         if text_id:
-            text = get_object_or_404(ReadingText, id=text_id)
-            text.delete()
+            get_object_or_404(ReadingText, id=text_id).delete()
             return redirect('practice_reading')
-
-        elif group_id and not word_ids:
+        elif group_id:
             group = get_object_or_404(WordGroup, id=group_id, user=request.user)
-            group.delete()
-            return redirect('groups')
-        
-        elif word_ids and not group_id:
+            if word_ids:
+                words = group.words.filter(id__in=word_ids)
+                for word in words:
+                    group.words.remove(word)
+
+                return redirect('group_words', group_id=group_id)
+            else:
+                group.delete()
+                return redirect('groups')
+        elif word_ids:
             Word.objects.filter(id__in=word_ids, user=request.user).delete()
             return redirect('words', user_name=request.user.username)
-
-        elif group_id and word_ids:
-            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
-            words = group.words.filter(id__in=word_ids)
-            for word in words:
-                group.words.remove(word)
-
-            return redirect('group_words', group_id=group_id)
-
+        
         return redirect('profile', user_name=request.user.username)
+
+    @staticmethod
+    def _get_delete_message(words, group_name=None):
+        if group_name:
+            return ("Are you sure you want to delete this group?"
+                    if len(words) == 0 else
+                    f"Are you sure you want to delete these words from group {group_name}?"
+                    if len(words) > 1 else
+                    f"Are you sure you want to delete this word from group {group_name}?")
+        return ("Are you sure you want to delete these words?"
+                if len(words) > 1 else
+                "Are you sure you want to delete this word?")
 
 
 @method_decorator(login_required, name='dispatch')
@@ -204,15 +205,11 @@ class WordListView(ListView):
         return context
 
 
-class GroupListView(ListView):
-    model = WordGroup
+class BaseGroupView(ListView):
     template_name = 'med/groups.html'
 
-    def get_context_data(self, **kwargs):
+    def get_common_context(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = "Groups"
-        context['title1'] = "Words"
-        context['is_group'] = False
         context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
         context['used_groups'] = WordGroup.objects.filter(uses_users=self.request.user)
         context['len_groups'] = max(context['groups'].count() + context['used_groups'].count() - 1, 0)
@@ -220,9 +217,19 @@ class GroupListView(ListView):
         return context
 
 
-class GroupWordsView(ListView):
+class GroupListView(BaseGroupView):
+    model = WordGroup
+
+    def get_context_data(self, **kwargs):
+        context = self.get_common_context(**kwargs)
+        context['title'] = "Groups"
+        context['title1'] = "Words"
+        context['is_group'] = False
+        return context
+
+
+class GroupWordsView(BaseGroupView):
     model = Word
-    template_name = 'med/groups.html'
     context_object_name = 'words'
     paginate_by = 25
 
@@ -235,30 +242,34 @@ class GroupWordsView(ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = self.get_common_context(**kwargs)
 
         group_id = self.kwargs.get('group_id')
         group = get_object_or_404(WordGroup, id=group_id)
         is_my_group = group.user == self.request.user
-        is_uses = False
 
-        if not is_my_group:
-            is_uses = group.uses_users.filter(id=self.request.user.id).exists()
+        context.update({
+            'is_my_group': is_my_group,
+            'is_uses': not is_my_group and group.uses_users.filter(id=self.request.user.id).exists(),
+            'title': "Groups",
+            'title1': f"{group.name} Words ({group.user.username})" if not is_my_group else f"{group.name} Words",
+            'is_main': group.is_main,
+            'group_id': group_id,
+            'is_group': True,
+            'words_f_g': True,
+        })
 
-        context['is_my_group'] = is_my_group
-        context['is_uses'] = is_uses
+        if context['is_uses']:
+            all_words = Word.objects.filter(user=self.request.user)
 
-        context['title'] = "Groups"
-        context['title1'] = f"{group.name} Words ({group.user.username})" if context['is_uses'] == True else f"{group.name} Words"
-        context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
-        context['used_groups'] = WordGroup.objects.filter(uses_users=self.request.user)
-        context['len_groups'] = max(context['groups'].count() + context['used_groups'].count() - 1, 0)
-        context['is_main'] = group.is_main
-        context['group_id'] = self.kwargs.get('group_id')
-        context['is_group'] = True
-        context['is_my_group'] = self.request.user == get_object_or_404(WordGroup, id=self.kwargs.get('group_id')).user
-        context['words_f_g'] = True
-        context['max_group_count'] = MAX_GROUP_COUNT if self.request.user.username != 'grouper' else 100
+            user_word_titles = [word.word.lower() for word in all_words]
+
+            group_words = group.words.all()
+
+            for word in group_words:
+                word.is_saved = word.word.lower() in user_word_titles
+
+            context['words'] = group_words
         return context
 
     def get_queryset(self):
@@ -337,6 +348,7 @@ class ProfileView(View):
 
 
             word_count = Word.objects.filter(user=user).count()
+            group_count = max(WordGroup.objects.filter(user=user).count() + WordGroup.objects.filter(uses_users=self.request.user).count() - 1, 0)
             group_count = WordGroup.objects.filter(user=user).count()
 
             friends = User.objects.filter(
@@ -385,6 +397,7 @@ class ProfileView(View):
             'is_requests_in': is_requests_in,
             'is_requests_out': is_requests_out,
         })
+    
 
 class SelectGroupView(View):
     def get(self, request):
@@ -758,7 +771,26 @@ def add_as_uses(request, group_id):
     group.uses_users.add(request.user)
     return redirect('group_words_practice', group_id=group_id)
 
-def leave_group(request, group_id):
+def leave_group(request, group_id, fp):
+
+    if fp.lower() in ['true', '1', 'yes']:
+        is_fp = True
+    elif fp.lower() in ['false', '0', 'no']:
+        is_fp = False
+
     group = get_object_or_404(WordGroup, id=group_id)
     group.uses_users.remove(request.user)
+    if is_fp:
+        return redirect('group_words_practice', group_id=group_id)
     return redirect('groups')
+
+
+def save_word(request, word_id):
+    word = get_object_or_404(Word, id=word_id)
+    existing_word = Word.objects.filter(user=request.user, id=word.id).first()
+
+    if not existing_word:
+        Word.objects.create(user=request.user, word=word.word, translation=word.translation,
+                            example=word.example, is_favourite=False)
+
+    return redirect('words', user_name=request.user.username)
