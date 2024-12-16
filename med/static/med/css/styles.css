@@ -1355,6 +1355,30 @@ form .edit-buttons a {
     justify-content: space-between !important;
 }
 
+.list-pages {
+    clear: both;
+}
+
+.add_ff {
+    text-align: justify;
+}
+
+.add_ff .buttons {
+    text-align: center;
+}
+
+.add_ff img {
+    display: block;
+    margin: auto;
+    margin-bottom: 30px;
+    max-width: 100%;
+    height: auto; 
+}
+
+.add_ff .rows_exel {
+    width: 80%;
+}
+
 @media (max-width: 900px) {
     .burger-menu {
         display: block;

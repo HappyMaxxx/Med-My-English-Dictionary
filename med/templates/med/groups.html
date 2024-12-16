@@ -113,11 +113,12 @@
         </div>
         {% else %}
         <div class="buttons groups-buttons">
+            <div class="add_word">
+                <a href="{% url 'save_group_words' group_id %}" class="add-word-button">Save</a>
+            </div>
             <div class="delete-button">
                 <a href="{% url 'leave_group' group_id=group_id fp=0 %}" class="delete-group-button">Leave</a>
             </div>
-        {% endif %}
-        </div>
         {% endif %}
 
         {% if paginator.num_pages > 1 %}
@@ -145,8 +146,9 @@
             </ul>
         </nav>
         {% endif %}
-
-    </div>
+        </div>
+        {% endif %}
+    </div>  
 </div>
 
 <script>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<h1>Load words from file</h1>
+
+<div class="profile-container add_ff">
+    <p><strong>Instructions:</strong> Your file should contain only one sheet. The sheet name doesn't matter, but it must include data in exactly <strong>3 columns</strong>.</p>
+    <img src="{% static 'med/img/exel/sheets_exel.png' %}" alt="Exel sheets">
+    <p><strong>First rows:</strong> Ensure the first rows match the structure shown in the example below.</p>
+    <img src="{% static 'med/img/exel/rows_exel.png' %}" alt="Exel rows" class="rows_exel">
+    <p><strong>Download Template:</strong> Click the button below to download an example table.</p>
+    <div class="buttons">
+        <a href="{% url 'download_file' 'awexample.xlsx' %}">Download Example Table</a>
+    </div>
+</div>
+{% endblock %}

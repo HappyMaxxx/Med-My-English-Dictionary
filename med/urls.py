@@ -39,4 +39,7 @@ urlpatterns = [
     path('add_as_uses/<int:group_id>/', views.add_as_uses, name='add_as_uses'),
     path('leave_group/<int:group_id>/<str:fp>/', views.leave_group, name='leave_group'),
     path('save_word/<int:word_id>/', views.save_word, name='save_word'),
+    path('save-group-words/<int:group_id>/', views.save_group_words, name='save_group_words'),
+    path('download/<path:file>/', views.download_file, name='download_file'),
+    path('words_from_file/', views.words_from_file, name='words_from_file'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

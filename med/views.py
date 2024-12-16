@@ -1,6 +1,6 @@
 import re
 import string
-from django.http import HttpResponseNotFound, HttpResponseRedirect
+from django.http import FileResponse, Http404, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm, WordsShowForm, TextForm
@@ -23,6 +23,9 @@ import json
 from django.core.paginator import Paginator
 
 from urllib.parse import urlparse
+
+import openpyxl
+from tkinter import Tk, filedialog
 
 from django.contrib.auth import logout, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -646,6 +649,7 @@ def parct_groups_view(request):
     groups = WordGroup.objects.filter(user=user).filter(is_main=False)
     for group in groups:
         group.words_count = group.words.count()
+    groups = sorted(groups, key=lambda x: x.words_count, reverse=False)
     return render(request, 'med/practice_groups.html', {'groups': groups})
 
 def split_content_by_phrases(content, translations):
@@ -788,9 +792,103 @@ def leave_group(request, group_id, fp):
 def save_word(request, word_id):
     word = get_object_or_404(Word, id=word_id)
     existing_word = Word.objects.filter(user=request.user, id=word.id).first()
+    group_name = f"All {request.user.username}'s "
 
     if not existing_word:
         Word.objects.create(user=request.user, word=word.word, translation=word.translation,
                             example=word.example, is_favourite=False)
 
+        new_word = Word.objects.get(word=word.word, user=request.user)
+
+        group, created = WordGroup.objects.get_or_create(
+            name=group_name,
+            is_main=True,
+            user=request.user
+        )
+
+        group.words.add(new_word)
+
     return redirect('words', user_name=request.user.username)
+
+def save_group_words(request, group_id):
+    user = request.user
+    group = get_object_or_404(WordGroup, id=group_id)
+    words = group.words.all()
+    word_ids = [word.id for word in words]
+    group_name = f"All {user.username}'s "
+    all_my_words = Word.objects.filter(user=user)
+
+    new_group = WordGroup.objects.create(
+        name=f"{group.name}",
+        user=user
+    )
+
+    for word_id in word_ids:
+        original_word = get_object_or_404(Word, id=word_id)
+
+        if not all_my_words.filter(word=original_word.word).exists():
+            copied_word = Word.objects.create(
+                word=original_word.word,
+                translation=original_word.translation,
+                example=original_word.example,
+                user=user,
+            )
+            
+            # all words groop
+            group1, created = WordGroup.objects.get_or_create(
+                name=group_name,
+                is_main=True,
+                user=user
+            )
+
+            group1.words.add(copied_word)
+
+            new_group.words.add(copied_word)
+
+        else:
+            word = all_my_words.get(word=original_word.word)
+            new_group.words.add(word)
+    
+    group.uses_users.remove(user)
+    return redirect('groups')
+
+
+def get_exel_data():
+    Tk().withdraw()
+    file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+
+    if not file_path:
+        pass
+    else:
+        wb = openpyxl.load_workbook(file_path)
+        sheet = wb[wb.sheetnames[0]]
+
+        words = []
+        for row in sheet.iter_rows(values_only=True):
+            if len(row) == 3:
+                words.append(row)
+                print(row)
+            else:
+                pass
+
+        wb.close()
+    
+    if words[0] == ('Word', 'Translation', 'Example'):
+        return words
+    else:
+        return None
+    
+
+def words_from_file(request):
+    return render(request, 'med/words_ff.html')
+
+def download_file(request, file):
+    base_dir = 'media'
+    file_path = os.path.join(base_dir, file)
+    
+    if not os.path.exists(file_path):
+        raise Http404("File does not exist")
+
+    response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+    response['Content-Disposition'] = 'attachment; filename="example.xlsx"'
+    return response
