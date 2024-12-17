@@ -1363,8 +1363,9 @@ form .edit-buttons a {
     text-align: justify;
 }
 
-.add_ff .buttons {
+.add_ff .dow-ex-button {
     text-align: center;
+    margin-bottom: 40px;
 }
 
 .add_ff img {
@@ -1455,5 +1456,9 @@ form .edit-buttons a {
 
     .reading-item {
         font-size: 80%;
+    }
+
+    .word_table_container {
+        font-size: 70%;
     }
 }

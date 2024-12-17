@@ -25,7 +25,6 @@ from django.core.paginator import Paginator
 from urllib.parse import urlparse
 
 import openpyxl
-from tkinter import Tk, filedialog
 
 from django.contrib.auth import logout, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -351,8 +350,7 @@ class ProfileView(View):
 
 
             word_count = Word.objects.filter(user=user).count()
-            group_count = max(WordGroup.objects.filter(user=user).count() + WordGroup.objects.filter(uses_users=self.request.user).count() - 1, 0)
-            group_count = WordGroup.objects.filter(user=user).count()
+            group_count = max((WordGroup.objects.filter(user=user).count() + WordGroup.objects.filter(uses_users=self.request.user).count()) - 1, 0)
 
             friends = User.objects.filter(
                 Q(friendship_requests_sent__receiver=user, friendship_requests_sent__status='accepted') |
@@ -853,31 +851,73 @@ def save_group_words(request, group_id):
     return redirect('groups')
 
 
-def get_exel_data():
-    Tk().withdraw()
-    file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx")])
+def upload_file(request):
+    if request.method == 'POST' and request.FILES.get('file'):
+        group_name = f"All {request.user.username}'s "
+        group, created = WordGroup.objects.get_or_create(
+            name=group_name,
+            is_main=True,
+            user=request.user
+        )
+        uploaded_file = request.FILES['file']
+        file_name = uploaded_file.name.lower()
 
-    if not file_path:
-        pass
-    else:
-        wb = openpyxl.load_workbook(file_path)
-        sheet = wb[wb.sheetnames[0]]
+        try:
+            if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+                # Обробка Excel-файлу
+                wb = openpyxl.load_workbook(uploaded_file)
+                sheet = wb[wb.sheetnames[0]]
 
-        words = []
-        for row in sheet.iter_rows(values_only=True):
-            if len(row) == 3:
-                words.append(row)
-                print(row)
+                words = []
+                for row in sheet.iter_rows(values_only=True):
+                    if len(row) == 3:
+                        words.append(row)
+
+                wb.close()
+
+                if words[0] == ('Word', 'Translation', 'Example'):
+                    for word in words[1:]:
+                        word = Word.objects.create(
+                            word=word[0],
+                            translation=word[1],
+                            example=word[2],
+                            user=request.user,
+                        )
+                        group.words.add(word)
+
+                    return JsonResponse({'status': 'success', 'message': 'Words added successfully.'})
+                else:
+                    return JsonResponse({'status': 'error', 'message': 'Invalid headers in Excel file.'})
+
+            elif file_name.endswith('.txt'):
+                content = uploaded_file.read().decode('utf-8')
+                try:
+                    json_data = json.loads(content)
+
+                    if isinstance(json_data, list):
+                        for item in json_data:
+                            if all(k in item for k in ('word', 'translation', 'example')):
+                                word = Word.objects.create(
+                                    word=item['word'],
+                                    translation=item['translation'],
+                                    example=item['example'],
+                                    user=request.user,
+                                )
+                                group.words.add(word)
+
+                        return JsonResponse({'status': 'success', 'message': 'Words added successfully from JSON.'})
+                    else:
+                        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format in file.'})
+                except json.JSONDecodeError:
+                    return JsonResponse({'status': 'error', 'message': 'Failed to decode JSON from file.'})
+
             else:
-                pass
+                return JsonResponse({'status': 'error', 'message': 'Unsupported file format. Use .xlsx or .txt.'})
 
-        wb.close()
-    
-    if words[0] == ('Word', 'Translation', 'Example'):
-        return words
-    else:
-        return None
-    
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f'Error processing file: {str(e)}'})
+
+    return render(request, 'med/words_ff.html')
 
 def words_from_file(request):
     return render(request, 'med/words_ff.html')

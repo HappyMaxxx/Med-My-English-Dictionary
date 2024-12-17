@@ -6,13 +6,65 @@
 <h1>Load words from file</h1>
 
 <div class="profile-container add_ff">
-    <p><strong>Instructions:</strong> Your file should contain only one sheet. The sheet name doesn't matter, but it must include data in exactly <strong>3 columns</strong>.</p>
-    <img src="{% static 'med/img/exel/sheets_exel.png' %}" alt="Exel sheets">
+    <p><strong>Instructions:</strong> You can upload either an Excel file (<code>.xlsx</code>) or a text file (<code>.txt</code>) containing data in JSON format.</p>
+    <p style="margin-bottom: 5px;"><strong>For Excel files:</strong></p>
+    <p>Ensure your file contains only one sheet. The sheet name doesn't matter, but it must include data in exactly <strong>3 columns</strong>.</p>
+    <img src="{% static 'med/img/exel/sheets_exel.png' %}" alt="Excel sheets">
     <p><strong>First rows:</strong> Ensure the first rows match the structure shown in the example below.</p>
-    <img src="{% static 'med/img/exel/rows_exel.png' %}" alt="Exel rows" class="rows_exel">
+    <img src="{% static 'med/img/exel/rows_exel.png' %}" alt="Excel rows" class="rows_exel">
+
     <p><strong>Download Template:</strong> Click the button below to download an example table.</p>
-    <div class="buttons">
+
+    <div class="buttons dow-ex-button">
         <a href="{% url 'download_file' 'awexample.xlsx' %}">Download Example Table</a>
     </div>
+
+    <p style="margin-bottom: 5px;"><strong>For text files:</strong></p> 
+    <p>The file should contain a valid JSON array with objects structured as follows:
+        <pre>
+        [
+        {
+        "word": "example", 
+        "translation": "приклад", 
+        "example": "This is an example sentence."
+        },
+        ...
+        ]
+        </pre>
+    </p>
+
+    <p><strong>Upload Your File:</strong> Select your file and click "Upload" to process it.</p>
+    <form id="uploadForm" method="POST" enctype="multipart/form-data" style="text-align: center;">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsx,.txt" required>
+        <div class="buttons edit-buttons">
+            <a href="#" onclick="document.getElementById('uploadForm').submit(); return false;">Upload</a>
+        </div>
+    </form>
+    <div id="result" style="margin-top: 20px;"></div>
 </div>
+
+<script>
+    const form = document.getElementById('uploadForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const response = await fetch("{% url 'upload_file' %}", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        const resultDiv = document.getElementById('result');
+
+        if (data.status === 'success') {
+            resultDiv.innerHTML = `<p style="margin-bottom: 5px;">Words loaded successfully</p>`;
+            setTimeout(() => {
+                window.location.href = "{% url 'words' request.user.username %}"; 
+            }, 2000);
+        } else {
+            resultDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p>`;
+        }
+    });
+</script>
 {% endblock %}

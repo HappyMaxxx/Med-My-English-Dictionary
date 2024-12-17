@@ -8,6 +8,7 @@
 <div class="word_table_container">
     {% if is_my_dict %}
     <div class="buttons">
+        <a href="{% url 'words_from_file' %}">From File</a>
         <a href="#" onclick="selectAllWords(); return false;">Select All Words</a>
         <a href="#" onclick="addWordsToGroup(); return false;">Add To The Group</a>
         <a href="#" onclick="deleteSelectedWords(); return false;">Delete Selected</a>

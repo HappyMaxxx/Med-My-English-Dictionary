@@ -42,4 +42,5 @@ urlpatterns = [
     path('save-group-words/<int:group_id>/', views.save_group_words, name='save_group_words'),
     path('download/<path:file>/', views.download_file, name='download_file'),
     path('words_from_file/', views.words_from_file, name='words_from_file'),
+    path('upload/', views.upload_file, name='upload_file'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
