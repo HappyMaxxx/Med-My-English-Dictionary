@@ -15,7 +15,7 @@ from django.contrib import messages
 from django.utils.decorators import method_decorator
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from django.http import JsonResponse
 import json
@@ -32,6 +32,27 @@ import os
 from med.models import *
 
 MAX_GROUP_COUNT = 20
+
+practice_cards = {
+    'test': {
+        'word': 'Test',
+        'img': 'med/img/practice/dice_light.png',
+        'dark_img': 'med/img/practice/dice_dark.png',
+        'href': '#'
+    },
+    'reading': {
+        'word': 'Reading',
+        'img': 'med/img/practice/read_light.png',
+        'dark_img': 'med/img/practice/read_dark.png',
+        'href': 'practice_reading'
+    },
+    'groups': {
+        'word': 'Groups',
+        'img': 'med/img/practice/group_light.png',
+        'dark_img': 'med/img/practice/group_dark.png',
+        'href': 'practice_groups'
+    },
+}
 
 @cache_page(60 * 15)
 def index(request):
@@ -348,14 +369,28 @@ class ProfileView(View):
             else:
                 recent_words = Word.objects.filter(user=user)[:user_profile.words_num_in_prof]
 
-
-            word_count = Word.objects.filter(user=user).count()
+            words = Word.objects.filter(user=user)
+            word_count = words.count()
             group_count = max((WordGroup.objects.filter(user=user).count() + WordGroup.objects.filter(uses_users=self.request.user).count()) - 1, 0)
 
             friends = User.objects.filter(
                 Q(friendship_requests_sent__receiver=user, friendship_requests_sent__status='accepted') |
                 Q(friendship_requests_received__sender=user, friendship_requests_received__status='accepted')
             ).distinct()
+
+            word_stats = words.values('word_type').annotate(count=Count('id'))
+            word_type_data = [
+                {
+                    'name': word_type['word_type'].capitalize(),
+                    'y': word_type['count']
+                }
+                for word_type in word_stats
+            ]
+
+            # if word_type_data:
+                # max_item = max(word_type_data, key=lambda x: x['y'])
+                # max_item['sliced'] = True
+                # max_item['selected'] = True
 
             return {
                 'user_profile': user_profile,
@@ -365,6 +400,7 @@ class ProfileView(View):
                 'friends': friends,
                 'friend_count': friends.count(),
                 'is_favorite': is_favorite,
+                'word_type_data': json.dumps(word_type_data),
             }
 
         profile_user = get_object_or_404(User, username=user_name)
@@ -636,7 +672,7 @@ def friends_list_view(request, user_name):
 
 # @cache_page(60 * 15)
 def practice_view(request):
-    return render(request, 'med/practice.html')
+    return render(request, 'med/practice.html', {'cards': practice_cards.values()})
 
 def reading_view(request):
     texts = ReadingText.objects.all()

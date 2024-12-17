@@ -3,6 +3,16 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 
 class Word(models.Model):
+    TYPE_CHOICES = [
+        ('noun', 'Noun'),
+        ('verb', 'Verb'),
+        ('adjective', 'Adjective'),
+        ('adverb', 'Adverb'),
+        ('pronoun', 'Pronoun'),
+        ('phrasal verb', 'Phrasal verb'),
+        ('other', 'Other')
+    ]
+
     word = models.CharField(max_length=100)
     translation = models.CharField(max_length=100)
     example = models.TextField(blank=True)
@@ -10,6 +20,7 @@ class Word(models.Model):
     time_update = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_favourite = models.BooleanField(default=False)
+    word_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='other')
 
     def __str__(self):
         return self.word
@@ -96,11 +107,18 @@ class Friendship(models.Model):
 
 
 class ReadingText(models.Model):
+    ENG_LEVEL_CHOICES = [
+        ('A1', 'A1'),
+        ('A2', 'A2'),
+        ('B1', 'B1'),
+        ('B2', 'B2'),
+        ('C1', 'C1'),
+        ('C2', 'C2')
+    ]
     title = models.CharField(max_length=100)
     time_to_read = models.IntegerField()
     word_count = models.IntegerField()
-    eng_level = models.CharField(max_length=2, choices=[('A1', 'A1'), ('A2', 'A2'), ('B1', 'B1'),
-                                                        ('B2', 'B2'), ('C1', 'C1'), ('C2', 'C2')])
+    eng_level = models.CharField(max_length=2, choices=ENG_LEVEL_CHOICES, default='A1')
     content = models.TextField(blank=True)
     words_with_translations = models.JSONField(default=dict, blank=True, null=True)
     auth = models.CharField(max_length=200, blank=True)

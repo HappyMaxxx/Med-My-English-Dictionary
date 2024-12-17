@@ -15,6 +15,12 @@
     <p><label class="form-label" for="{{ form.example.id_for_label }}">{{ form.example.label }}: </label>{{ form.example }}</p>
     <div class="form-error">{{ form.example.errors }}</div>
 
+    <p>
+        <label class="form-label" for="{{ form.word_type.id_for_label }}"> {{ form.word_type.label }}: </label>
+        {{ form.word_type }}
+    </p>
+    <div class="form-error">{{ form.word_type.errors }}</div>
+
     <div class="form-error down-error">{{ form.non_field_errors }}</div>
 
     <div class="buttons l-r-but">

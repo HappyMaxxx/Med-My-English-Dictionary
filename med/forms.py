@@ -9,11 +9,12 @@ from .models import *
 class AddWordForm(forms.ModelForm):
     class Meta:
         model = Word
-        fields = ['word', 'translation', 'example']
+        fields = ['word', 'translation', 'example', 'word_type']
         labels = {
             'word': 'Word',
             'translation': 'Translation',
-            'example': 'Example'
+            'example': 'Example',
+            'word_type': 'Word type'
         }
         widgets = {
             'example': forms.Textarea(attrs={'rows': 3})
@@ -59,11 +60,12 @@ class LoginUserForm(AuthenticationForm):
 class WordForm(forms.ModelForm):
     class Meta:
         model = Word
-        fields = ['word', 'translation', 'example']
+        fields = ['word', 'translation', 'example', 'word_type']
         labels = {
             'word': 'Word',
             'translation': 'Translation',
-            'example': 'Example'
+            'example': 'Example',
+            'word_type': 'Word type'
         }
         widgets = {
             'example': forms.Textarea(attrs={'rows': 3})
@@ -89,9 +91,11 @@ class TextForm(forms.ModelForm):
             'is_auth_a': forms.CheckboxInput()
         }
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['eng_level'].initial = 'A1' 
+    eng_level = forms.ChoiceField(
+        choices=[(choice[0], choice[1]) for choice in ReadingText.ENG_LEVEL_CHOICES],
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=True
+    )
 
 class GroupForm(forms.ModelForm):
     class Meta:

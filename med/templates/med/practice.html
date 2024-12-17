@@ -6,28 +6,21 @@
 <h1>Practice</h1>
 
 <div class="practice-container">
-    
-    <a href="#">
-    <div class="card">
-        <img src="{% static 'med/img/practice/dice_light.png' %}" alt="Test" class="card-image" data-light-src="{% static 'med/img/practice/dice_light.png' %}" data-dark-src="{% static 'med/img/practice/dice_dark.png' %}">
-        <p class="card-text" id="card-text">Test</p>
-    </div>
-    </a>
-
-    <a href="{% url 'practice_reading' %}">
-    <div class="card">
-        <img src="{% static 'med/img/practice/read_light.png' %}" alt="Reading" class="card-image" data-light-src="{% static 'med/img/practice/read_light.png' %}" data-dark-src="{% static 'med/img/practice/read_dark.png' %}">
-        <p class="card-text">Reading</p>
-    </div>
-    </a>
-
-    <a href="{% url 'practice_groups' %}">
+    {% for card in cards %}
+        {% if card.href == '#' %}
+        <a href="#">
+        {% else %}
+        <a href="{% url card.href %}">
+        {% endif %}
         <div class="card">
-            <img src="{% static 'med/img/practice/group_light.png' %}" alt="Groups" class="card-image" data-light-src="{% static 'med/img/practice/group_light.png' %}" data-dark-src="{% static 'med/img/practice/group_dark.png' %}">
-            <p class="card-text">Groups</p>
+            <img src="{% static card.img %}" alt="{{ card.word }}" 
+                class="card-image" 
+                data-light-src="{% static card.img %}" 
+                data-dark-src="{% static card.dark_img %}">
+            <p class="card-text">{{ card.word }}</p>
         </div>
-    </a>
-
+        </a>
+    {% endfor %}
 </div>
 
 <script>

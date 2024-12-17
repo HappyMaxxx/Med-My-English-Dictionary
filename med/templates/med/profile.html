@@ -56,7 +56,7 @@
         </div>
     {% elif is_requests_out %}
         <div class="buttons">
-            <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Cancel</a> 
+            <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Cancel</a>
         </div>
     {% else %}
     <div class="buttons profile-buttons">
@@ -68,6 +68,21 @@
         <a href="{% url 'delete_friend' friendship_id=user.friendship_id %}" class="remove-friend-link">Remove Friend</a>
     </div>
     {% endif %}
+    {% endif %}
+
+    {% if word_count < 5 %}
+    {% if is_my_profile %}
+    <div style="text-align: center; margin-top: 30px;"></div>
+        <p>You need at least 5 words to see the statistics</p>
+    </div>
+    {% endif %}
+    {% else %}
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <figure class="highcharts-figure" style="margin-top: 20px;">
+        <div id="word_stat"></div>
+    </figure>
     {% endif %}
 
     {% if recent_words %}
@@ -94,4 +109,56 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    var word_type_data = {{ word_type_data|safe }};
+
+    var isDarkTheme = document.body.classList.contains('dark-theme');
+    var backgroundColor = isDarkTheme ? 'var(--feature-background)' : 'var(--feature-background)';
+    var textColor = isDarkTheme ? 'var(--text-color)' : 'var(--text-color)';
+    var plotBackgroundColor = isDarkTheme ? 'var(--tab-background)' : '#ffffff';
+
+    Highcharts.chart('word_stat', {
+        chart: {
+            type: 'pie',
+            backgroundColor: backgroundColor,
+            style: {
+                fontFamily: 'Arial, sans-serif'
+            }
+        },
+        title: {
+            text: 'Word type distribution',
+            style: {
+                color: textColor
+            }
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                borderWidth: 3,
+                borderColor: backgroundColor,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.name}: {point.percentage:.1f} %',
+                    style: {
+                        color: textColor,
+                        textOutline: 'none'
+                    }
+                }
+            }
+        },
+        series: [
+            {
+                name: 'Percentage',
+                colorByPoint: true,
+                Outline: 'none',
+                data: word_type_data
+            }
+        ],
+        credits: {
+            enabled: false
+        }
+    });
+</script>
 {% endblock %}
