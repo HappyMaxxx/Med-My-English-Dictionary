@@ -71,6 +71,7 @@ class UserProfile(models.Model):
     words_num_in_prof = models.IntegerField(choices=NumberWords.choices, default=NumberWords.five)
     what_type_show = models.CharField(max_length=10, choices=Types.choices, default=Types.learning)
     access_dictionary = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.everybody)
+    show_word_stats = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.everybody)
 
     def __str__(self):
         return self.user.username

@@ -70,19 +70,30 @@
     {% endif %}
     {% endif %}
 
-    {% if word_count < 5 %}
-    {% if is_my_profile %}
-    <div style="text-align: center; margin-top: 30px;"></div>
-        <p>You need at least 5 words to see the statistics</p>
-    </div>
-    {% endif %}
-    {% else %}
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    {% if user_profile.show_word_stats == 'every' or is_my_profile %}
+        {% if word_count < 5 %}
+        {% if is_my_profile %}
+        <div style="text-align: center; margin-top: 30px;">
+            <p>You need at least 5 words to see the statistics</p>
+        </div>
+        {% endif %}
+        {% else %}
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
-    <figure class="highcharts-figure" style="margin-top: 20px;">
-        <div id="word_stat"></div>
-    </figure>
+        <figure class="highcharts-figure" style="margin-top: 20px;">
+            <div id="word_stat"></div>
+        </figure>
+        {% endif %}
+    {% elif not is_my_profile and request.user in friends and user_profile.show_word_stats == 'friends' %}
+    {% if word_count > 5 %}
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+        <figure class="highcharts-figure" style="margin-top: 20px;">
+            <div id="word_stat"></div>
+        </figure>
+        {% endif %}
     {% endif %}
 
     {% if recent_words %}

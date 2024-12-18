@@ -34,7 +34,7 @@
     </p>
 
     <p><strong>Upload Your File:</strong> Select your file and click "Upload" to process it.</p>
-    <form id="uploadForm" method="POST" enctype="multipart/form-data" style="text-align: center;">
+    <form id="uploadForm" method="post" enctype="multipart/form-data" style="text-align: center;">
         {% csrf_token %}
         <input type="file" name="file" accept=".xlsx,.txt" required>
         <div class="buttons edit-buttons">
@@ -42,29 +42,38 @@
         </div>
     </form>
     <div id="result" style="margin-top: 20px;"></div>
-</div>
+    </div>
 
-<script>
-    const form = document.getElementById('uploadForm');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const response = await fetch("{% url 'upload_file' %}", {
-            method: "POST",
-            body: formData
+    <script>
+        const form = document.getElementById('uploadForm');
+        console.log(form);
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+    
+            try {
+                const response = await axios.post("{% url 'upload_file' %}", formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+    
+                const data = response.data;
+                const resultDiv = document.getElementById('result');
+    
+                if (data.status === 'success') {
+                    resultDiv.innerHTML = `<p style="margin-bottom: 5px;">Words loaded successfully</p>`;
+                    setTimeout(() => {
+                        window.location.href = "{% url 'words' request.user.username %}";
+                    }, 2000);
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p>`;
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.response?.data?.message || "Something went wrong"}</p>`;
+            }
         });
-
-        const data = await response.json();
-        const resultDiv = document.getElementById('result');
-
-        if (data.status === 'success') {
-            resultDiv.innerHTML = `<p style="margin-bottom: 5px;">Words loaded successfully</p>`;
-            setTimeout(() => {
-                window.location.href = "{% url 'words' request.user.username %}"; 
-            }, 2000);
-        } else {
-            resultDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p>`;
-        }
-    });
-</script>
+    </script>
+    
 {% endblock %}

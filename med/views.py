@@ -900,15 +900,12 @@ def upload_file(request):
 
         try:
             if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
-                # Обробка Excel-файлу
                 wb = openpyxl.load_workbook(uploaded_file)
                 sheet = wb[wb.sheetnames[0]]
-
                 words = []
                 for row in sheet.iter_rows(values_only=True):
                     if len(row) == 3:
                         words.append(row)
-
                 wb.close()
 
                 if words[0] == ('Word', 'Translation', 'Example'):
@@ -920,8 +917,7 @@ def upload_file(request):
                             user=request.user,
                         )
                         group.words.add(word)
-
-                    return JsonResponse({'status': 'success', 'message': 'Words added successfully.'})
+                    return redirect('words', user_name=request.user.username)
                 else:
                     return JsonResponse({'status': 'error', 'message': 'Invalid headers in Excel file.'})
 
@@ -929,7 +925,6 @@ def upload_file(request):
                 content = uploaded_file.read().decode('utf-8')
                 try:
                     json_data = json.loads(content)
-
                     if isinstance(json_data, list):
                         for item in json_data:
                             if all(k in item for k in ('word', 'translation', 'example')):
@@ -940,8 +935,7 @@ def upload_file(request):
                                     user=request.user,
                                 )
                                 group.words.add(word)
-
-                        return JsonResponse({'status': 'success', 'message': 'Words added successfully from JSON.'})
+                        return redirect('words', user_name=request.user.username)
                     else:
                         return JsonResponse({'status': 'error', 'message': 'Invalid JSON format in file.'})
                 except json.JSONDecodeError:
@@ -953,9 +947,6 @@ def upload_file(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': f'Error processing file: {str(e)}'})
 
-    return render(request, 'med/words_ff.html')
-
-def words_from_file(request):
     return render(request, 'med/words_ff.html')
 
 def download_file(request, file):

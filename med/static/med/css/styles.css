@@ -444,7 +444,7 @@ form .buttons a:hover {
 
 .word_table_container .buttons a {
     margin: 5px 5px;
-    width: 20%;
+    width: auto;
 }
 
 .word_table_container .buttons a:last-child {
