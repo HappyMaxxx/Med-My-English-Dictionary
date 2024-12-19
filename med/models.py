@@ -61,17 +61,22 @@ class UserProfile(models.Model):
         zero = 0, '0'
 
     class WordsType(models.TextChoices):
-        everybody = 'every', 'Everybody'
-        friends = 'friends', 'Friends'
-        only_me = 'only', 'Only me'
+        EVERYBODY = 'every', 'Everybody'
+        FRIENDS = 'friends', 'Friends'
+        ONLY_ME = 'only', 'Only me'
 
+    class WordsMore(models.TextChoices):
+        EVERYBODY = 'every', 'Everybody'
+        FRIENDS = 'friends', 'Friends'
+        ONLY_ME = 'only', 'Only me'
+        NOBODY = 'nobody', 'Nobody'
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     words_num_in_prof = models.IntegerField(choices=NumberWords.choices, default=NumberWords.five)
     what_type_show = models.CharField(max_length=10, choices=Types.choices, default=Types.learning)
-    access_dictionary = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.everybody)
-    show_word_stats = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.everybody)
+    access_dictionary = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.EVERYBODY)
+    show_word_stats = models.CharField(max_length=10, choices=WordsMore.choices, default=WordsMore.EVERYBODY)
 
     def __str__(self):
         return self.user.username

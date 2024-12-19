@@ -444,7 +444,7 @@ form .buttons a:hover {
 
 .word_table_container .buttons a {
     margin: 5px 5px;
-    width: auto;
+    width: 20%;
 }
 
 .word_table_container .buttons a:last-child {
@@ -1492,9 +1492,9 @@ input[type="number"] {
         width: 100%;
     }
 
-    .word_table_container .buttons a{
+    /* .word_table_container .buttons a{
         width: 100%;
-    }
+    } */
 
     .reading-item {
         font-size: 80%;

@@ -142,3 +142,6 @@ CACHES = {
         'LOCATION': os.path.join(BASE_DIR, 'cache'),
     }
 }
+
+LOGIN_REDIRECT_URL = '/login'
+LOGIN_URL = '/login/'

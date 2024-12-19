@@ -34,6 +34,13 @@
     </p>
 
     <p><strong>Upload Your File:</strong> Select your file and click "Upload" to process it.</p>
+    {% if messages %}
+    <ul class="messages" style="text-align: center;">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="color:red; list-style-type: none;">{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     <form id="uploadForm" method="post" enctype="multipart/form-data" style="text-align: center;">
         {% csrf_token %}
         <input type="file" name="file" accept=".xlsx,.txt" required>
@@ -41,7 +48,6 @@
             <a href="#" onclick="document.getElementById('uploadForm').submit(); return false;">Upload</a>
         </div>
     </form>
-    <div id="result" style="margin-top: 20px;"></div>
     </div>
 
     <script>
@@ -57,23 +63,9 @@
                         'Content-Type': 'multipart/form-data'
                     }
                 });
-    
-                const data = response.data;
-                const resultDiv = document.getElementById('result');
-    
-                if (data.status === 'success') {
-                    resultDiv.innerHTML = `<p style="margin-bottom: 5px;">Words loaded successfully</p>`;
-                    setTimeout(() => {
-                        window.location.href = "{% url 'words' request.user.username %}";
-                    }, 2000);
-                } else {
-                    resultDiv.innerHTML = `<p style="color: red;">Error: ${data.message}</p>`;
-                }
-            } catch (error) {
-                const resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.response?.data?.message || "Something went wrong"}</p>`;
-            }
-        });
+        } catch (error) {
+            console.error(error);
+        }});
     </script>
     
 {% endblock %}

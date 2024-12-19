@@ -70,29 +70,21 @@
     {% endif %}
     {% endif %}
 
-    {% if user_profile.show_word_stats == 'every' or is_my_profile %}
-        {% if word_count < 5 %}
-        {% if is_my_profile %}
-        <div style="text-align: center; margin-top: 30px;">
-            <p>You need at least 5 words to see the statistics</p>
-        </div>
-        {% endif %}
-        {% else %}
-        <script src="https://code.highcharts.com/highcharts.js"></script>
-        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-        <figure class="highcharts-figure" style="margin-top: 20px;">
-            <div id="word_stat"></div>
-        </figure>
-        {% endif %}
-    {% elif not is_my_profile and request.user in friends and user_profile.show_word_stats == 'friends' %}
-    {% if word_count > 5 %}
-        <script src="https://code.highcharts.com/highcharts.js"></script>
-        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-        <figure class="highcharts-figure" style="margin-top: 20px;">
-            <div id="word_stat"></div>
-        </figure>
+    {% if user_profile.show_word_stats != 'nobody' %}
+        {% if user_profile.show_word_stats == 'every' or is_my_profile %}
+            {% if word_count < 5 %}
+                {% if is_my_profile %}
+                    <div style="text-align: center; margin-top: 30px;">
+                        <p>You need at least 5 words to see the statistics</p>
+                    </div>
+                {% endif %}
+            {% else %}
+                {% include 'word_stats_charts.html' %}
+            {% endif %}
+        {% elif not is_my_profile and request.user in friends and user_profile.show_word_stats == 'friends' %}
+            {% if word_count > 5 %}
+                {% include 'word_stats_charts.html' %}
+            {% endif %}
         {% endif %}
     {% endif %}
 
@@ -121,6 +113,25 @@
     {% endif %}
 </div>
 
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+
+<!-- Tubs -->
+<script>
+    document.querySelectorAll(".tab-btn").forEach(button => {
+        button.addEventListener("click", () => {
+            const tab = button.dataset.tab;
+
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            document.querySelectorAll(".tab-content").forEach(content => content.classList.add("hidden"));
+            document.getElementById(tab).classList.remove("hidden");
+        });
+    });
+</script>
+
+<!-- Pie diagram -->
 <script>
     var word_type_data = {{ word_type_data|safe }};
 
@@ -129,7 +140,7 @@
     var textColor = isDarkTheme ? 'var(--text-color)' : 'var(--text-color)';
     var plotBackgroundColor = isDarkTheme ? 'var(--tab-background)' : '#ffffff';
 
-    Highcharts.chart('word_stat', {
+    Highcharts.chart('word_stat_pie', {
         chart: {
             type: 'pie',
             backgroundColor: backgroundColor,
@@ -138,10 +149,13 @@
             }
         },
         title: {
-            text: 'Word type distribution',
+            text: 'Word Type Distribution',
             style: {
                 color: textColor
             }
+        },
+        subtitle: {
+            text: 'Click the columns to view more details.'
         },
         plotOptions: {
             pie: {
@@ -167,6 +181,108 @@
                 data: word_type_data
             }
         ],
+        credits: {
+            enabled: false
+        }
+    });
+</script>
+
+<!-- Bar diagram -->
+<script>
+    var word_type_data = {{ word_type_data|safe }};
+    var isDarkTheme = document.body.classList.contains('dark-theme');
+    var backgroundColor = isDarkTheme ? 'var(--feature-background)' : 'var(--feature-background)';
+    var textColor = isDarkTheme ? 'var(--text-color)' : 'var(--text-color)';
+
+    var mainData = word_type_data.map(item => ({
+        name: item.name,
+        y: item.y,
+        drilldown: item.name
+    }));
+
+    var drilldownData = word_type_data.map(item => ({
+        name: item.name,
+        id: item.name,
+        data: item.details || []
+    }));
+
+    Highcharts.chart('word_stat_bar', {
+        chart: {
+            type: 'column',
+            backgroundColor: backgroundColor,
+            style: {
+                fontFamily: 'Arial, sans-serif'
+            }
+        },
+        title: {
+            text: 'Word Type Distribution',
+            style: {
+                color: textColor
+            }
+        },
+        subtitle: {
+            text: 'Click the columns to view more details.'
+        },
+        accessibility: {
+            announceNewData: {
+                enabled: true
+            }
+        },
+        xAxis: {
+            type: 'category',
+            labels: {
+                style: {
+                    color: textColor
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Percentage',
+                style: {
+                    color: textColor
+                }
+            },
+            labels: {
+                style: {
+                    color: textColor
+                }
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        plotOptions: {
+            series: {
+                borderWidth: 0,
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.y}',
+                    style: {
+                        color: textColor
+                    }
+                }
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+            pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> of total<br/>'
+        },
+        series: [
+            {
+                name: 'Word Types',
+                colorByPoint: true,
+                data: mainData
+            }
+        ],
+        drilldown: {
+            breadcrumbs: {
+                position: {
+                    align: 'right'
+                }
+            },
+            series: drilldownData
+        },
         credits: {
             enabled: false
         }

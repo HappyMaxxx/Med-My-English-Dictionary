@@ -1,0 +1,23 @@
+<div class="tabs" style="margin-top: 20px;">
+    <button class="tab-btn active" data-tab="pie-tab">Pie Chart</button>
+    <button class="tab-btn" data-tab="bar-tab">Bar Chart</button>
+</div>
+
+<div class="tab-content" id="pie-tab">
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <figure class="highcharts-figure" style="margin-top: 20px;">
+        <div id="word_stat_pie"></div>
+    </figure>
+</div>
+
+<div class="tab-content hidden" id="bar-tab">
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+    <figure class="highcharts-figure" style="margin-top: 20px;">
+        <div id="word_stat_bar"></div>
+    </figure>
+</div>

@@ -68,7 +68,7 @@ def about(request):
 @method_decorator(login_required, name='dispatch')
 class AddWordView(LoginRequiredMixin, CreateView):
     form_class = AddWordForm
-    template_name = 'med/addword.html'
+    template_name = 'med/add_word.html'
     extra_context = {'title': 'Add Word'}
 
     def get_success_url(self):
@@ -386,11 +386,6 @@ class ProfileView(View):
                 }
                 for word_type in word_stats
             ]
-
-            # if word_type_data:
-                # max_item = max(word_type_data, key=lambda x: x['y'])
-                # max_item['sliced'] = True
-                # max_item['selected'] = True
 
             return {
                 'user_profile': user_profile,
@@ -830,7 +825,7 @@ def save_word(request, word_id):
 
     if not existing_word:
         Word.objects.create(user=request.user, word=word.word, translation=word.translation,
-                            example=word.example, is_favourite=False)
+                            word_type=word.word_type, example=word.example, is_favourite=False)
 
         new_word = Word.objects.get(word=word.word, user=request.user)
 
@@ -865,6 +860,7 @@ def save_group_words(request, group_id):
                 word=original_word.word,
                 translation=original_word.translation,
                 example=original_word.example,
+                word_type=original_word.word_type,
                 user=user,
             )
             
@@ -886,6 +882,8 @@ def save_group_words(request, group_id):
     group.uses_users.remove(user)
     return redirect('groups')
 
+
+from django.contrib import messages
 
 def upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):
@@ -919,7 +917,8 @@ def upload_file(request):
                         group.words.add(word)
                     return redirect('words', user_name=request.user.username)
                 else:
-                    return JsonResponse({'status': 'error', 'message': 'Invalid headers in Excel file.'})
+                    messages.error(request, "Excel file format is incorrect. First row should be 'Word', 'Translation', 'Example'.")
+                    return render(request, 'med/words_ff.html')
 
             elif file_name.endswith('.txt'):
                 content = uploaded_file.read().decode('utf-8')
@@ -928,26 +927,34 @@ def upload_file(request):
                     if isinstance(json_data, list):
                         for item in json_data:
                             if all(k in item for k in ('word', 'translation', 'example')):
+                                word_type = item.get('word_type', 'other') 
+                                
                                 word = Word.objects.create(
                                     word=item['word'],
                                     translation=item['translation'],
                                     example=item['example'],
+                                    word_type=word_type, 
                                     user=request.user,
                                 )
                                 group.words.add(word)
                         return redirect('words', user_name=request.user.username)
                     else:
-                        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format in file.'})
+                        messages.error(request, "JSON file should contain a list of objects with keys: 'word', 'translation', 'example'.")
+                        return render(request, 'med/words_ff.html')
                 except json.JSONDecodeError:
-                    return JsonResponse({'status': 'error', 'message': 'Failed to decode JSON from file.'})
+                    messages.error(request, "Invalid JSON format in text file.")
+                    return render(request, 'med/words_ff.html')
 
             else:
-                return JsonResponse({'status': 'error', 'message': 'Unsupported file format. Use .xlsx or .txt.'})
+                messages.error(request, "Unsupported file format. Please upload .xlsx, .xls, or .txt file.")
+                return render(request, 'med/words_ff.html')
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Error processing file: {str(e)}'})
+            messages.error(request, f"An error occurred while processing the file: {e}")
+            return render(request, 'med/words_ff.html')
 
     return render(request, 'med/words_ff.html')
+
 
 def download_file(request, file):
     base_dir = 'media'
@@ -957,5 +964,26 @@ def download_file(request, file):
         raise Http404("File does not exist")
 
     response = FileResponse(open(file_path, 'rb'), as_attachment=True)
-    response['Content-Disposition'] = 'attachment; filename="example.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename=' + file
     return response
+
+def save_all_words_as_json(request):
+    user = request.user
+    words = Word.objects.filter(user=user)
+    data = []
+
+    for word in words:
+        data.append({
+            'word': word.word,
+            'translation': word.translation,
+            'example': word.example,
+            'word_type': word.word_type,
+        })
+    
+    file_name = f"{user.username}_words.json"
+    file_path = os.path.join('media', file_name)
+
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+    return redirect('download_file', file=file_name)
