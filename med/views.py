@@ -671,15 +671,25 @@ def practice_view(request):
 
 def reading_view(request):
     texts = ReadingText.objects.all()
-    return render(request, 'med/reading.html', {'texts': texts})
+    paginator = Paginator(texts, 25)
+    page_number = request.GET.get('page')
+    paginated_texts = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'med/reading.html', {'texts': paginated_texts, 'paginator': paginator, 'page_obj': page_obj})
 
 def parct_groups_view(request):
-    user = get_object_or_404(User, username='grouper')
-    groups = WordGroup.objects.filter(user=user).filter(is_main=False)
+    groups = WordGroup.objects.filter(user__username='grouper', is_main=False)
+
     for group in groups:
         group.words_count = group.words.count()
     groups = sorted(groups, key=lambda x: x.words_count, reverse=False)
-    return render(request, 'med/practice_groups.html', {'groups': groups})
+
+    paginator = Paginator(groups, 25)
+    page_number = request.GET.get('page')
+    paginated_groups = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'med/practice_groups.html', {'groups': paginated_groups, 'paginator': paginator, 'page_obj': page_obj})
 
 def split_content_by_phrases(content, translations):
     words = content.split()
@@ -789,7 +799,13 @@ class PracticeGroupWordsListView(ListView):
         group_id = self.kwargs.get('group_id')
         group = get_object_or_404(WordGroup, id=group_id)
 
-        return group.words.all()
+        user_word_titles = [word.word.lower() for word in Word.objects.filter(user=self.request.user)]
+
+        words = group.words.all()
+        for word in words:
+                word.is_saved = word.word.lower() in user_word_titles
+
+        return words
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

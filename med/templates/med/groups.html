@@ -66,11 +66,11 @@
                             <td><input type="checkbox" name="word_checkbox" value="{{ word.id }}"></td>
                             {% else %}
                             {% if word.is_saved %}
+
                             <td class="img_td">
-                                <!-- <a href="{% url 'words' request.user.username %}"> -->
                                 <img class="f_img cm_img" src="{% static 'med/img/groups/cm_light.png' %}" data-light-src="{% static 'med/img/groups/cm_light.png' %}" data-dark-src="{% static 'med/img/groups/cm_dark.png' %}" alt="IS Saved img">
-                                <!-- </a> -->
                             </td>
+
                             {% else %}
 
                             <td class="img_td">

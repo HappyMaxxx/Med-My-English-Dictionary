@@ -27,6 +27,7 @@
     <table class="word_table">
         <thead>
             <tr>
+                <th class="edit">Add</th>
                 <th>Word</th>
                 <th>Translation</th>
                 <th>Example</th>
@@ -35,6 +36,17 @@
         <tbody>
             {% for word in words %}
                 <tr>
+                    {% if word.is_saved %}
+                    <td class="img_td">
+                        <img class="f_img cm_img" src="{% static 'med/img/groups/cm_light.png' %}" data-light-src="{% static 'med/img/groups/cm_light.png' %}" data-dark-src="{% static 'med/img/groups/cm_dark.png' %}" alt="IS Saved img">
+                    </td>
+                    {% else %}
+                    <td class="img_td">
+                        <a href="{% url 'save_word' word.id %}">
+                        <img class="f_img" src="{% static 'med/img/groups/add_light.png' %}" data-light-src="{% static 'med/img/groups/add_light.png' %}" data-dark-src="{% static 'med/img/groups/add_dark.png' %}" alt="Add img">
+                        </a>
+                    </td>
+                    {% endif %}
                     <td>{{ word.word }}</td>
                     <td>{{ word.translation }}</td>
                     <td>{{ word.example }}</td>
