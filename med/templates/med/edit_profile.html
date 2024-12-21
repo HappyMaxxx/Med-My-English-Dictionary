@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="profile-container">
@@ -39,12 +40,30 @@
     </form>
 
     <h2>Update Avatar</h2>
-    <form method="post" enctype="multipart/form-data" class="avatar-form">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
+    
+    <form method="post" enctype="multipart/form-data" id="avatar-form">
         {% csrf_token %}
-        {{ avatar_form.as_p }}
-        <input type="hidden" name="update_avatar" value="update_avatar">
+        <div style="display: grid; align-items: center; justify-items: center;">
+            <input type="file" id="avatar-input" accept="image/*" style="display: block; margin-bottom: 20px;">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <img id="image" style="max-width: 100%; display: none;">
+        </div>
+        <input type="hidden" name="cropped_avatar" id="cropped-avatar">
+
+        {% if user_profile.avatar %}
+        <div>
+            <label for="delete-avatar">
+                <input type="checkbox" name="delete_avatar" id="delete-avatar">
+                Delete current avatar
+            </label>
+        </div>
+        {% endif %}
+
         <div class="buttons edit-buttons">
-            <a href="#" onclick="this.closest('form').submit();" name="update_avatar" class="btn">Update Avatar Image</a>
+            <a href="#" class="btn" onclick="submitAvatarForm()">Update Avatar Image</a>
         </div>
     </form>
 
@@ -58,4 +77,43 @@
         </div>
     </form>
 </div>
+
+<script>
+    const input = document.getElementById('avatar-input');
+    const image = document.getElementById('image');
+    const croppedAvatarInput = document.getElementById('cropped-avatar');
+    let cropper;
+
+    input.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                image.src = reader.result;
+                image.style.display = 'block';
+                if (cropper) {
+                    cropper.destroy();
+                }
+                cropper = new Cropper(image, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function submitAvatarForm() {
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas();
+            if (canvas) {
+                const croppedDataURL = canvas.toDataURL('image/png');
+                croppedAvatarInput.value = croppedDataURL;
+            }
+        }
+
+        document.getElementById('avatar-form').submit();
+    }
+</script>
 {% endblock %}

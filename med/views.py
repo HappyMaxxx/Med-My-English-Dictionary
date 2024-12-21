@@ -10,6 +10,10 @@ from django.views import View
 from django.core.files.storage import default_storage
 from django.views.decorators.cache import cache_page
 
+from django.core.files.base import ContentFile
+from PIL import Image
+import base64
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.decorators import method_decorator
@@ -472,6 +476,7 @@ class EditProfileView(View):
         avatar_form = AvatarUpdateForm(instance=user_profile)
         password_form = ChengePasswordForm(user=request.user)
         return render(request, 'med/edit_profile.html', {
+            'user_profile': user_profile,
             'profile_form': profile_form,
             'words_show_form': words_show_form,
             'avatar_form': avatar_form,
@@ -480,6 +485,13 @@ class EditProfileView(View):
 
     def post(self, request, *args, **kwargs):
         user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+
+        if 'delete_avatar' in request.POST:
+            if user_profile.avatar and os.path.isfile(user_profile.avatar.path):
+                os.remove(user_profile.avatar.path)
+            user_profile.avatar = None
+            user_profile.save()
+            return redirect('profile', user_name=request.user.username)
         
         if 'update_profile' in request.POST:
             profile_form = EditProfileForm(request.POST, instance=request.user)
@@ -493,23 +505,33 @@ class EditProfileView(View):
                 words_show_form.save()
                 return redirect('profile', user_name=request.user.username)
 
-        if 'update_avatar' in request.POST:
-            if request.POST.get('avatar') == '' and not request.POST.get('avatar-clear'):
-                return redirect('edit_profile')
+        if 'cropped_avatar' in request.POST:
+            avatar_data = request.POST.get('cropped_avatar')
 
-            old_avatar_path = None
+            if avatar_data:
+                try:
+                    format, imgstr = avatar_data.split(';base64,')
+                    extension = format.split('/')[-1]
 
-            if user_profile.avatar:
-                old_avatar_path = user_profile.avatar.path  
+                    avatar_file = ContentFile(base64.b64decode(imgstr))
 
-            avatar_form = AvatarUpdateForm(request.POST, request.FILES, instance=user_profile)
-            if avatar_form.is_valid():
-                avatar_form.save()
-                if old_avatar_path:
-                    if os.path.isfile(old_avatar_path):
+                    user_profile = UserProfile.objects.get(user=request.user)
+
+                    new_name = f"{request.user.username}_{now().strftime('%Y%m%d%H%M')}_{request.user.id}.{extension}"
+                    old_avatar_path = user_profile.avatar.path if user_profile.avatar else None
+                    if old_avatar_path:
+                        old_avatar_path = old_avatar_path.replace('/media/', '/media/avatars/')
+
+                    if old_avatar_path and os.path.isfile(old_avatar_path):
                         default_storage.delete(old_avatar_path)
-                return redirect('profile', user_name=request.user.username)
-            
+
+                    user_profile.avatar.save(new_name, avatar_file)
+
+                    return redirect('profile', user_name=request.user.username)
+                except Exception as e:
+                    print(f"Error saving avatar: {e}")
+                    messages.error(request, "Failed to update avatar. Please try again.")
+                    
         if 'change_password' in request.POST:
             password_form = ChengePasswordForm(user=request.user, data=request.POST)
             if password_form.is_valid():

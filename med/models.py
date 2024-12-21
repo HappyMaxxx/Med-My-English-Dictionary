@@ -83,7 +83,7 @@ class UserProfile(models.Model):
     
     def get_avatar_url(self):
         if self.avatar:
-            return self.avatar.url
+            return f'/media/avatars/{self.avatar.name.split("/")[-1]}'
         return '/static/med/img/base/default_avatar.png'
     
     def save(self, *args, **kwargs):
@@ -92,7 +92,7 @@ class UserProfile(models.Model):
             if old_instance and old_instance.avatar != self.avatar:
                 if self.avatar:
                     extension = self.avatar.name.split('.')[-1]
-                    new_name = f"{self.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{self.user.id}.{extension}"
+                    new_name = f"{self.user.username}_{now().strftime('%Y%m%d%H%M')}_{self.user.id}.{extension}"
                     self.avatar.name = new_name
 
         super().save(*args, **kwargs)
