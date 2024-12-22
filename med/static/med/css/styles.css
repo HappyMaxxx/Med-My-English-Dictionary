@@ -1422,6 +1422,10 @@ input[type="number"] {
     margin: 0.3rem 10px;
 }
 
+.filter-form {
+    box-shadow: none !important;
+}
+
 @media (max-width: 900px) {
     .burger-menu {
         display: block;

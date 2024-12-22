@@ -121,6 +121,7 @@ class ReadingText(models.Model):
         ('C1', 'C1'),
         ('C2', 'C2')
     ]
+    
     title = models.CharField(max_length=100)
     time_to_read = models.IntegerField()
     word_count = models.IntegerField()

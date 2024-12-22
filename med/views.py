@@ -469,30 +469,59 @@ class SelectGroupView(View):
 
 @method_decorator(login_required, name='dispatch')
 class EditProfileView(View):
-    def get(self, request, *args, **kwargs):
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-        profile_form = EditProfileForm(instance=request.user)
-        words_show_form = WordsShowForm(instance=user_profile)
-        avatar_form = AvatarUpdateForm(instance=user_profile)
-        password_form = ChengePasswordForm(user=request.user)
-        return render(request, 'med/edit_profile.html', {
-            'user_profile': user_profile,
-            'profile_form': profile_form,
-            'words_show_form': words_show_form,
-            'avatar_form': avatar_form,
-            'password_form': password_form,
-        })
+    def get_user_profile(self, user):
+        return UserProfile.objects.get_or_create(user=user)
 
-    def post(self, request, *args, **kwargs):
-        user_profile, created = UserProfile.objects.get_or_create(user=request.user)
+    def get_forms(self, request, user_profile):
+        return {
+            'profile_form': EditProfileForm(instance=request.user),
+            'words_show_form': WordsShowForm(instance=user_profile),
+            'avatar_form': AvatarUpdateForm(instance=user_profile),
+            'password_form': ChengePasswordForm(user=request.user),
+        }
 
-        if 'delete_avatar' in request.POST:
-            if user_profile.avatar and os.path.isfile(user_profile.avatar.path):
-                os.remove(user_profile.avatar.path)
+    def render_profile_page(self, request, user_profile, **kwargs):
+        forms = self.get_forms(request, user_profile)
+        forms.update(kwargs)
+        forms['user_profile'] = user_profile 
+        return render(request, 'med/edit_profile.html', forms)
+
+    def handle_delete_avatar(self, user_profile):
+        if user_profile.avatar:
+            try:
+                os.remove(user_profile.avatar.path.replace('/media/', '/media/avatars/'))
+            except FileNotFoundError:
+                pass
             user_profile.avatar = None
             user_profile.save()
+
+    def handle_cropped_avatar(self, request, user_profile):
+        avatar_data = request.POST.get('cropped_avatar')
+        if avatar_data:
+            try:
+                format, imgstr = avatar_data.split(';base64,')
+                extension = format.split('/')[-1]
+                avatar_file = ContentFile(base64.b64decode(imgstr))
+                new_name = f"{request.user.username}_{now().strftime('%Y%m%d%H%M')}_{request.user.id}.{extension}"
+
+                if user_profile.avatar:
+                    os.remove(user_profile.avatar.path.replace('/media/', '/media/avatars/'))
+
+                user_profile.avatar.save(new_name, avatar_file)
+            except Exception as e:
+                messages.error(request, "Failed to update avatar. Please try again.")
+
+    def get(self, request, *args, **kwargs):
+        user_profile, _ = self.get_user_profile(request.user)
+        return self.render_profile_page(request, user_profile)
+
+    def post(self, request, *args, **kwargs):
+        user_profile, _ = self.get_user_profile(request.user)
+
+        if 'delete_avatar' in request.POST:
+            self.handle_delete_avatar(user_profile)
             return redirect('profile', user_name=request.user.username)
-        
+
         if 'update_profile' in request.POST:
             profile_form = EditProfileForm(request.POST, instance=request.user)
             if profile_form.is_valid():
@@ -506,32 +535,9 @@ class EditProfileView(View):
                 return redirect('profile', user_name=request.user.username)
 
         if 'cropped_avatar' in request.POST:
-            avatar_data = request.POST.get('cropped_avatar')
+            self.handle_cropped_avatar(request, user_profile)
+            return redirect('profile', user_name=request.user.username)
 
-            if avatar_data:
-                try:
-                    format, imgstr = avatar_data.split(';base64,')
-                    extension = format.split('/')[-1]
-
-                    avatar_file = ContentFile(base64.b64decode(imgstr))
-
-                    user_profile = UserProfile.objects.get(user=request.user)
-
-                    new_name = f"{request.user.username}_{now().strftime('%Y%m%d%H%M')}_{request.user.id}.{extension}"
-                    old_avatar_path = user_profile.avatar.path if user_profile.avatar else None
-                    if old_avatar_path:
-                        old_avatar_path = old_avatar_path.replace('/media/', '/media/avatars/')
-
-                    if old_avatar_path and os.path.isfile(old_avatar_path):
-                        default_storage.delete(old_avatar_path)
-
-                    user_profile.avatar.save(new_name, avatar_file)
-
-                    return redirect('profile', user_name=request.user.username)
-                except Exception as e:
-                    print(f"Error saving avatar: {e}")
-                    messages.error(request, "Failed to update avatar. Please try again.")
-                    
         if 'change_password' in request.POST:
             password_form = ChengePasswordForm(user=request.user, data=request.POST)
             if password_form.is_valid():
@@ -539,17 +545,7 @@ class EditProfileView(View):
                 update_session_auth_hash(request, request.user)
                 return redirect('profile', user_name=request.user.username)
 
-        profile_form = EditProfileForm(instance=request.user)
-        words_show_form = WordsShowForm(instance=user_profile)
-        avatar_form = AvatarUpdateForm(instance=user_profile)
-        password_form = ChengePasswordForm(user=request.user)
-
-        return render(request, 'med/edit_profile.html', {
-            'profile_form': profile_form,
-            'words_show_form': words_show_form,
-            'avatar_form': avatar_form,
-            'password_form': password_form,
-        })
+        return self.render_profile_page(request, user_profile)
         
 
 def logout_user(request):
@@ -693,12 +689,32 @@ def practice_view(request):
 
 def reading_view(request):
     texts = ReadingText.objects.all()
+    
+    level = request.GET.get('level')
+    if level:
+        texts = texts.filter(eng_level=level)
+
+    words_min = request.GET.get('words_min')
+    if words_min:
+        texts = texts.filter(word_count__gte=int(words_min))
+
+    words_max = request.GET.get('words_max')
+    if words_max:
+        texts = texts.filter(word_count__lte=int(words_max))
+
     paginator = Paginator(texts, 25)
     page_number = request.GET.get('page')
     paginated_texts = paginator.get_page(page_number)
     page_obj = paginator.get_page(page_number)
-    return render(request, 'med/reading.html', {'texts': paginated_texts, 'paginator': paginator, 'page_obj': page_obj})
 
+    levels = ReadingText.ENG_LEVEL_CHOICES
+
+    return render(request, 'med/reading.html', {
+        'texts': paginated_texts,
+        'paginator': paginator,
+        'page_obj': page_obj,
+        'levels': levels,
+    })
 def parct_groups_view(request):
     groups = WordGroup.objects.filter(user__username='grouper', is_main=False)
 
@@ -919,9 +935,6 @@ def save_group_words(request, group_id):
     
     group.uses_users.remove(user)
     return redirect('groups')
-
-
-from django.contrib import messages
 
 def upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):

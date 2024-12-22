@@ -4,7 +4,9 @@
 
 <h1>Reading</h1>
 
-<div class="reading-container">
+<div class="group-container">
+
+    <div class="word-list-container">
     <div class="buttons make-text-btn texts-btn">
         <a href="{% url 'practice' %}">&lt;</a>
         {% if request.user.is_superuser %}
@@ -71,6 +73,36 @@
     {% else %}
     <p>No texts available.</p>
     {% endif %}
+    </div>
+
+    <div class="group-list" style="flex: 0 0 20%;">
+        <h2>Filters</h2>
+        <form method="get" id="filter_form" class="filter-form">
+            <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                <h3><label for="level">Level:</label></h3>
+                <select name="level" id="level" style="width: 100%;">
+                    <option value="">All</option>
+                    {% for level in levels %}
+                    <option value="{{ level.0 }}" {% if request.GET.level == level.0 %}selected{% endif %}>
+                        {{ level.1 }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <p style="margin-bottom: 10px;"><h3><label for="words_min">Min Words:</label></h3>
+            <input type="number" name="words_min" id="words_min" value="{{ request.GET.words_min }}"></p>
+    
+            <p><h3><label for="words_max">Max Words:</label></h3>
+            <input type="number" name="words_max" id="words_max" value="{{ request.GET.words_max }}"></p>
+            
+            <div style="margin-top: 10px;">
+            <a href="#" onclick="document.getElementById('filter_form').submit(); return false;" class="buttons">Aply</a>
+            <a href="{% url 'practice_reading' %}" class="buttons">Clear</a>
+            </div>
+        </form>
+    </div>
+
 </div>
 
 {% endblock %}
