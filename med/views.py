@@ -10,6 +10,9 @@ from django.views import View
 from django.core.files.storage import default_storage
 from django.views.decorators.cache import cache_page
 
+from django.utils.timezone import now, timedelta
+from django.db.models.functions import TruncDay
+
 from django.core.files.base import ContentFile
 from PIL import Image
 import base64
@@ -391,6 +394,23 @@ class ProfileView(View):
                 for word_type in word_stats
             ]
 
+            n_days = 7
+            today = now().date()
+            start_date = today - timedelta(days=n_days)
+            daily_word_count = words.filter(time_create__date__gte=start_date).annotate(
+                day=TruncDay('time_create')
+            ).values('day').annotate(count=Count('id')).order_by('day')
+
+            daily_data = {
+                str(entry['day'].date()): entry['count']
+                for entry in daily_word_count
+            }
+
+            daily_chart_data = json.dumps({
+                'categories': [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(n_days + 1)],
+                'data': [daily_data.get((start_date + timedelta(days=i)).strftime('%Y-%m-%d'), 0) for i in range(n_days + 1)],
+            })
+
             return {
                 'user_profile': user_profile,
                 'recent_words': recent_words,
@@ -400,6 +420,8 @@ class ProfileView(View):
                 'friend_count': friends.count(),
                 'is_favorite': is_favorite,
                 'word_type_data': json.dumps(word_type_data),
+                'daily_chart_data': daily_chart_data,
+                'n_days': n_days,
             }
 
         profile_user = get_object_or_404(User, username=user_name)

@@ -133,7 +133,7 @@
 
 <!-- Pie diagram -->
 <script>
-    var word_type_data = {{ word_type_data|safe }};
+    var word_type_data = JSON.parse('{{ word_type_data|safe }}');
 
     var isDarkTheme = document.body.classList.contains('dark-theme');
     var backgroundColor = isDarkTheme ? 'var(--feature-background)' : 'var(--feature-background)';
@@ -189,7 +189,7 @@
 
 <!-- Bar diagram -->
 <script>
-    var word_type_data = {{ word_type_data|safe }};
+    var word_type_data = JSON.parse('{{ word_type_data|safe }}');
     var isDarkTheme = document.body.classList.contains('dark-theme');
     var backgroundColor = isDarkTheme ? 'var(--feature-background)' : 'var(--feature-background)';
     var textColor = isDarkTheme ? 'var(--text-color)' : 'var(--text-color)';
@@ -286,6 +286,63 @@
         credits: {
             enabled: false
         }
+    });
+</script>
+
+<!-- Time diagram -->
+<script>
+    const dailyData = JSON.parse('{{ daily_chart_data|safe }}');
+
+    Highcharts.chart('word_stat_time', {
+        chart: {
+            type: 'line',
+            backgroundColor: backgroundColor,
+            style: {
+                fontFamily: 'Arial, sans-serif'
+            }
+        },
+        title: {
+            text: 'Words Added Over the Last {{ n_days }} Days',
+            style: {
+                color: textColor
+            }
+        },
+        xAxis: {
+            categories: dailyData.categories,
+            title: {
+                text: 'Date',
+                style: {
+                    color: textColor
+                }
+            },
+            labels: {
+                style: {
+                    color: textColor
+                }
+            },
+        },
+        yAxis: {
+            title: {
+                text: 'Words Added',
+                style: {
+                    color: textColor
+                }
+            },
+            labels: {
+                style: {
+                    color: textColor
+                }
+            }
+        },
+        legend: {
+            itemStyle: {
+                color: textColor
+            }
+        },
+        series: [{
+            name: 'Words',
+            data: dailyData.data,
+        }],
     });
 </script>
 {% endblock %}

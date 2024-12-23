@@ -45,7 +45,7 @@
 
                     {% if is_my_dict %}
                         {% if word.is_favourite %}
-                        <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/f_light.png' %}" data-light-src="{% static 'med/img/base/f_light.png' %}" data-dark-src="{% static 'med/img/base/f_dark.png' %}" alt="Favourite img"></a></td>
+                        <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/f_light.png' %}" data-light-src="{% static 'med/img/base/f_light.png' %}" data-dark-src="{% static 'med/img/base/f_dark.png' %}" alt="Favourite img" style="width: 24px; height: 24px;"></a></td>
                         {% else %}
                         <td class="img_td"><a href="{% url 'make_favourite' word.id %}"><img class="f_img" src="{% static 'med/img/base/no_f_light.png' %}" data-light-src="{% static 'med/img/base/no_f_light.png' %}" data-dark-src="{% static 'med/img/base/no_f_dark.png' %}" alt="Not Favourite img"></a></td>
                         {% endif %}
