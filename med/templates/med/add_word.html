@@ -1,26 +1,65 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 
-<h1>{{title}}</h1>
+<h1>{{ title }}</h1>
 
 <form action="{% url 'addword' %}" method="post" id="word_adding_form">
     {% csrf_token %}
-    <p><label class="form-label" for="{{ form.word.id_for_label }}">{{ form.word.label }}: </label>{{ form.word }}</p>
-    <div class="form-error">{{ form.word.errors }}</div>
-
-    <p><label class="form-label" for="{{ form.translation.id_for_label }}">{{ form.translation.label }}: </label>{{ form.translation }}</p>
-    <div class="form-error">{{ form.translation.errors }}</div>
-
-    <p><label class="form-label" for="{{ form.example.id_for_label }}">{{ form.example.label }}: </label>{{ form.example }}</p>
-    <div class="form-error">{{ form.example.errors }}</div>
+    <p>
+        <label class="form-label" for="{{ form.word.id_for_label }}">
+            {{ form.word.label }}:
+        </label>
+        {{ form.word }} 
+    </p>
+    <div class="form-error" id="{{ form.word.id_for_label }}-error">{{ form.word.errors }}</div>
 
     <p>
-        <label class="form-label" for="{{ form.word_type.id_for_label }}"> {{ form.word_type.label }}: </label>
-        {{ form.word_type }}
+        <label class="form-label" for="{{ form.translation.id_for_label }}">
+            {{ form.translation.label }}:
+        </label>
+        {{ form.translation }}
     </p>
-    <div class="form-error">{{ form.word_type.errors }}</div>
+    <div class="form-error" id="{{ form.translation.id_for_label }}-error">{{ form.translation.errors }}</div>
 
+    <p>
+        <label class="form-label" for="{{ form.example.id_for_label }}">
+            {{ form.example.label }}:
+        </label>
+        {{ form.example }}
+    </p>
+    <div class="form-error" id="{{ form.example.id_for_label }}-error">{{ form.example.errors }}</div>
+
+    <p style="text-align: center;">
+        <label class="form-label" for="{{ form.word_type.id_for_label }}">
+            {{ form.word_type.label }}:
+        </label>
+        <div style="display: inline-flex; align-items: center; gap: 10px;">
+            {{ form.word_type }}
+            
+            <div class="tooltip" style="position: relative; display: inline-block;">
+                <button class="info-button" style="background: none; border: none; cursor: pointer;">
+                    <img class="icon edit_img" 
+                         src="{% static 'med/img/base/info_light.png' %}" 
+                         data-light-src="{% static 'med/img/base/info_light.png' %}" 
+                         data-dark-src="{% static 'med/img/base/info_dark.png' %}" 
+                         alt="Info img" style="width: 20px; height: 20px;">
+                </button>
+                <span class="tooltiptext" 
+                      style="visibility: hidden; width: 250px; background-color: #6c757d; color: #fff; text-align: left; border-radius: 5px; padding: 10px; position: absolute; z-index: 1; bottom: 25px; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s;">
+                    <strong>Noun:</strong> предмет, місце, явище ("dog", "city")
+                    <br><strong>Verb:</strong> дія чи стан ("run", "is")
+                    <br><strong>Adjective:</strong> описує іменник ("happy", "blue")
+                    <br><strong>Adverb:</strong> уточнює дієслово ("quickly", "very")
+                    <br><strong>Pronoun:</strong> замінює іменник ("he", "she")
+                    <br><strong>Phrasal verb:</strong> дієслово + частка ("give up", "take off")
+                    <br><strong>Other:</strong> не належить до категорій
+                </span>
+            </div>
+        </div>
+    </p>
+    <div id="{{ form.word_type.id_for_label }}-error" class="form-error"></div>
     <div class="form-error down-error">{{ form.non_field_errors }}</div>
 
     <div class="buttons l-r-but">
@@ -28,4 +67,60 @@
     </div>
 </form>
 
+<!-- Info button -->
+<script>
+    document.querySelector('.info-button').addEventListener('mouseover', function() {
+        var tooltip = this.nextElementSibling;
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = '1';
+    });
+    
+    document.querySelector('.info-button').addEventListener('mouseout', function() {
+        var tooltip = this.nextElementSibling;
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.opacity = '0';
+    });
+</script>
+
+<!-- Find word type -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const wordInput = document.getElementById('{{ form.word.id_for_label }}');
+    const wordTypeError = document.getElementById('{{ form.word_type.id_for_label }}-error');
+    const typeInput = document.getElementById('{{ form.word_type.id_for_label }}');
+    const isDarkTheme = document.body.classList.contains('dark-theme');
+    const textColor = isDarkTheme ? 'var(--text-color)' : 'var(--text-color)';
+    wordInput.addEventListener('blur', function (event) {
+        event.preventDefault();
+
+        const word = wordInput.value.trim();
+        wordTypeError.textContent = "";
+
+        if (word) {
+            fetch('{% url "find_word_type" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ word: word })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    wordTypeError.textContent = data.error;
+                    wordTypeError.style.color = 'red';
+                } else {
+                    typeInput.value = data.word_type;
+                    wordTypeError.textContent = "Also depending on the context can be: " + data.all_types;
+                    wordTypeError.style.color = textColor;
+                }
+            });
+        } else {
+            wordTypeError.textContent = "First fill in the 'Word' field";
+            wordTypeError.style.color = 'red';
+        }
+    });
+});
+</script>
 {% endblock %}

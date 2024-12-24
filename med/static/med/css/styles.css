@@ -895,7 +895,7 @@ form .edit-buttons a {
 }
 
 .l-r-but {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .search-form {
@@ -1424,6 +1424,59 @@ input[type="number"] {
 
 .filter-form {
     box-shadow: none !important;
+}
+
+.info-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+  
+  .icon {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+  
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+  
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 400px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+  
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; 
+    left: 50%;
+    margin-left: -80px;
+  
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+  
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+  
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
 }
 
 @media (max-width: 900px) {

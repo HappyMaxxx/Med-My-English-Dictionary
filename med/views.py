@@ -10,6 +10,8 @@ from django.views import View
 from django.core.files.storage import default_storage
 from django.views.decorators.cache import cache_page
 
+import requests
+
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncDay
 
@@ -1060,3 +1062,29 @@ def save_all_words_as_json(request):
         json.dump(data, file, indent=4)
 
     return redirect('download_file', file=file_name)
+
+def find_word_type(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        word = data.get('word', None)
+        if word:
+            api_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+            response = requests.get(api_url)
+
+            if response.status_code == 200:
+                word_type = response.json()[0]['meanings'][0]['partOfSpeech']
+                try:
+                    all_types = set()
+                    for meaning in response.json()[0]['meanings']:
+                        all_types.add(meaning['partOfSpeech'])
+                    all_types.remove(word_type)
+                    all_types = list(all_types)
+                    return JsonResponse({'word_type': word_type, 'all_types': all_types}, status=200)
+                except:
+                    return JsonResponse({'word_type': word_type}, status=200)
+            else:
+                return JsonResponse({'word_type': 'other'}, status=200)
+        
+        return JsonResponse({'word_type': 'other'}, status=200)
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=400)

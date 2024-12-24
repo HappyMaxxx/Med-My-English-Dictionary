@@ -43,4 +43,5 @@ urlpatterns = [
     path('download/<path:file>/', views.download_file, name='download_file'),
     path('upload/', views.upload_file, name='upload_file'),
     path('save_words/', views.save_all_words_as_json, name='save_words'),
+    path('find_word_type/', views.find_word_type, name='find_word_type'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
