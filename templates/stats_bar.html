@@ -1,0 +1,108 @@
+<div class="tabs" style="margin-top: 20px;">
+    {% if is_profile %}
+        {% for tab in order %}
+            {% if tab == 'Pie Chart' and user_profile.show_pie_chart %}
+                <button
+                    {% if forloop.first %} class="tab-btn active" {% else %} class="tab-btn" {% endif %}
+                    data-tab="pie-tab"
+                    onclick="toggleActiveTab(this)">
+                    Pie Chart
+                </button>
+            {% elif tab == 'Bar Chart' and user_profile.show_bar_chart %}
+                <button
+                    {% if forloop.first %} class="tab-btn active" {% else %} class="tab-btn" {% endif %}
+                    data-tab="bar-tab"
+                    onclick="toggleActiveTab(this)">
+                    Bar Chart
+                </button>
+            {% elif tab == 'Time Line' and user_profile.show_line_chart %}
+                <button
+                    {% if forloop.first %} class="tab-btn active" {% else %} class="tab-btn" {% endif %}
+                    data-tab="time-tab"
+                    onclick="toggleActiveTab(this)">
+                    Time Line
+                </button>
+            {% endif %}
+        {% endfor %}
+        {% else %}
+            {% for tab in order %}
+                <div class="tab-btn {% if tab == 'Pie Chart' and user_profile.show_pie_chart %} active {% endif %}
+                                    {% if tab == 'Bar Chart' and user_profile.show_bar_chart %} active {% endif %}
+                                    {% if tab == 'Time Line' and user_profile.show_line_chart %} active {% endif %}"
+                    draggable="true" id="button" onclick="toggleActiveTab(this)">
+                    {% if tab == 'Pie Chart' %}
+                        Pie Chart
+                        <input type="hidden" name="pie-visible" value="{% if user_profile.show_pie_chart %}true{% else %}false{% endif %}">
+                    {% elif tab == 'Bar Chart' %}
+                        Bar Chart
+                        <input type="hidden" name="bar-visible" value="{% if user_profile.show_bar_chart %}true{% else %}false{% endif %}">
+                    {% else %}
+                        Time Line
+                        <input type="hidden" name="time-visible" value="{% if user_profile.show_line_chart %}true{% else %}false{% endif %}">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% endif %}
+</div>
+
+{% if is_profile %}
+<div class="tab-content hidden" id="pie-tab">
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <figure class="highcharts-figure" style="margin-top: 20px;">
+        <div id="word_stat_pie"></div>
+    </figure>
+</div>
+
+<div class="tab-content hidden" id="bar-tab">
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <figure class="highcharts-figure" style="margin-top: 20px;">
+        <div id="word_stat_bar"></div>
+    </figure>
+</div>
+
+<div class="tab-content hidden" id="time-tab">
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <figure class="highcharts-figure" style="margin-top: 20px;">
+        <div id="word_stat_time"></div>
+    </figure>
+</div>
+{% endif %}
+
+{% if not is_profile %}
+<script>
+    function toggleActiveTab(tab) {
+        // Змінюємо клас активності для кнопки вкладки
+        if (tab.classList.contains('active')) {
+            tab.classList.remove('active');
+        } else {
+            tab.classList.add('active');
+        }
+
+        let contentId = tab.getAttribute('data-tab');
+        let contents = document.querySelectorAll('.tab-content');
+        contents.forEach(function (content) {
+            if (content.id === contentId) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+
+        let hiddenInputs = tab.querySelectorAll('input[type="hidden"]');
+        hiddenInputs.forEach(function(input) {
+            let currentValue = input.value;
+            if (currentValue === "true") {
+                input.value = "false";
+            } else {
+                input.value = "true";
+            }
+        });
+    }
+</script>
+{% endif %}

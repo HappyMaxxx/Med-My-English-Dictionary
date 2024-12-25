@@ -350,9 +350,9 @@ class RegisterUser(CreateView):
     @transaction.atomic
     def form_valid(self, form):
         user = form.save()
-        print(form.cleaned_data)
-        raw_password = form.cleaned_data.get('password1')
-        print("Введений пароль:", raw_password)
+        # print(form.cleaned_data)
+        # raw_password = form.cleaned_data.get('password1')
+        # print("Введений пароль:", raw_password)
         login(self.request, user)
         return redirect('profile', user_name=user.username)
 
@@ -424,6 +424,7 @@ class ProfileView(View):
                 'word_type_data': json.dumps(word_type_data),
                 'daily_chart_data': daily_chart_data,
                 'n_days': n_days,
+                'order': user_profile.charts_order.split(',')
             }
 
         profile_user = get_object_or_404(User, username=user_name)
@@ -508,6 +509,7 @@ class EditProfileView(View):
         forms = self.get_forms(request, user_profile)
         forms.update(kwargs)
         forms['user_profile'] = user_profile 
+        forms['order'] = user_profile.charts_order.split(',')
         return render(request, 'med/edit_profile.html', forms)
 
     def handle_delete_avatar(self, user_profile):
@@ -533,7 +535,7 @@ class EditProfileView(View):
 
                 user_profile.avatar.save(new_name, avatar_file)
             except Exception as e:
-                messages.error(request, "Failed to update avatar. Please try again.")
+                pass
 
     def get(self, request, *args, **kwargs):
         user_profile, _ = self.get_user_profile(request.user)
@@ -554,6 +556,22 @@ class EditProfileView(View):
 
         if 'update_words_show' in request.POST:
             words_show_form = WordsShowForm(request.POST, instance=user_profile)
+            charts_order = request.POST.get('word_stat_order')
+            if charts_order:
+                user_profile.charts_order = charts_order
+                user_profile.save()
+
+            pie_visible = True if request.POST.get('pie-visible') == 'true' else False
+            bar_visible = True if request.POST.get('bar-visible') == 'true' else False
+            line_visible = True if request.POST.get('time-visible') == 'true' else False
+
+            if pie_visible != user_profile.show_pie_chart:
+                user_profile.show_pie_chart = pie_visible
+            if bar_visible != user_profile.show_bar_chart:
+                user_profile.show_bar_chart = bar_visible
+            if line_visible != user_profile.show_line_chart:
+                user_profile.show_line_chart = line_visible
+
             if words_show_form.is_valid():
                 words_show_form.save()
                 return redirect('profile', user_name=request.user.username)

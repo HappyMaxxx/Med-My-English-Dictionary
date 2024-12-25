@@ -112,8 +112,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     wordTypeError.style.color = 'red';
                 } else {
                     typeInput.value = data.word_type;
-                    wordTypeError.textContent = "Also depending on the context can be: " + data.all_types;
-                    wordTypeError.style.color = textColor;
+                    console.log(data.all_types);
+                    if (data.all_types !== "") {
+                        wordTypeError.textContent = "Also depending on the context can be: " + data.all_types;
+                        wordTypeError.style.color = textColor;
+                    }
                 }
             });
         } else {

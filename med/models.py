@@ -77,6 +77,10 @@ class UserProfile(models.Model):
     what_type_show = models.CharField(max_length=10, choices=Types.choices, default=Types.learning)
     access_dictionary = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.EVERYBODY)
     show_word_stats = models.CharField(max_length=10, choices=WordsMore.choices, default=WordsMore.EVERYBODY)
+    show_pie_chart = models.BooleanField(default=True)
+    show_bar_chart = models.BooleanField(default=True)
+    show_line_chart = models.BooleanField(default=True)
+    charts_order = models.CharField(max_length=30, default='Pie Chart,Bar Chart,Time Line')
 
     def __str__(self):
         return self.user.username

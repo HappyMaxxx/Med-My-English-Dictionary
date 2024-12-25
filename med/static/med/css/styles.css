@@ -1479,6 +1479,18 @@ input[type="number"] {
     opacity: 1;
 }
 
+.tab-btn {
+    cursor: grab;
+    text-align: center;
+    transition: transform 0.5s ease, background-color 0.5s ease;
+    user-select: none;
+}
+
+.tab-btn:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+}
+
 @media (max-width: 900px) {
     .burger-menu {
         display: block;

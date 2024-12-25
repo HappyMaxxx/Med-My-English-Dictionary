@@ -4,7 +4,7 @@
 {% block content %}
 <div class="profile-container">
     <h2>Edit Profile</h2>
-    <form method="post">
+    <form method="post" style="box-shadow: none; margin-top: 0;">
         {% csrf_token %}
         {{ profile_form.as_p }}
         <input type="hidden" name="update_profile" value="update_profile">
@@ -14,7 +14,7 @@
     </form>
     
     <h2>Display Of Words</h2>
-    <form method="post">
+    <form method="post" style="box-shadow: none;">
         {% csrf_token %}
         <div class="words_select">
             {{ words_show_form.words_num_in_prof.label_tag }}
@@ -33,7 +33,13 @@
             {{ words_show_form.access_dictionary }}
         </div>
 
+        <div style="margin-top: 20px;">
+            <h3>You can move it</h3>
+            {% include 'stats_bar.html' %}
+        </div>
         <input type="hidden" name="update_words_show" value="update_words_show">
+        <input type="hidden" name="word_stat_order" id="word-stat-order">
+
         <div class="buttons edit-buttons">
             <a href="#" onclick="this.closest('form').submit();" name="update_words_show" class="btn">Update Words Show</a>
         </div>
@@ -43,7 +49,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
     
-    <form method="post" enctype="multipart/form-data" id="avatar-form">
+    <form method="post" enctype="multipart/form-data" id="avatar-form" style="box-shadow: none;">
         {% csrf_token %}
         <div style="display: grid; align-items: center; justify-items: center;">
             <input type="file" id="avatar-input" accept="image/*" style="display: block; margin-bottom: 20px;">
@@ -68,7 +74,7 @@
     </form>
 
     <h2>Change Password</h2>
-    <form method="post">
+    <form method="post" style="box-shadow: none; margin-top: 0;">
         {% csrf_token %}
         {{ password_form.as_p }}
         <input type="hidden" name="change_password" value="change_password">
@@ -115,5 +121,68 @@
 
         document.getElementById('avatar-form').submit();
     }
+</script>
+
+<script>
+    const container = document.querySelector('.tabs');
+    const tabs = document.querySelectorAll('.tab-btn');
+
+    let draggedItem = null;
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('dragstart', () => {
+            draggedItem = tab;
+            setTimeout(() => tab.classList.add('hidden'), 0);
+        });
+
+        tab.addEventListener('dragend', () => {
+            draggedItem.classList.remove('hidden');
+            draggedItem = null;
+
+            updateOrder();
+            logOrder();
+        });
+    });
+
+    container.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(container, e.clientX);
+
+        if (afterElement == null) {
+            container.appendChild(draggedItem);
+        } else {
+            container.insertBefore(draggedItem, afterElement);
+        }
+    });
+
+    function getDragAfterElement(container, x) {
+        const draggableElements = [...container.querySelectorAll('.tab-btn:not(.hidden)')];
+
+        return draggableElements.reduce(
+            (closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = x - box.left - box.width / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            },
+            { offset: Number.NEGATIVE_INFINITY }
+        ).element;
+    }
+
+    function updateOrder() {
+        const tabs = [...container.children];
+        tabs.forEach((tab, index) => {
+            tab.dataset.index = index;
+        });
+    }
+
+    function logOrder() {
+        const order = [...container.children].map(tab => tab.textContent.trim());
+        document.getElementById('word-stat-order').value = order.join(',');
+    }
+
 </script>
 {% endblock %}
