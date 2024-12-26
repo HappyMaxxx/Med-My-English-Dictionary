@@ -9,7 +9,7 @@ from django.contrib.auth.views import LoginView
 from django.views import View
 from django.core.files.storage import default_storage
 from django.views.decorators.cache import cache_page
-
+from django.db.models import Min, Max
 import requests
 
 from django.utils.timezone import now, timedelta
@@ -47,7 +47,7 @@ practice_cards = {
         'word': 'Test',
         'img': 'med/img/practice/dice_light.png',
         'dark_img': 'med/img/practice/dice_dark.png',
-        'href': '#'
+        'href': 'soon'
     },
     'reading': {
         'word': 'Reading',
@@ -373,14 +373,15 @@ class ProfileView(View):
             user_profile, created = UserProfile.objects.get_or_create(user=user)
             is_favorite = user_profile.what_type_show == 'fav'
 
-            if is_favorite:
-                recent_words = Word.objects.filter(user=user, is_favourite=True)[:user_profile.words_num_in_prof]
-            else:
-                recent_words = Word.objects.filter(user=user)[:user_profile.words_num_in_prof]
+            recent_words = Word.objects.filter(
+                user=user, 
+                is_favourite=is_favorite
+            )[:user_profile.words_num_in_prof] if is_favorite else Word.objects.filter(user=user)[:user_profile.words_num_in_prof]
 
             words = Word.objects.filter(user=user)
             word_count = words.count()
-            group_count = max((WordGroup.objects.filter(user=user).count() + WordGroup.objects.filter(uses_users=self.request.user).count()) - 1, 0)
+            group_count = max((WordGroup.objects.filter(user=user).count() +
+                            WordGroup.objects.filter(uses_users=self.request.user).count()) - 1, 0)
 
             friends = User.objects.filter(
                 Q(friendship_requests_sent__receiver=user, friendship_requests_sent__status='accepted') |
@@ -388,13 +389,13 @@ class ProfileView(View):
             ).distinct()
 
             word_stats = words.values('word_type').annotate(count=Count('id'))
-            word_type_data = [
+            word_type_data = json.dumps([
                 {
                     'name': word_type['word_type'].capitalize(),
                     'y': word_type['count']
                 }
                 for word_type in word_stats
-            ]
+            ])
 
             n_days = 7
             today = now().date()
@@ -421,7 +422,7 @@ class ProfileView(View):
                 'friends': friends,
                 'friend_count': friends.count(),
                 'is_favorite': is_favorite,
-                'word_type_data': json.dumps(word_type_data),
+                'word_type_data': word_type_data,
                 'daily_chart_data': daily_chart_data,
                 'n_days': n_days,
                 'order': user_profile.charts_order.split(',')
@@ -603,9 +604,6 @@ def make_favourite(request, word_id):
     except:
         return redirect('login')
 
-def page_not_found(request, exception):
-    return HttpResponseNotFound("<h1>404 Page Not Found</h1>")
-
 def check_username(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -724,14 +722,16 @@ def friends_list_view(request, user_name):
         'is_my_friends': is_my_friends,
     })
 
-
-# @cache_page(60 * 15)
 def practice_view(request):
     return render(request, 'med/practice.html', {'cards': practice_cards.values()})
 
 def reading_view(request):
     texts = ReadingText.objects.all()
     
+    word_stats = texts.aggregate(min_words=Min('word_count'), max_words=Max('word_count'))
+    min_words = word_stats['min_words'] or 0 
+    max_words = word_stats['max_words'] or 0
+
     level = request.GET.get('level')
     if level:
         texts = texts.filter(eng_level=level)
@@ -747,16 +747,18 @@ def reading_view(request):
     paginator = Paginator(texts, 25)
     page_number = request.GET.get('page')
     paginated_texts = paginator.get_page(page_number)
-    page_obj = paginator.get_page(page_number)
 
     levels = ReadingText.ENG_LEVEL_CHOICES
 
     return render(request, 'med/reading.html', {
         'texts': paginated_texts,
         'paginator': paginator,
-        'page_obj': page_obj,
+        'page_obj': paginated_texts,
         'levels': levels,
+        'min_words': min_words,
+        'max_words': max_words,
     })
+
 def parct_groups_view(request):
     groups = WordGroup.objects.filter(user__username='grouper', is_main=False)
 
@@ -810,10 +812,15 @@ def reading_text_view(request, text_id):
         phrases = split_content_by_phrases(paragraph, text.words_with_translations)
         content_phrases.append(phrases)
 
+    paginator = Paginator(content_phrases, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'med/read_text.html', {
         'text': text,
         'base_url': base_url,
-        'content_phrases': content_phrases
+        'page_obj': page_obj,
+        'paginator': paginator,
     })
 
 def word_detail_view(request, word, text_id):
@@ -1097,7 +1104,11 @@ def find_word_type(request):
                         all_types.add(meaning['partOfSpeech'])
                     all_types.remove(word_type)
                     all_types = list(all_types)
-                    return JsonResponse({'word_type': word_type, 'all_types': all_types}, status=200)
+
+                    if len(all_types) > 1:
+                        return JsonResponse({'word_type': word_type, 'all_types': all_types}, status=200)
+                    else:
+                        return JsonResponse({'word_type': word_type}, status=200)
                 except:
                     return JsonResponse({'word_type': word_type}, status=200)
             else:
@@ -1106,3 +1117,19 @@ def find_word_type(request):
         return JsonResponse({'word_type': 'other'}, status=200)
     
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+def check_word(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        word = data.get('word', None)
+        if word:
+            if Word.objects.filter(word=word, user=request.user).exists():
+                return JsonResponse({'error': 'This word already exists in your dictionary.'}, status=200)
+            return JsonResponse({'error': ''}, status=200)
+        return JsonResponse({'error': 'Invalid word'}, status=200)
+
+def page_not_found(request, exception):
+    return render(request, 'med/404.html')
+
+def soon_page(request):
+    return render(request, 'med/soon.html')

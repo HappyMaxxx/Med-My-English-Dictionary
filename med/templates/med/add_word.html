@@ -86,6 +86,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const wordInput = document.getElementById('{{ form.word.id_for_label }}');
+    const wordError = document.getElementById('{{ form.word.id_for_label }}-error');
     const wordTypeError = document.getElementById('{{ form.word_type.id_for_label }}-error');
     const typeInput = document.getElementById('{{ form.word_type.id_for_label }}');
     const isDarkTheme = document.body.classList.contains('dark-theme');
@@ -94,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         event.preventDefault();
 
         const word = wordInput.value.trim();
+        wordError.textContent = "";
         wordTypeError.textContent = "";
 
         if (word) {
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     typeInput.value = data.word_type;
                     console.log(data.all_types);
-                    if (data.all_types !== "") {
+                    if (data.all_types) {
                         wordTypeError.textContent = "Also depending on the context can be: " + data.all_types;
                         wordTypeError.style.color = textColor;
                     }
@@ -122,6 +124,24 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             wordTypeError.textContent = "First fill in the 'Word' field";
             wordTypeError.style.color = 'red';
+        }
+
+        if (word) {
+            fetch('{% url "check_word" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ word: word })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    wordError .textContent = data.error;
+                    wordTypeError.style.color = 'red';
+                }
+            });
         }
     });
 });

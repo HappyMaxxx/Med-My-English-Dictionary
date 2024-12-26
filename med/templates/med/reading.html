@@ -7,42 +7,46 @@
 <div class="group-container">
 
     <div class="word-list-container">
-    <div class="buttons make-text-btn texts-btn">
-        <a href="{% url 'practice' %}">&lt;</a>
-        {% if request.user.is_superuser %}
-        <a href="{% url 'add_text' %}">Create New Text</a>
-        {% endif %}
-    </div>
-
-    {% if texts %}
-    <ul class="user-list">
-        {% for text in texts %}
-        <li class="user-item">
-            <a href="{% url 'reading_text' text.id %}">
-            <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
-
-                <div class="user-title" style="flex: 1; text-align: left; margin-left: 15px;">
-                    <p class="user-name"><strong>{{ text.title }}</strong></p>
-                </div>
-
-                <div class="user-stats" style="display: flex; gap: 20px; text-align: center; margin-right: 15px;">
-                    <div class="stat-item reading-item">
-                        <p>Words</p>
-                        <p>{{ text.word_count }}</p>
-                    </div>
-                    <div class="stat-item reading-item">
-                        <p>Time</p>
-                        <p>{{ text.time_to_read }} min</p>
-                    </div>
-                    <div class="stat-item reading-item">
-                        <p>Level</p>
-                        <p>{{ text.get_eng_level_display }}</p>
-                    </div>
-                </div>
+        <div class="buttons" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+            <div style="margin-right: auto;">
+                <a href="{% url 'practice' %}" class="buttons" style="display: inline-block; text-align: center;">&lt;</a>
             </div>
-            </a>
-        </li>
-        {% endfor %}
+            <div style="display: flex; gap: 10px;">
+                {% if request.user.is_superuser %}
+                <a href="{% url 'add_text' %}" class="buttons" style="display: inline-block; text-align: center;">Create New Text</a>
+                {% endif %}
+                <a id="burger-menu-btn" class="buttons" style="display: inline-block; text-align: center;">Filters</a>
+            </div>
+        </div>        
+
+        {% if texts %}
+        <ul class="user-list">
+            {% for text in texts %}
+            <li class="user-item">
+                <a href="{% url 'reading_text' text.id %}">
+                <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                    <div class="user-title" style="flex: 1; text-align: left; margin-left: 15px;">
+                        <p class="user-name"><strong>{{ text.title }}</strong></p>
+                    </div>
+
+                    <div class="user-stats" style="display: flex; gap: 20px; text-align: center; margin-right: 15px;">
+                        <div class="stat-item reading-item">
+                            <p>Words</p>
+                            <p>{{ text.word_count }}</p>
+                        </div>
+                        <div class="stat-item reading-item">
+                            <p>Time</p>
+                            <p>{{ text.time_to_read }} min</p>
+                        </div>
+                        <div class="stat-item reading-item">
+                            <p>Level</p>
+                            <p>{{ text.get_eng_level_display }}</p>
+                        </div>
+                    </div>
+                </div>
+                </a>
+            </li>
+            {% endfor %}
         </ul>
         
         {% if paginator.num_pages > 1 %}
@@ -70,14 +74,14 @@
             </ul>
         </nav>
         {% endif %}
-    {% else %}
-    <p>No texts available.</p>
-    {% endif %}
+        {% else %}
+        <p>No texts available.</p>
+        {% endif %}
     </div>
 
-    <div class="group-list" style="flex: 0 0 20%;">
+    <div id="filter-menu" class="group-list" style="flex: 0 0 20%; display: none;">
         <h2>Filters</h2>
-        <form method="get" id="filter_form" class="filter-form">
+        <form method="get" id="filter_form" class="filter-form" style="width: 100%; padding: 10px 0px;">
             <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
                 <h3><label for="level">Level:</label></h3>
                 <select name="level" id="level" style="width: 100%;">
@@ -91,18 +95,43 @@
             </div>
 
             <p style="margin-bottom: 10px;"><h3><label for="words_min">Min Words:</label></h3>
-            <input type="number" name="words_min" id="words_min" value="{{ request.GET.words_min }}"></p>
+            <input type="number" name="words_min" id="words_min" value="{{ request.GET.words_min }}" min="{{ min_words }}" max="{{ max_words }}" style="width: 100%;"></p>
     
             <p><h3><label for="words_max">Max Words:</label></h3>
-            <input type="number" name="words_max" id="words_max" value="{{ request.GET.words_max }}"></p>
+            <input type="number" name="words_max" id="words_max" value="{{ request.GET.words_max }}" min="{{ min_words }}" max="{{ max_words }}" style="width: 100%;"></p>
             
             <div style="margin-top: 10px;">
-            <a href="#" onclick="document.getElementById('filter_form').submit(); return false;" class="buttons">Aply</a>
+            <a href="#" onclick="document.getElementById('filter_form').submit(); return false;" class="buttons">Apply</a>
             <a href="{% url 'practice_reading' %}" class="buttons">Clear</a>
             </div>
         </form>
     </div>
 
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterMenu = document.getElementById('filter-menu');
+        const isFilterMenuOpen = localStorage.getItem('filterMenuOpen') === 'true';
+        if (isFilterMenuOpen) {
+            filterMenu.style.display = 'block';
+        } else {
+            filterMenu.style.display = 'none';
+        }
+    });
+
+    document.getElementById('burger-menu-btn').addEventListener('click', function () {
+        const filterMenu = document.getElementById('filter-menu');
+        const isCurrentlyOpen = filterMenu.style.display === 'block';
+        
+        if (isCurrentlyOpen) {
+            filterMenu.style.display = 'none';
+            localStorage.setItem('filterMenuOpen', 'false');
+        } else {
+            filterMenu.style.display = 'block';
+            localStorage.setItem('filterMenuOpen', 'true');
+        }
+    });
+</script>
 
 {% endblock %}

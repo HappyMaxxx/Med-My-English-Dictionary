@@ -14,7 +14,7 @@
         {% endif %}
     </div>
 
-    {% for paragraph in content_phrases %}
+    {% for paragraph in page_obj %}
         <p>⠀​⠀
             {% for phrase, translation in paragraph %}
                 {% with cleaned_phrase=phrase|clean_word %}
@@ -27,6 +27,32 @@
             {% endfor %}
         </p>
     {% endfor %}
+
+    {% if paginator.num_pages > 1 %}
+        <nav class="list-pages" style="margin-bottom: 20px;">
+            <ul>
+                {% if page_obj.has_previous %}
+                <li class="page-num">
+                    <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+                </li>
+                {% endif %}
+
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                    <li class="page-num page-num-selected">{{ p }}</li>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                    <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-num">
+                    <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
 
     {% if text.is_auth_a %}
         <p>Resource: <a href="{{ text.auth }}" target="_blank">{{ base_url }}</a></p>

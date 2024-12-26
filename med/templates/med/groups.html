@@ -95,32 +95,6 @@
         {% endif %}
 
         {% if is_group %}
-        {% if not is_uses %}
-        <div class="buttons groups-buttons">
-            <div class="add_word">
-                {% if is_main %}
-                <a href="{% url 'addword' %}" class="add-word-button">Add Word</a>
-                {% else %}
-                <a href="{% url 'words' request.user.username %}" class="add-word-button">Add Word</a>
-                <a href="#" class="add-word-button" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
-                {% endif %}
-            </div>
-            {% if not is_main %}
-            <div class="delete-button">
-                <a href="{% url 'confirm_delete' %}?group_id={{ group_id }}" class="delete-group-button">Delete Group</a>
-            </div>
-            {% endif %}
-        </div>
-        {% else %}
-        <div class="buttons groups-buttons">
-            <div class="add_word">
-                <a href="{% url 'save_group_words' group_id %}" class="add-word-button">Save</a>
-            </div>
-            <div class="delete-button">
-                <a href="{% url 'leave_group' group_id=group_id fp=0 %}" class="delete-group-button">Leave</a>
-            </div>
-        {% endif %}
-
         {% if paginator.num_pages > 1 %}
         <nav class="list-pages"> 
             <ul>
@@ -145,6 +119,31 @@
                 {% endif %}
             </ul>
         </nav>
+        {% endif %}
+        {% if not is_uses %}
+        <div class="buttons groups-buttons">
+            <div class="add_word">
+                {% if is_main %}
+                <a href="{% url 'addword' %}" class="add-word-button">Add Word</a>
+                {% else %}
+                <a href="{% url 'words' request.user.username %}" class="add-word-button">Add Word</a>
+                <a href="#" class="add-word-button" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
+                {% endif %}
+            </div>
+            {% if not is_main %}
+            <div class="delete-button">
+                <a href="{% url 'confirm_delete' %}?group_id={{ group_id }}" class="delete-group-button">Delete Group</a>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="buttons groups-buttons">
+            <div class="add_word">
+                <a href="{% url 'save_group_words' group_id %}" class="add-word-button">Save</a>
+            </div>
+            <div class="delete-button">
+                <a href="{% url 'leave_group' group_id=group_id fp=0 %}" class="delete-group-button">Leave</a>
+            </div>
         {% endif %}
         </div>
         {% endif %}
