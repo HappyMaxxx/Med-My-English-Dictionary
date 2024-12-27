@@ -8,6 +8,7 @@
     <title>My English Dictionary</title>
     <link rel="stylesheet" type="text/css" href="{% static 'med/css/styles.css' %}">
     <link rel="icon" href="{% static 'med/img/base/icon.png' %}" type="image/png"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 
@@ -73,12 +74,13 @@
 
                 <a href="{% url 'login' %}">Groups</a>
                 {% endif %}
-                <a href="#" id="theme-toggle-light">Light Mode</a>
-                <a href="#" id="theme-toggle-dark">Dark Mode</a>
+                <!-- <a href="#" id="theme-toggle-light">Light Mode</a>
+                <a href="#" id="theme-toggle-dark">Dark Mode</a> -->
             </div>
         {% if request.user.is_authenticated %}
         <div class="buttons">
-            
+            <a id="theme-toggle-light" class="no-style"><i class="fas fa-sun"></i></a>
+            <a id="theme-toggle-dark" class="no-style"><i class="fas fa-moon"></i></a>
             {% if is_profile or is_dict %}
                 {% if is_my_profile or is_my_dict %}
                 <a href="{% url 'profile' user.username %}">{{request.user.username}}</a>

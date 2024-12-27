@@ -15,7 +15,9 @@
                 {% if request.user.is_superuser %}
                 <a href="{% url 'add_text' %}" class="buttons" style="display: inline-block; text-align: center;">Create New Text</a>
                 {% endif %}
-                <a id="burger-menu-btn" class="buttons" style="display: inline-block; text-align: center;">Filters</a>
+                <a id="burger-menu-btn" class="buttons" style="display: inline-block; text-align: center;">
+                    <i class="fas fa-filter"></i>
+                </a>
             </div>
         </div>        
 

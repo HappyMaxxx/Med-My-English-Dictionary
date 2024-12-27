@@ -204,13 +204,51 @@ class WordListView(ListView):
     context_object_name = 'words'
     paginate_by = 25
 
+    def get(self, request, *args, **kwargs):
+        if 'sort_alphabet' not in request.GET and 'sort_date' not in request.GET:
+            query_params = request.GET.copy()
+            query_params['sort_date'] = 'desc' 
+            return HttpResponseRedirect(f"{request.path}?{query_params.urlencode()}")
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         user_name = self.kwargs['user_name']
         user = get_object_or_404(User, username=user_name)
 
         self.is_my_dict = user == self.request.user
+        queryset = Word.objects.filter(user=user)
+        
+        word_type = self.request.GET.get('type')
+        if word_type:
+            queryset = queryset.filter(word_type=word_type)
 
-        return Word.objects.filter(user=user)
+        filter_word = self.request.GET.get('filter_word', '')
+        filter_translation = self.request.GET.get('filter_translation', '')
+
+        if filter_word:
+            queryset = queryset.filter(word__icontains=filter_word)
+        if filter_translation:
+            queryset = queryset.filter(translation__icontains=filter_translation)
+
+        print(self.request.GET.keys())
+        print(self.request.GET.get('sort_alphabet'), self.request.GET.get('sort_date'))
+
+        sort_alphabet = self.request.GET.get('sort_alphabet')
+        sort_date = self.request.GET.get('sort_date')
+
+        print(sort_alphabet, sort_date)
+
+        if sort_alphabet == 'asc':
+            queryset = queryset.order_by('word')
+        elif sort_alphabet == 'desc':
+            queryset = queryset.order_by('-word')
+
+        if sort_date == 'asc':
+            queryset = queryset.order_by('time_create')
+        elif sort_date == 'desc':
+            queryset = queryset.order_by('-time_create')
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -224,6 +262,8 @@ class WordListView(ListView):
 
         is_friends = request_user in friends
 
+        types = Word.TYPE_CHOICES
+
         context.update({
             'user_name': self.kwargs['user_name'],
             'user': user,
@@ -233,6 +273,11 @@ class WordListView(ListView):
             'logged_user': request_user,
             'access': UserProfile.objects.get(user=user).access_dictionary,
             'is_friends': is_friends,
+            'filter_word': self.request.GET.get('filter_word', ''),
+            'filter_translation': self.request.GET.get('filter_translation', ''),
+            'sort_alphabet': self.request.GET.get('sort_alphabet', 'asc'),
+            'sort_date': self.request.GET.get('sort_date', 'asc'),
+            'types': types,
         })
         return context
 
@@ -732,15 +777,24 @@ def reading_view(request):
     min_words = word_stats['min_words'] or 0 
     max_words = word_stats['max_words'] or 0
 
+    if request.method == 'GET':
+        if 'words_min' not in request.GET or 'words_max' not in request.GET:
+            query_params = request.GET.copy()
+            if 'words_min' not in request.GET:
+                query_params['words_min'] = min_words
+            if 'words_max' not in request.GET:
+                query_params['words_max'] = max_words
+            return HttpResponseRedirect(f"{request.path}?{query_params.urlencode()}")
+
     level = request.GET.get('level')
     if level:
         texts = texts.filter(eng_level=level)
 
-    words_min = request.GET.get('words_min')
+    words_min = request.GET.get('words_min', min_words)
     if words_min:
         texts = texts.filter(word_count__gte=int(words_min))
 
-    words_max = request.GET.get('words_max')
+    words_max = request.GET.get('words_max', max_words)
     if words_max:
         texts = texts.filter(word_count__lte=int(words_max))
 

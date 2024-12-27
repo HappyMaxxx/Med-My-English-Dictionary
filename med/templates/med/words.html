@@ -5,14 +5,18 @@
 
 <h1>{{title}}</h1>
 
+<div class="words-container">
 <div class="word_table_container">
     {% if is_my_dict %}
     <div class="buttons">
-        <a href="{% url 'upload_file' %}">From File</a>
+        <a href="{% url 'upload_file' %}" style="margin-left: 0;">From File</a>
         <a href="#" onclick="selectAllWords(); return false;">Select All</a>
         <a href="#" onclick="addWordsToGroup(); return false;">Add To Group</a>
         <a href="#" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
         <a href="{% url 'addword' %}">Add New Word</a>
+        <a id="filter-menu-btn" class="filter-btn" style="display: inline-block; text-align: center; margin-left: auto; margin-right: 0; ">
+            <i class="fas fa-filter"></i>
+        </a>
     </div>
     {% endif %}
 
@@ -66,7 +70,7 @@
     </table>
 
     {% if paginator.num_pages > 1 %}
-    <nav class="list-pages"> 
+    <nav class="list-pages">
         <ul>
             {% if page_obj.has_previous %}
             <li class="page-num">
@@ -90,53 +94,156 @@
         </ul>
     </nav>
     {% endif %}
+</div>
 
+<div id="filter-menu" class="group-list" style="flex: 0 0 20%; display: none;">
+    <h2 style="margin-bottom: 0;">Filters</h2>
+    <form id="filter_form" method="get" class="filter-form" style="width: 100%; padding: 10px 0px; margin: 0;">
+        <p>
+            <h3><label for="sort_options">Sort:</label></h3>
+            
+            <a href="?sort_alphabet={% if sort_alphabet == 'asc' %}desc{% else %}asc{% endif %}&sort_date=&filter_word={{ filter_word }}&filter_translation={{ filter_translation }}">
+                <i class="fas fa-sort-alpha-{% if sort_alphabet == 'asc' %}down{% else %}up{% endif %}"></i>
+            </a>
+            
+            <a href="?sort_date={% if sort_date == 'desc' %}asc{% else %}desc{% endif %}&sort_alphabet=&filter_word={{ filter_word }}&filter_translation={{ filter_translation }}">
+                <i class="fas fa-calendar-{% if sort_date == 'asc' %}day{% else %}alt{% endif %}"></i>
+            </a>
+        </p>
+
+        <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+            <h3><label for="type">Type:</label></h3>
+            <select name="type" id="type" style="width: 100%;">
+                <option value="">All</option>
+                {% for type in types %}
+                <option value="{{ type.0 }}" {% if request.GET.type == type.0 %}selected{% endif %}>
+                    {{ type.1 }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <p>
+            <h3><label for="filter_word">By Word:</label></h3>
+            <input type="text" id="filter_word" name="filter_word" style="width: 100%;" value="{{ filter_word }}">
+        </p>
+    
+        <p>
+            <h3><label for="filter_translation">By Translation:</label></h3>
+            <input type="text" id="filter_translation" name="filter_translation" style="width: 100%;" value="{{ filter_translation }}">
+        </p>
+    
+        <div style="margin-top: 10px;">
+            <a href="#" onclick="document.getElementById('filter_form').submit(); return false;" class="buttons">Apply</a>
+            <a href="{% url 'words' user_name %}" class="buttons">Clear</a>
+        </div>
+    </form>
+      
 </div>
 
 <script>
-function selectAllWords() {
-    var checkboxes = document.getElementsByName('word_checkbox');
-    var allChecked = true;
-    for (var checkbox of checkboxes) {
-        if (!checkbox.checked) {
-            allChecked = false;
-            break;
-        }
+    function applyFilters() {
+        const form = document.getElementById('filter_form');
+        const filterWord = document.getElementById('filter_word').value;
+        const filterTranslation = document.getElementById('filter_translation').value;
+        const sortAlphabet = document.getElementById('sort-alphabet-icon').getAttribute('data-sort');
+        const sortDate = document.getElementById('sort-date-icon').getAttribute('data-sort');
+        const type = document.getElementById('type').value;
+
+        const params = new URLSearchParams({
+            filter_word: filterWord,
+            filter_translation: filterTranslation,
+            sort_alphabet: sortAlphabet,
+            sort_date: sortDate,
+            type: type,
+        });
+
+        window.location.href = `${form.action}?${params.toString()}`;
     }
-    for (var checkbox of checkboxes) {
-        checkbox.checked = !allChecked;
+
+    function toggleAlphabetSort() {
+        const icon = document.getElementById('sort-alphabet-icon');
+        const currentSort = icon.getAttribute('data-sort');
+        const newSort = currentSort === 'asc' ? 'desc' : 'asc';
+        icon.setAttribute('data-sort', newSort);
+        applyFilters();
     }
-}
+
+    function toggleDateSort() {
+        const icon = document.getElementById('sort-date-icon');
+        const currentSort = icon.getAttribute('data-sort');
+        const newSort = currentSort === 'asc' ? 'desc' : 'asc';
+        icon.setAttribute('data-sort', newSort);
+        applyFilters();
+    }
 </script>
 
+<!-- Locale storage -->
 <script>
-function deleteSelectedWords() {
-    var checkboxes = document.getElementsByName('word_checkbox');
-    var wordIds = [];
-    for (var checkbox of checkboxes) {
-        if (checkbox.checked) {
-            wordIds.push(checkbox.value);
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterMenu = document.getElementById('filter-menu');
+        const filterMenuBtn = document.getElementById('filter-menu-btn');
+
+        const isFilterMenuWords = localStorage.getItem('isFilterMenuWords') === 'true';
+
+        if (isFilterMenuWords) {
+            filterMenu.style.display = 'block';
         }
-    }
-    if (wordIds.length > 0) {
-        window.location.href = "{% url 'confirm_delete' %}?word_ids=" + wordIds.join('&word_ids=');
-    }
-}
+
+        filterMenuBtn.addEventListener('click', function () {
+            if (filterMenu.style.display === 'none' || filterMenu.style.display === '') {
+                filterMenu.style.display = 'block';
+                localStorage.setItem('isFilterMenuWords', 'true');
+            } else {
+                filterMenu.style.display = 'none';
+                localStorage.setItem('isFilterMenuWords', 'false');
+            }
+        });
+    });
 </script>
 
+
+<!-- Check boxes work -->
 <script>
-function addWordsToGroup() {
-    var checkboxes = document.getElementsByName('word_checkbox');
-    var wordIds = [];
-    for (var checkbox of checkboxes) {
-        if (checkbox.checked) {
-            wordIds.push(checkbox.value);
+    function selectAllWords() {
+        var checkboxes = document.getElementsByName('word_checkbox');
+        var allChecked = true;
+        for (var checkbox of checkboxes) {
+            if (!checkbox.checked) {
+                allChecked = false;
+                break;
+            }
+        }
+        for (var checkbox of checkboxes) {
+            checkbox.checked = !allChecked;
         }
     }
-    if (wordIds.length > 0) {
-        window.location.href = "{% url 'select_group' %}?word_ids=" + wordIds.join('&word_ids=');
+    
+    function deleteSelectedWords() {
+        var checkboxes = document.getElementsByName('word_checkbox');
+        var wordIds = [];
+        for (var checkbox of checkboxes) {
+            if (checkbox.checked) {
+                wordIds.push(checkbox.value);
+            }
+        }
+        if (wordIds.length > 0) {
+            window.location.href = "{% url 'confirm_delete' %}?word_ids=" + wordIds.join('&word_ids=');
+        }
     }
-}
+    
+    function addWordsToGroup() {
+        var checkboxes = document.getElementsByName('word_checkbox');
+        var wordIds = [];
+        for (var checkbox of checkboxes) {
+            if (checkbox.checked) {
+                wordIds.push(checkbox.value);
+            }
+        }
+        if (wordIds.length > 0) {
+            window.location.href = "{% url 'select_group' %}?word_ids=" + wordIds.join('&word_ids=');
+        }
+    }
 </script>
-
+    
 {% endblock %}

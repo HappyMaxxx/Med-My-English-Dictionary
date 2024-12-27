@@ -394,17 +394,16 @@ form .buttons a:hover {
     text-decoration: none;
 }
 
-/* Контейнер для таблиці */
 .word_table_container {
     max-width: 1000px;
-    margin: 20px auto;
+    width: 100%;
+    margin: 0 auto;
     padding: 10px;
     background-color: var(--feature-background);
     border-radius: 10px;
     box-shadow: var(--feature-shadow);
 }
 
-/* Заголовки таблиці */
 .word_table thead th {
     background-color: var(--button-background);
     color: var(--button-text-color);
@@ -438,17 +437,17 @@ form .buttons a:hover {
 
 .word_table_container .buttons {
     display: flex;
-    justify-content: flex-end;
-    /* margin-bottom: 20px; */
+    justify-content: flex-start;
+    width: 100%;
 }
 
 .word_table_container .buttons a {
     margin: 5px 5px;
-    width: 20%;
+    min-width: 16%;
 }
 
 .word_table_container .buttons a:last-child {
-    margin: 5px 2px 5px 5px;
+    min-width: 0 !important; 
 }
 
 .word_table_container .edit_img, .f_img, .th_f {
@@ -600,24 +599,24 @@ form .buttons a:hover {
 }
 
 .stats {
-    display: flex; /* Використовуємо Flexbox для горизонтального розміщення */
-    justify-content: space-around; /* Розподіляємо елементи по горизонталі з рівними відступами */
-    align-items: center; /* Вертикально вирівнюємо елементи */
-    margin-top: 20px; /* Відступ від інших елементів */
+    display: flex; 
+    justify-content: space-around; 
+    align-items: center; 
+    margin-top: 20px; 
 }
 
 .stat-item {
-    text-align: center; /* Центруємо текст всередині кожного елемента */
+    text-align: center; 
 }
 
 .stat-item p:first-child {
-    font-weight: bold; /* Заголовок робимо жирним */
-    margin-bottom: 5px; /* Відступ між заголовком і значенням */
+    font-weight: bold;
+    margin-bottom: 5px; 
 }
 
 .stat-item p:last-child {
-    font-size: 1.5em;  /* Збільшуємо розмір шрифту для значення */
-    font-weight: bold;  /* Робимо значення жирним */
+    font-size: 1.5em; 
+    font-weight: bold; 
 }
 
 .stat-item a {
@@ -625,12 +624,17 @@ form .buttons a:hover {
     text-decoration: none;
 }
 
+.words-container,
 .group-container {
     display: flex;
     gap: 10px;
     margin-top: 20px;
     text-align: left;
-    align-items: flex-start; /* Вирівнювання контейнерів зверху */
+    align-items: flex-start;
+}
+
+.words-container {
+    text-align: center !important;
 }
 
 .group-list {
@@ -1489,6 +1493,22 @@ input[type="number"] {
 .tab-btn:active {
     cursor: grabbing;
     transform: scale(0.95);
+}
+
+.buttons .no-style {
+    font-size:larger;
+    background-color: unset;
+    min-width: 0;
+    cursor: pointer;
+    padding: 10px 5px;
+}
+
+.buttons .no-style:hover {
+    background-color: unset;
+}
+
+#theme-toggle-dark {
+    color: #333;
 }
 
 @media (max-width: 900px) {
