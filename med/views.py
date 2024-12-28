@@ -73,6 +73,15 @@ def index(request):
 def about(request):
     return render(request, 'med/about.html')
 
+def add_to_main_group(request, word):
+    group_name = f"All {request.user.username}'s "
+    group, created = WordGroup.objects.get_or_create(
+        name=group_name,
+        is_main=True,
+        user=request.user
+    )
+
+    group.words.add(word)
 
 @method_decorator(login_required, name='dispatch')
 class AddWordView(LoginRequiredMixin, CreateView):
@@ -88,14 +97,7 @@ class AddWordView(LoginRequiredMixin, CreateView):
         word.user = self.request.user
         word.save()
 
-        group_name = f"All {self.request.user.username}'s "
-        group, created = WordGroup.objects.get_or_create(
-            name=group_name,
-            is_main=True,
-            user=self.request.user
-        )
-
-        group.words.add(word)
+        add_to_main_group(self.request, word)
 
         return super().form_valid(form)
 
@@ -230,13 +232,8 @@ class WordListView(ListView):
         if filter_translation:
             queryset = queryset.filter(translation__icontains=filter_translation)
 
-        print(self.request.GET.keys())
-        print(self.request.GET.get('sort_alphabet'), self.request.GET.get('sort_date'))
-
         sort_alphabet = self.request.GET.get('sort_alphabet')
         sort_date = self.request.GET.get('sort_date')
-
-        print(sort_alphabet, sort_date)
 
         if sort_alphabet == 'asc':
             queryset = queryset.order_by('word')
@@ -746,22 +743,22 @@ def friends_list_view(request, user_name):
     friendships = Friendship.objects.filter(
         Q(sender=user, status='accepted') |
         Q(receiver=user, status='accepted')
-    )
+    ).select_related('sender', 'receiver')
 
     friends = [
         friendship.sender if friendship.receiver == user else friendship.receiver
         for friendship in friendships
     ]
 
-    friend_requests_in = Friendship.objects.filter(receiver=user, status='pending')
-    friend_requests_out = Friendship.objects.filter(sender=user, status='pending')
+    friend_requests_in = Friendship.objects.filter(receiver=user, status='pending').select_related('sender')
+    friend_requests_out = Friendship.objects.filter(sender=user, status='pending').select_related('receiver')
 
-    for user in friends:
-        friendship = friendships.filter(sender=user, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=user).first()
-        user.friendship_id = friendship.id if friendship else None
+    for friend in friends:
+        friendship = friendships.filter(sender=friend, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=friend).first()
+        friend.friendship_id = friendship.id if friendship else None
 
     return render(request, 'med/friends_list.html', {
-        'friends': friends, 
+        'friends': friends,
         'friend_requests_in': friend_requests_in,
         'friend_requests_out': friend_requests_out,
         'is_my_friends': is_my_friends,
@@ -986,13 +983,7 @@ def save_word(request, word_id):
 
         new_word = Word.objects.get(word=word.word, user=request.user)
 
-        group, created = WordGroup.objects.get_or_create(
-            name=group_name,
-            is_main=True,
-            user=request.user
-        )
-
-        group.words.add(new_word)
+        add_to_main_group(request.user, new_word)
 
     return redirect('words', user_name=request.user.username)
 

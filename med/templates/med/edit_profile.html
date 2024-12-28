@@ -2,19 +2,26 @@
 {% load static %}
 
 {% block content %}
-<div class="profile-container">
-    <h2>Edit Profile</h2>
-    <form method="post" style="box-shadow: none; margin-top: 0;">
+<div class="profile-container edit-container">
+    <ul class="user-list">
+        <li class="user-item">
+            <div class="user-card">
+    <h2 class="toggle-header" data-target="#profile-form">Edit Profile &#9660;</h2>
+    <form id="profile-form" method="post" style="box-shadow: none; margin-top: 0; display: none;">
         {% csrf_token %}
         {{ profile_form.as_p }}
         <input type="hidden" name="update_profile" value="update_profile">
         <div class="buttons edit-buttons">
-            <a href="#" onclick="this.closest('form').submit();" name="update_profile" class="btn">Update Profile Info</a>
+            <a href="#" onclick="this.closest('form').submit();" name="update_profile" class="btn">Update Profile Info &#9660;</a>
         </div>
     </form>
+            </div>
+        </li>
     
-    <h2>Display Of Words</h2>
-    <form method="post" style="box-shadow: none;">
+        <li class="user-item">
+            <div class="user-card">
+    <h2 class="toggle-header" data-target="#words-show-form">Display Of Words &#9660;</h2>
+    <form id="words-show-form" method="post" style="box-shadow: none; display: none;">
         {% csrf_token %}
         <div class="words_select">
             {{ words_show_form.words_num_in_prof.label_tag }}
@@ -44,12 +51,13 @@
             <a href="#" onclick="this.closest('form').submit();" name="update_words_show" class="btn">Update Words Show</a>
         </div>
     </form>
+            </div>
+        </li>
 
-    <h2>Update Avatar</h2>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
-    
-    <form method="post" enctype="multipart/form-data" id="avatar-form" style="box-shadow: none;">
+        <li class="user-item">
+            <div class="user-card">
+    <h2 class="toggle-header" data-target="#avatar-form">Update Avatar &#9660;</h2>
+    <form id="avatar-form" method="post" enctype="multipart/form-data" style="box-shadow: none; display: none;">
         {% csrf_token %}
         <div style="display: grid; align-items: center; justify-items: center;">
             <input type="file" id="avatar-input" accept="image/*" style="display: block; margin-bottom: 20px;">
@@ -72,9 +80,13 @@
             <a href="#" class="btn" onclick="submitAvatarForm()">Update Avatar Image</a>
         </div>
     </form>
-
-    <h2>Change Password</h2>
-    <form method="post" style="box-shadow: none; margin-top: 0;">
+            </div>
+        </li>
+    
+        <li class="user-item">
+            <div class="user-card">
+    <h2 class="toggle-header" data-target="#password-form">Change Password &#9660;</h2>
+    <form id="password-form" method="post" style="box-shadow: none; margin-top: 0; display: none;">
         {% csrf_token %}
         {{ password_form.as_p }}
         <input type="hidden" name="change_password" value="change_password">
@@ -82,7 +94,36 @@
             <a href="#" onclick="this.closest('form').submit();" name="change_password" class="btn">Change Password</a>
         </div>
     </form>
+            </div>
+        </li>
+    </ul>
+    
 </div>
+
+<script>
+    document.querySelectorAll('.toggle-header').forEach(header => {
+        const targetForm = document.querySelector(header.dataset.target);
+        const storedState = localStorage.getItem(header.dataset.target);
+        
+        // Restore the state from localStorage
+        if (storedState === 'open') {
+            targetForm.style.display = 'block';
+            header.innerHTML = header.innerHTML.replace('▼', '▲');
+        }
+
+        header.addEventListener('click', () => {
+            if (targetForm.style.display === 'none') {
+                targetForm.style.display = 'block';
+                header.innerHTML = header.innerHTML.replace('▼', '▲');
+                localStorage.setItem(header.dataset.target, 'open');
+            } else {
+                targetForm.style.display = 'none';
+                header.innerHTML = header.innerHTML.replace('▲', '▼');
+                localStorage.setItem(header.dataset.target, 'closed');
+            }
+        });
+    });
+</script>
 
 <script>
     const input = document.getElementById('avatar-input');

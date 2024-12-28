@@ -1176,7 +1176,6 @@ form .edit-buttons a {
     display: none;
 }
 
-
 .practice-container {
     max-width: 650px;
     min-width: 300px;
@@ -1510,6 +1509,39 @@ input[type="number"] {
 #theme-toggle-dark {
     color: #333;
 }
+
+.edit-container h2 {
+    cursor: pointer;
+}
+
+.edit-container form {
+    background-color: unset;
+}
+
+.edit-container .user-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 15px; 
+    padding: 20px; 
+    border: 1px solid var(--button-background);
+    border-radius: 10px; 
+    background-color: var(--background-color);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.edit-container .user-card form {
+    margin-top: 15px;
+    margin-bottom: 0px;
+}
+
+.edit-container .user-card form {
+    display: block;
+    width: 100%;
+    margin-top: 0;
+}
+
 
 @media (max-width: 900px) {
     .burger-menu {
