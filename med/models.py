@@ -81,6 +81,10 @@ class UserProfile(models.Model):
     show_bar_chart = models.BooleanField(default=True)
     show_line_chart = models.BooleanField(default=True)
     charts_order = models.CharField(max_length=30, default='Pie Chart,Bar Chart,Time Line')
+    text_read = models.IntegerField(default=0)
+    words_added_from_text = models.IntegerField(default=0)
+    sent_groups = models.IntegerField(default=0)
+    edited_words = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username
@@ -142,4 +146,40 @@ class ReadingText(models.Model):
         ordering = ['eng_level', 'word_count', 'title']
         indexes = [
             models.Index(fields=['eng_level', 'title'])
+        ]
+
+
+class Achievement(models.Model):
+    ACH_TYPE_CHOICES = [
+        ('1', 'Words'),
+        ('2', 'Groups'),
+        ('3', 'Friends'),
+        ('4', 'Reading'),
+        ('5', 'Interaction'),
+        ('6', 'Content Quality'),
+        ('7', 'Special')
+    ]
+
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    level = models.PositiveIntegerField()
+    icon = models.ImageField(upload_to='achievements/', blank=True)
+    ach_type = models.CharField(max_length=20, choices=ACH_TYPE_CHOICES)
+
+    def __str__(self):
+        return f"{self.name} (Level {self.level})"
+    
+
+class UserAchievement(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
+    time_get = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.achievement.name}"
+    
+    class Meta:
+        ordering = ['-time_get']
+        indexes = [
+            models.Index(fields=['-time_get'])
         ]
