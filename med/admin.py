@@ -27,7 +27,21 @@ class TextAdmin(admin.ModelAdmin):
     list_filter = ('title', "eng_level",) 
     search_fields = ('title',)
 
+
+class AchievementAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description','icon', 'level', 'ach_type')
+    list_filter = ('name', 'description')
+    search_fields = ('name', 'description')
+
+
+class UserAchievementAdmin(admin.ModelAdmin):
+    list_display = ('user', 'achievement', 'time_get')
+    list_filter = ('user', 'achievement')
+    search_fields = ('user', 'achievement')
+
 admin.site.register(Word, WordAdmin)
 admin.site.register(WordGroup, WordGroupAdmin)
 admin.site.register(Friendship, FriendshipAdmin)
 admin.site.register(ReadingText, TextAdmin)
+admin.site.register(Achievement, AchievementAdmin)
+admin.site.register(UserAchievement, UserAchievementAdmin)

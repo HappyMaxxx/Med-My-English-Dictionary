@@ -14,6 +14,7 @@ import requests
 
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncDay
+from contextlib import contextmanager
 
 from django.core.files.base import ContentFile
 from PIL import Image
@@ -39,6 +40,9 @@ from django.contrib.auth import logout, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 import os
 from med.models import *
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 MAX_GROUP_COUNT = 20
 
@@ -73,6 +77,8 @@ def index(request):
 def about(request):
     return render(request, 'med/about.html')
 
+processed_signals = {}
+
 def add_to_main_group(request, word):
     group_name = f"All {request.user.username}'s "
     group, created = WordGroup.objects.get_or_create(
@@ -81,7 +87,10 @@ def add_to_main_group(request, word):
         user=request.user
     )
 
+    post_save.disconnect(update_achievements_words, sender=Word)
     group.words.add(word)
+    post_save.connect(update_achievements_words, sender=Word)
+
 
 @method_decorator(login_required, name='dispatch')
 class AddWordView(LoginRequiredMixin, CreateView):
@@ -691,6 +700,7 @@ def user_search(request):
 @login_required
 def send_friend_request(request, username):
     receiver = get_object_or_404(User, username=username)
+
     if receiver == request.user:
         return redirect('profile', user_name=request.user.username)
     
@@ -1172,6 +1182,58 @@ def check_word(request):
                 return JsonResponse({'error': 'This word already exists in your dictionary.'}, status=200)
             return JsonResponse({'error': ''}, status=200)
         return JsonResponse({'error': 'Invalid word'}, status=200)
+
+def process_achievements(user, achievement_type, thresholds):
+    if user.pk in processed_signals:
+        return
+
+    processed_signals[user.pk] = True
+
+    achievements = Achievement.objects.filter(ach_type=achievement_type)
+    user_profile = UserProfile.objects.get(user=user)
+
+    current_user_achievements = UserAchievement.objects.filter(user=user, achievement__ach_type=achievement_type)
+    current_levels = {ua.achievement.level for ua in current_user_achievements}
+
+    item_count = (
+        Word.objects.filter(user=user).count() if achievement_type == '1'
+        else WordGroup.objects.filter(user=user).count() if achievement_type == '2'
+        else Friendship.objects.filter(Q(sender=user, status='accepted') | Q(receiver=user, status='accepted')).count() if achievement_type == '3'
+        else 0
+    )
+
+    for i, ach in enumerate(achievements):
+        threshold = thresholds[i] if i < len(thresholds) else thresholds[-1]
+
+        if item_count >= threshold and ach.level not in current_levels:
+            if any(existing_level > ach.level for existing_level in current_levels):
+                continue
+
+            UserAchievement.objects.filter(
+                user=user,
+                achievement__level__lt=ach.level
+            ).delete()
+
+            UserAchievement.objects.create(user=user, achievement=ach)
+
+            current_levels.add(ach.level)
+
+@receiver(post_save, sender=Word)
+def update_achievements_words(sender, instance, **kwargs):
+    thresholds = [10, 50, 100] 
+    process_achievements(instance, achievement_type='1', thresholds=thresholds)
+
+@receiver(post_save, sender=WordGroup)
+def update_achievements_groups(sender, instance, **kwargs):
+    thresholds = [2, 5, 10] 
+    process_achievements(instance, achievement_type='2', thresholds=thresholds)
+
+@receiver(post_save, sender=Friendship)
+def update_achievements_friends(sender, instance, **kwargs):
+    thresholds = [5, 20, 50]
+    
+    process_achievements(instance.sender, achievement_type='3', thresholds=thresholds)
+    process_achievements(instance.receiver, achievement_type='3', thresholds=thresholds)
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

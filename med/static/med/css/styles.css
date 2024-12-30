@@ -1351,7 +1351,8 @@ form .edit-buttons a {
 }
 
 .group_words .buttons a{
-    width: auto
+    width: auto;
+    min-width: 0px;
 }
 
 .groups-btn {
