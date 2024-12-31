@@ -41,7 +41,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import os
 from med.models import *
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed, pre_save
 from django.dispatch import receiver
 
 MAX_GROUP_COUNT = 20
@@ -67,6 +67,9 @@ practice_cards = {
     },
 }
 
+processed_signals = {}
+process_wrods_signals = {}
+
 @cache_page(60 * 15)
 def index(request):
     if request.user.is_authenticated:
@@ -77,8 +80,6 @@ def index(request):
 def about(request):
     return render(request, 'med/about.html')
 
-processed_signals = {}
-
 def add_to_main_group(request, word):
     group_name = f"All {request.user.username}'s "
     group, created = WordGroup.objects.get_or_create(
@@ -86,6 +87,8 @@ def add_to_main_group(request, word):
         is_main=True,
         user=request.user
     )
+
+    group.save()
 
     if isinstance(word, str):
         word = Word.objects.get(word=word, user=request.user)
@@ -1200,6 +1203,9 @@ def check_word(request):
         return JsonResponse({'error': 'Invalid word'}, status=200)
 
 def process_achievements(user, achievement_type, thresholds):
+    if achievement_type == '6':
+        processed_signals.clear()
+
     if user.pk in processed_signals:
         return
 
@@ -1210,25 +1216,51 @@ def process_achievements(user, achievement_type, thresholds):
 
     current_user_achievements = UserAchievement.objects.filter(user=user, achievement__ach_type=achievement_type)
     current_levels = {ua.achievement.level for ua in current_user_achievements}
-
-    item_count = (
-        Word.objects.filter(user=user).count() if achievement_type == '1'
-        else WordGroup.objects.filter(user=user).count() if achievement_type == '2'
-        else Friendship.objects.filter(Q(sender=user, status='accepted') | Q(receiver=user, status='accepted')).count() if achievement_type == '3'
-        else (user_profile.text_read, user_profile.words_added_from_text) if achievement_type == '4'
-        else 0
-    )
+    if achievement_type == '1':
+        item_count = Word.objects.filter(user=user).count()
+    elif achievement_type == '2':
+        item_count = WordGroup.objects.filter(user=user, is_main=False).count()
+    elif achievement_type == '3':
+        item_count = Friendship.objects.filter(Q(sender=user, status='accepted') | Q(receiver=user, status='accepted')).count()
+    elif achievement_type == '4':
+        item_count = (user_profile.text_read, user_profile.words_added_from_text)
+    elif achievement_type == '6':
+        item_count = Word.objects.filter(user=user).exclude(example='').count()
+    else:
+        item_count = 0
 
     for i, ach in enumerate(achievements):
         threshold = thresholds[i] if i < len(thresholds) else thresholds[-1]
 
-        if achievement_type in ['1', '2', '3']:
+        if achievement_type in ['1', '2', '3', '6']:
+            if achievement_type == '2' and current_levels == {2}:
+                groups_with_more_5_words = WordGroup.objects.filter(user=user, is_main=False).annotate(
+                    word_count=Count('words')
+                ).filter(word_count__gte=5).count()
+
+                if groups_with_more_5_words >= 5 and ach.level not in current_levels:
+                    if any(existing_level > ach.level for existing_level in current_levels):
+                        continue
+
+                    UserAchievement.objects.filter(
+                        user=user,
+                        achievement__ach_type=achievement_type,
+                        achievement__level__lt=ach.level
+                    ).delete()
+
+                    UserAchievement.objects.create(user=user, achievement=ach)
+
+                    current_levels.add(ach.level)
+                
+                continue
+
             if item_count >= threshold and ach.level not in current_levels:
                 if any(existing_level > ach.level for existing_level in current_levels):
                     continue
 
                 UserAchievement.objects.filter(
                     user=user,
+                    achievement__ach_type=achievement_type,
                     achievement__level__lt=ach.level
                 ).delete()
 
@@ -1249,15 +1281,28 @@ def process_achievements(user, achievement_type, thresholds):
 
                 current_levels.add(ach.level)
 
+def process_words_achivments(user, thresholds):
+    if user.pk in process_wrods_signals:
+        return
+    
+    process_wrods_signals[user.pk] = True
+    
+    achievement_type = ['1', '6']
+
+    for ach_type in achievement_type:
+        process_achievements(user, ach_type, thresholds)
+
 @receiver(post_save, sender=Word)
 def update_achievements_words(sender, instance, **kwargs):
     thresholds = [10, 50, 100]
-    process_achievements(instance.user, achievement_type='1', thresholds=thresholds)
+    process_words_achivments(instance.user, thresholds)
 
-@receiver(post_save, sender=WordGroup)
-def update_achievements_groups(sender, instance, **kwargs):
-    thresholds = [2, 5, 10] 
-    process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+@receiver(m2m_changed, sender=WordGroup.words.through)
+def update_achievements_on_group_words_change(sender, instance, action, **kwargs):
+    if action in ["post_add", "post_remove"]:
+        thresholds = [1, 5, 10]
+        process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+
 
 @receiver(post_save, sender=Friendship)
 def update_achievements_friends(sender, instance, **kwargs):
@@ -1270,6 +1315,8 @@ def update_achievements_friends(sender, instance, **kwargs):
 def update_achievements_reading(sender, instance, **kwargs):
     thresholds = [(5, 1), (50, 10), (100, 20)]
     process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
+
+# TODO: Interaction
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')
