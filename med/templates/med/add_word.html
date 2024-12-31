@@ -61,6 +61,10 @@
     </p>
     <div id="{{ form.word_type.id_for_label }}-error" class="form-error"></div>
     <div class="form-error down-error">{{ form.non_field_errors }}</div>
+    
+    {% if from_text %}
+        <input type="hidden" name="from_text" value="true">
+    {% endif %}
 
     <div class="buttons l-r-but">
         <a href="#" onclick="document.getElementById('word_adding_form').submit(); return false;">Add Word</a>

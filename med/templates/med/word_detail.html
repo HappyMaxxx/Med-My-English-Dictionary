@@ -9,7 +9,7 @@
     <p><strong>Example:</strong> {{ example }} </p>
 
     <div class="buttons">
-        <form action="{% url 'addword' %}" method="post" style="display:inline;" id="deletting_form">
+        <form action="{% url 'addword' %}?from=text" method="post" style="display:inline;" id="deletting_form">
             {% csrf_token %}
             <input type="hidden" name="word" value="{{ word }}">
             <input type="hidden" name="translation" value="{{ translation }}">
