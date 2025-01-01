@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 import string
 from django.http import FileResponse, Http404, HttpResponseNotFound, HttpResponseRedirect
@@ -219,6 +220,9 @@ class EditWordView(View):
         form = WordForm(request.POST, instance=word)
         if form.is_valid():
             form.save()
+            user_profile = UserProfile.objects.get(user=request.user)
+            user_profile.edited_words += 1
+            user_profile.save()
             return redirect('words', user_name=request.user.username)
         return render(request, 'med/edit_word.html', {'form': form, 'word': word})
     
@@ -1292,16 +1296,50 @@ def process_words_achivments(user, thresholds):
     for ach_type in achievement_type:
         process_achievements(user, ach_type, thresholds)
 
+SITE_LAUNCH_DATE = datetime(2025, 1, 1)
+
+from django.db.models import Count, Q
+
+def process_special_achivments(user):
+    user_special_achivments = UserAchievement.objects.filter(user=user, achievement__ach_type='7').values_list('achievement__name', flat=True)
+    all_achievements = Achievement.objects.filter(ach_type='7').in_bulk(field_name='name')
+
+    # Early Bird
+    if 'Early Bird' not in user_special_achivments and now() <= SITE_LAUNCH_DATE + timedelta(days=30):
+        UserAchievement.objects.create(user=user, achievement=all_achievements['Early Bird'])
+
+    # Marathoner
+    if 'Marathoner' not in user_special_achivments:
+        last_30_days = now().date() - timedelta(days=30)
+        user_logins = user.logins.filter(date__gte=last_30_days).aggregate(count=Count('date', distinct=True))['count']
+        if user_logins == 30:
+            UserAchievement.objects.create(user=user, achievement=all_achievements['Marathoner'])
+
+    # Perfectionist
+    if 'Perfectionist' not in user_special_achivments:
+        edited_words = UserProfile.objects.filter(user=user).values_list('edited_words', flat=True).first()
+        if edited_words and edited_words >= 20:
+            UserAchievement.objects.create(user=user, achievement=all_achievements['Perfectionist'])
+
+    # Gotta Catch 'Em All
+    if "Gotta Catch 'Em All" not in user_special_achivments:
+        ach_count = UserAchievement.objects.filter(user=user).exclude(achievement__ach_type='7').count()
+        user_ach_count = Achievement.objects.exclude(ach_type='7').count()
+        if ach_count == user_ach_count:
+            UserAchievement.objects.create(user=user, achievement=all_achievements["Gotta Catch 'Em All"])
+
 @receiver(post_save, sender=Word)
 def update_achievements_words(sender, instance, **kwargs):
     thresholds = [10, 50, 100]
     process_words_achivments(instance.user, thresholds)
+    process_special_achivments(instance.user)
 
 @receiver(m2m_changed, sender=WordGroup.words.through)
 def update_achievements_on_group_words_change(sender, instance, action, **kwargs):
     if action in ["post_add", "post_remove"]:
         thresholds = [1, 5, 10]
         process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+    process_special_achivments(instance.user)
 
 
 @receiver(post_save, sender=Friendship)
@@ -1315,6 +1353,7 @@ def update_achievements_friends(sender, instance, **kwargs):
 def update_achievements_reading(sender, instance, **kwargs):
     thresholds = [(5, 1), (50, 10), (100, 20)]
     process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
+    process_special_achivments(instance.user)
 
 # TODO: Interaction
 
