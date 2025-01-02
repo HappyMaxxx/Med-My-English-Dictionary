@@ -70,14 +70,6 @@
     {% endif %}
     {% endif %}
 
-    {% if achivments %}
-    <div class="achivment_container">
-        <form style="margin:20px 0px; width: 100%; max-width: none; padding: 10px;">
-            <h3>Achivments</h3>
-        </form>
-    </div>
-    {% endif %}
-
     {% if user_profile.show_word_stats != 'nobody' %}
         {% if user_profile.show_word_stats == 'every' or is_my_profile %}
             {% if word_count < 5 %}
@@ -316,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         title: {
-            text: 'Words Added Over the Last 7 Days',
+            text: 'Words Added Over the Last {{ n_days }} Days',
             style: {
                 color: textColor
             }
