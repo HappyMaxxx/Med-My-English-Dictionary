@@ -166,6 +166,11 @@ class Achievement(models.Model):
     icon = models.ImageField(upload_to='achievements/', blank=True)
     ach_type = models.CharField(max_length=20, choices=ACH_TYPE_CHOICES)
 
+    def get_icon_url(self):
+        if self.icon:
+            return f'/media/achievements/{self.icon.name.split("/")[-1]}'
+        return self.name
+
     def __str__(self):
         return f"{self.name} (Level {self.level})"
     
