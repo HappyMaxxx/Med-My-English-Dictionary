@@ -69,6 +69,22 @@
     </div>
     {% endif %}
     {% endif %}
+    
+    {% if achievements %}
+    <div class="achievements">
+        <form style="margin: 20px 0px; padding: 10px;">
+            <a href="{% url 'achievement' %}"><h3>Achievements</h3></a>
+            <div class="achievements-container">
+                {% for achievement in achievements %}
+                <div class="achievement-block">
+                    <h4>{{ achievement.achievement.name }}</h4>
+                    <p class="description">{{ achievement.achievement.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+    {% endif %}
 
     {% if user_profile.show_word_stats != 'nobody' %}
         {% if user_profile.show_word_stats == 'every' or is_my_profile %}

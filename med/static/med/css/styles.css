@@ -1543,6 +1543,67 @@ input[type="number"] {
     margin-top: 0;
 }
 
+.achievements-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.achievement-block {
+    flex: 1 0 calc(20% - 20px);
+    max-width: calc(20% - 20px);
+    border: 1px solid var(--tab-border-color);
+    padding: 10px;
+    text-align: center;
+    box-shadow: var(--feature-shadow);
+    background-color: var(--feature-background);
+    color: var(--text-color);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    aspect-ratio: 1;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.achievement-block h4 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-color);
+}
+
+.achievement-block:hover {
+    background-color: var(--tab-hover-background);
+    transform: scale(1.05);
+}
+
+.description {
+    position: absolute;
+    bottom: 10px; 
+    left: 0; 
+    right: 0;
+    padding: 10px;
+    background-color: var(--button-background);
+    color: var(--text-color);
+    border-radius: 5px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    font-size: 0.9em;
+    text-align: center;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.achievement-block:hover .description {
+    opacity: 1;
+    transform: translateY(0);
+    bottom: 10px;
+}
 
 @media (max-width: 900px) {
     .burger-menu {

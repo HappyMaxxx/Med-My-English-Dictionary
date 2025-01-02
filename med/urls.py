@@ -46,4 +46,5 @@ urlpatterns = [
     path('find_word_type/', views.find_word_type, name='find_word_type'),
     path('soon/', views.soon_page, name='soon'),
     path('check_word/', views.check_word, name='check_word'),
+    path('achievement/', views.achievement_view, name='achievement'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
