@@ -1300,22 +1300,24 @@ def process_words_achivments(user, thresholds):
 
 SITE_LAUNCH_DATE = datetime(2025, 1, 1)
 
-from django.db.models import Count, Q
-
 def process_special_achivments(user):
     user_special_achivments = UserAchievement.objects.filter(user=user, achievement__ach_type='7').values_list('achievement__name', flat=True)
-    all_achievements = Achievement.objects.filter(ach_type='7').in_bulk(field_name='name')
+    
+    all_achievements = Achievement.objects.filter(ach_type='7')
 
-    # Early Bird
-    if 'Early Bird' not in user_special_achivments and now() <= SITE_LAUNCH_DATE + timedelta(days=30):
-        UserAchievement.objects.create(user=user, achievement=all_achievements['Early Bird'])
+    current_time = now().replace(tzinfo=None)
+    if 'Early Bird' not in user_special_achivments and current_time <= SITE_LAUNCH_DATE + timedelta(days=30):
+        early_bird_achievement = all_achievements.get(name='Early Bird')
+        if early_bird_achievement:
+            UserAchievement.objects.create(user=user, achievement=early_bird_achievement)
 
     # Marathoner
     if 'Marathoner' not in user_special_achivments:
-        last_30_days = now().date() - timedelta(days=30)
-        user_logins = user.logins.filter(date__gte=last_30_days).aggregate(count=Count('date', distinct=True))['count']
-        if user_logins == 30:
-            UserAchievement.objects.create(user=user, achievement=all_achievements['Marathoner'])
+        # last_30_days = now().date() - timedelta(days=30)
+        # user_logins = user.logins.filter(date__gte=last_30_days).aggregate(count=Count('date', distinct=True))['count']
+        # if user_logins == 30:
+        #     UserAchievement.objects.create(user=user, achievement=all_achievements['Marathoner'])
+        pass
 
     # Perfectionist
     if 'Perfectionist' not in user_special_achivments:
@@ -1347,6 +1349,7 @@ def update_achievements_words(sender, instance, **kwargs):
     thresholds = [10, 50, 100]
     process_words_achivments(instance.user, thresholds)
     process_special_achivments(instance.user)
+    process_interaction_achivments(instance.user)
 
 @receiver(m2m_changed, sender=WordGroup.words.through)
 def update_achievements_on_group_words_change(sender, instance, action, **kwargs):
@@ -1354,7 +1357,7 @@ def update_achievements_on_group_words_change(sender, instance, action, **kwargs
         thresholds = [1, 5, 10]
         process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
     process_special_achivments(instance.user)
-
+    process_interaction_achivments(instance.user)
 
 @receiver(post_save, sender=Friendship)
 def update_achievements_friends(sender, instance, **kwargs):
