@@ -175,11 +175,33 @@ class UserAchievement(models.Model):
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     time_get = models.DateTimeField(auto_now_add=True)
 
+    @staticmethod
+    def get_last_five_achievements(user):
+        if UserAchievement.objects.filter(user=user, is_changed=True).exists():
+
+            custom_order = (
+                UserAchievement.objects.filter(user=user, is_changed=True)
+                .values_list('custom_order', flat=True)
+                .first()
+            )
+            order_list = custom_order.split(',') if custom_order else []
+
+            return UserAchievement.objects.filter(
+                user=user, achievement__name__in=order_list
+            ).order_by(models.Case(
+                *[
+                    models.When(achievement__name=name, then=idx)
+                    for idx, name in enumerate(order_list)
+                ]
+            ))
+        else:
+            return UserAchievement.objects.filter(user=user).order_by('-time_get')[:5]
+
     def __str__(self):
         return f"{self.user.username} - {self.achievement.name}"
-    
+
     class Meta:
         ordering = ['-time_get']
         indexes = [
-            models.Index(fields=['-time_get'])
+            models.Index(fields=['-time_get']),
         ]

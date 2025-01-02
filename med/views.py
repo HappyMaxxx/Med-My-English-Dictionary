@@ -484,6 +484,9 @@ class ProfileView(View):
                 'data': [daily_data.get((start_date + timedelta(days=i)).strftime('%Y-%m-%d'), 0) for i in range(n_days + 1)],
             })
 
+            user_achievements = UserAchievement.objects.filter(user=user)
+            achivments = UserAchievement.get_last_five_achievements(user)
+
             return {
                 'user_profile': user_profile,
                 'recent_words': recent_words,
@@ -494,7 +497,6 @@ class ProfileView(View):
                 'is_favorite': is_favorite,
                 'word_type_data': word_type_data,
                 'daily_chart_data': daily_chart_data,
-                'n_days': n_days,
                 'order': user_profile.charts_order.split(',')
             }
 
@@ -1328,6 +1330,18 @@ def process_special_achivments(user):
         if ach_count == user_ach_count:
             UserAchievement.objects.create(user=user, achievement=all_achievements["Gotta Catch 'Em All"])
 
+def process_interaction_achivments(user):
+    user_interaction_achivments = UserAchievement.objects.filter(user=user, achievement__ach_type='5').values_list('achievement__name', flat=True)
+    # Friendly learner
+    if not user_interaction_achivments:
+        user_groups = WordGroup.objects.filter(uses_users=user).count()
+        if user_groups >= 5:
+            UserAchievement.objects.create(user=user, achievement=Achievement.objects.get(ach_type='5', level=1))
+    
+    if user_interaction_achivments == ['Friendly learner']:
+        # TODO!
+        pass
+
 @receiver(post_save, sender=Word)
 def update_achievements_words(sender, instance, **kwargs):
     thresholds = [10, 50, 100]
@@ -1354,8 +1368,6 @@ def update_achievements_reading(sender, instance, **kwargs):
     thresholds = [(5, 1), (50, 10), (100, 20)]
     process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
     process_special_achivments(instance.user)
-
-# TODO: Interaction
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')
