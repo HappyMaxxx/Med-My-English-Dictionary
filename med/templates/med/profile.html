@@ -77,8 +77,11 @@
             <div class="achievements-container">
                 {% for achievement in achievements %}
                 <div class="achievement-block">
-                    <h4>{{ achievement.achievement.name }}</h4>
-                    <p class="description">{{ achievement.achievement.description }}</p>
+                    {% if achievement.achievement.icon %}
+                        <img class="achievement-icon prof_ach_ic" src="{{ achievement.achievement.get_icon_url }}" alt="Achievement icon">
+                    {% else %}
+                        <h4 class="achievement-title">{{ achievement.achievement.name }}</h4>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

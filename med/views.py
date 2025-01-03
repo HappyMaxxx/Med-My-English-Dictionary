@@ -1371,14 +1371,52 @@ def update_achievements_reading(sender, instance, **kwargs):
     thresholds = [(5, 1), (50, 10), (100, 20)]
     process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
     process_special_achivments(instance.user)
+    process_interaction_achivments(instance.user)
 
-# TODO:
 def achievement_view(request):
     achivments = {}
     for ach in Achievement.objects.all():
         achivments[ach.ach_type] = achivments.get(ach.ach_type, []) + [ach]
 
-    return render(request, 'med/achievements.html')
+    for ach_type in list(achivments.keys()):
+        achivments[Achievement.ACH_TYPE_CHOICES[int(ach_type) - 1][1]] = achivments.pop(ach_type)
+
+    type_list = [ach[1] for ach in Achievement.ACH_TYPE_CHOICES]
+
+    user_achivments = UserAchievement.objects.filter(user=request.user).values_list('achievement__name', flat=True)
+
+    biggest_level_each_type = {}
+
+    for ach_type in Achievement.ACH_TYPE_CHOICES[:6]:
+        ach = Achievement.objects.filter(
+            ach_type=ach_type[0],
+            userachievement__user=request.user
+        ).order_by('-level').first()
+        
+        if ach:
+            biggest_level_each_type[ach_type[1]] = ach.level
+    
+    for ach_type, ach_list in achivments.items():
+        for ach in ach_list:
+            if ach_type == 'Special':
+                if ach.name not in user_achivments:
+                    ach.name = "?"
+                    ach.description = f"???"
+                
+                continue
+
+            if ach.level > biggest_level_each_type.get(ach_type, 0):
+                ach.name = "?"
+                # ? ach.name = f"Locked {ach.name}"
+                ach.description = f"???"
+
+    return render(request, 'med/achievements.html', {
+        'achivments': achivments,
+        'types': type_list,
+        'user_achivments': user_achivments,
+        'biggest_level_each_type': biggest_level_each_type,
+    })
+
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')
