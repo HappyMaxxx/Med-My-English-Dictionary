@@ -6,8 +6,10 @@
 
     <div class="tabs">
         <button class="tab-btn active" data-tab="friends-tab">Friends</button>
-        <button class="tab-btn" data-tab="incoming-tab">Incoming Requests</button>
-        <button class="tab-btn" data-tab="outgoing-tab">Outgoing Requests</button>
+        {% if is_my_friends %}
+        <button class="tab-btn" data-tab="incoming-tab">Incoming {% if in_count != 0 %}<span class="count">{% if in_count <= 99 %}{{in_count}}{% else %} 99+ {% endif %}</span>{% endif %}</button>
+        <button class="tab-btn" data-tab="outgoing-tab">Outgoing</button>
+        {% endif %}
     </div>
 
     <div class="tab-content" id="friends-tab">
@@ -37,6 +39,7 @@
         {% endif %}
     </div>
 
+    {% if is_my_friends %}
     <div class="tab-content hidden" id="incoming-tab">
         <h2>Incoming Friend Requests:</h2>
         {% if friend_requests_in %}
@@ -87,6 +90,7 @@
             <p>No outgoing friend requests.</p>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 
 <script>

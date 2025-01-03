@@ -789,8 +789,10 @@ def friends_list_view(request, user_name):
         friend.friendship_id = friendship.id if friendship else None
 
     return render(request, 'med/friends_list.html', {
+        'user': user,
         'friends': friends,
         'friend_requests_in': friend_requests_in,
+        "in_count": friend_requests_in.count(),
         'friend_requests_out': friend_requests_out,
         'is_my_friends': is_my_friends,
     })
