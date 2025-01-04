@@ -9,7 +9,32 @@
         <div style="margin-right: auto;">
             <a href="{% url 'profile' request.user.username %}" class="buttons" style="display: inline-block; text-align: center;">&lt;</a>
         </div>
-    </div>   
+    </div>
+
+    {% if profile_achievements %}
+    <div class="achievements" style="display:flex; justify-items: center; justify-content: center;">
+        <form id="achievements-form" method="post" action="{% url 'achievement' %}" style="margin: 20px 0px; padding: 10px;">
+            {% csrf_token %}
+            <a href="{% url 'achievement' %}"><h3>Achievements</h3></a>
+            <div class="achievements-container" id="sortable">
+                {% for achievement in profile_achievements %}
+                {% if achievement.achievement.icon %}
+                        <img draggable="true" data-id="{{ achievement.id }}" class="achievement-block achievement-icon prof_ach_ic" src="{{ achievement.achievement.get_icon_url }}" alt="Achievement icon">
+                {% else %}
+                <div class="achievement-block" data-id="{{ achievement.id }}" draggable="true">
+                        <h4 class="achievement-title">{{ achievement.achievement.name }}</h4>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <input type="hidden" name="word_stat_order" id="ach-order">
+
+            <div class="buttons">
+                <a onclick="document.getElementById('achievements-form').submit(); return false;">Update Order</a>
+            </div>
+        </form>
+    </div>
+    {% endif %}
 
     <div class="achievements-grid">
         {% for ach_type, ach_list in achivments.items %}
@@ -31,4 +56,56 @@
         {% endfor %}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('sortable');
+        const hiddenInput = document.getElementById('ach-order');
+
+        let draggedItem = null;
+
+        container.addEventListener('dragstart', (e) => {
+            draggedItem = e.target;
+            e.target.style.opacity = 0.5;
+        });
+
+        container.addEventListener('dragend', (e) => {
+            e.target.style.opacity = '';
+        });
+
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            let target = e.target;
+            while (target && target !== container && !target.classList.contains('achievement-block')) {
+                target = target.parentElement;
+            }
+            if (draggedItem && target && target !== draggedItem) {
+                const allItems = Array.from(container.children);
+                const indexDragged = allItems.indexOf(draggedItem);
+                const indexTarget = allItems.indexOf(target);
+
+                if (indexDragged < indexTarget) {
+                    container.insertBefore(draggedItem, target.nextSibling);
+                } else {
+                    container.insertBefore(draggedItem, target);
+                }
+            }
+        });
+
+        container.addEventListener('dragend', () => {
+            updateOrder();
+        });
+
+        function updateOrder() {
+            const ids = Array.from(container.children).map(item => item.dataset.id);
+            console.log(ids);
+            hiddenInput.value = JSON.stringify(ids);
+        };
+    });
+
+</script>
 {% endblock %}

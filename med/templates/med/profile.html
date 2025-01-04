@@ -76,13 +76,13 @@
             <a href="{% url 'achievement' %}"><h3>Achievements</h3></a>
             <div class="achievements-container">
                 {% for achievement in achievements %}
-                <div class="achievement-block">
-                    {% if achievement.achievement.icon %}
-                        <img class="achievement-icon prof_ach_ic" src="{{ achievement.achievement.get_icon_url }}" alt="Achievement icon">
-                    {% else %}
+                {% if achievement.achievement.icon %}
+                        <img data-id="{{ achievement.id }}" class="achievement-icon prof_ach_ic" src="{{ achievement.achievement.get_icon_url }}" alt="Achievement icon">
+                {% else %}
+                <div class="achievement-block" data-id="{{ achievement.id }}">
                         <h4 class="achievement-title">{{ achievement.achievement.name }}</h4>
-                    {% endif %}
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </form>

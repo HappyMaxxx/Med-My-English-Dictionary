@@ -10,7 +10,7 @@ from django.contrib.auth.views import LoginView
 from django.views import View
 from django.core.files.storage import default_storage
 from django.views.decorators.cache import cache_page
-from django.db.models import Min, Max
+from django.db.models import Min, Max, When, Case
 import requests
 
 from django.utils.timezone import now, timedelta
@@ -484,7 +484,17 @@ class ProfileView(View):
                 'data': [daily_data.get((start_date + timedelta(days=i)).strftime('%Y-%m-%d'), 0) for i in range(n_days + 1)],
             })
 
-            achievements = UserAchievement.objects.filter(user=user)[:5]
+            if user_profile.chenged_order:
+                achievements_order = user_profile.achicment_order.strip('[]').replace('"', '').split(",")
+
+                order = [int(i) for i in achievements_order]
+
+                achievements = UserAchievement.objects.filter(
+                    user=request.user,
+                    id__in=achievements_order
+                ).order_by(Case(*[When(id=id, then=pos) for pos, id in enumerate(order)]))
+            else:
+                achievements = UserAchievement.objects.filter(user=request.user)[:5]
 
             return {
                 'user_profile': user_profile,
@@ -1376,6 +1386,14 @@ def update_achievements_reading(sender, instance, **kwargs):
     process_interaction_achivments(instance.user)
 
 def achievement_view(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    if request.method == 'POST':
+        order = request.POST.get('word_stat_order')
+        if order:
+            user_profile.achicment_order = order
+            user_profile.chenged_order = True
+            user_profile.save()
+
     achivments = {}
     for ach in Achievement.objects.all():
         achivments[ach.ach_type] = achivments.get(ach.ach_type, []) + [ach]
@@ -1409,16 +1427,27 @@ def achievement_view(request):
 
             if ach.level > biggest_level_each_type.get(ach_type, 0):
                 ach.name = "?"
-                # ? ach.name = f"Locked {ach.name}"
                 ach.description = f"???"
 
+    if user_profile.chenged_order:
+        achievements_order = user_profile.achicment_order.strip('[]').replace('"', '').split(",")
+
+        order = [int(i) for i in achievements_order]
+
+        profile_achievements = UserAchievement.objects.filter(
+            user=request.user,
+            id__in=achievements_order
+        ).order_by(Case(*[When(id=id, then=pos) for pos, id in enumerate(order)]))
+    else:
+        profile_achievements = UserAchievement.objects.filter(user=request.user)[:5]
+
     return render(request, 'med/achievements.html', {
+        'profile_achievements': profile_achievements,
         'achivments': achivments,
         'types': type_list,
         'user_achivments': user_achivments,
         'biggest_level_each_type': biggest_level_each_type,
     })
-
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

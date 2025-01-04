@@ -374,6 +374,7 @@ form .buttons a {
     text-align: center;
     font-weight: bold;
     transition: background-color 0.3s;
+    cursor: pointer;
 }
 
 form .buttons a:hover {
@@ -1555,7 +1556,7 @@ input[type="number"] {
     flex: 1 0 calc(20% - 10px);
     max-width: calc(20% - 10px);
     border: 1px solid var(--tab-border-color);
-    padding: 10px;
+    /* padding: 10px; */
     text-align: center;
     box-shadow: var(--feature-shadow);
     background-color: var(--feature-background);
@@ -1653,13 +1654,6 @@ input[type="number"] {
     justify-content: space-evenly;
 }
 
-/* .achievement-list > * {
-    flex: 1 1 calc(25% - 20px);
-    box-sizing: border-box;
-    aspect-ratio: 1 / 1;
-}
-*/
-
 .achievement-card {
     text-align: center;
     position: relative;
@@ -1677,12 +1671,16 @@ input[type="number"] {
 }
 
 .achievement-icon {
-    position: absolute;
     top: 0;
     left: 0;
+    max-width: calc(20% - 10px);
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.achievement-card .achievement-icon {
+    max-width: 100%;
 }
 
 .prof_ach_ic {

@@ -86,6 +86,9 @@ class UserProfile(models.Model):
     sent_groups = models.IntegerField(default=0)
     edited_words = models.IntegerField(default=0)
 
+    chenged_order = models.BooleanField(default=False)
+    achicment_order = models.CharField(max_length=30, blank=True)
+
     def __str__(self):
         return self.user.username
     
