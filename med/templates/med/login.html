@@ -3,20 +3,40 @@
 {% block content %}
 <h1>{{title}}</h1>
 
-<form method="post">
+
+<form method="post" id="loginForm">
     {% csrf_token %}
-    
+
     {% for field in form %}
         <p><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}: </label>{{ field }}</p>
-        <div class="form-error">{{ field.errors }}</div> 
+        <div class="form-error">{{ field.errors }}</div>
     {% endfor %}
     <div class="form-error">{{ form.non_field_errors }}</div>
 
     <div class="buttons l-r-but">
-        <a href="#" onclick="document.getElementsByTagName('form')[0].submit(); return false;">Log in</a>
+        <a href="#" id="submitLink">Log in</a>
     </div>
 
     <p>Not a member? <a href="{% url 'register' %}">Signup now</a></p>
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('loginForm');
+        var submitLink = document.getElementById('submitLink');
+
+        form.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitLink.click(); 
+            }
+        });
+
+        submitLink.addEventListener('click', function(event) {
+        event.preventDefault(); 
+        form.submit();
+        });
+    });
+</script>
 
 {% endblock %}
