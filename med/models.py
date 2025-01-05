@@ -165,6 +165,7 @@ class Achievement(models.Model):
 
     name = models.CharField(max_length=100)
     description = models.TextField()
+    requirements = models.TextField(blank=True)
     level = models.PositiveIntegerField()
     icon = models.ImageField(upload_to='achievements/', blank=True)
     ach_type = models.CharField(max_length=20, choices=ACH_TYPE_CHOICES)

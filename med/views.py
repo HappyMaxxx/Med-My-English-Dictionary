@@ -495,6 +495,8 @@ class ProfileView(View):
                 ).order_by(Case(*[When(id=id, then=pos) for pos, id in enumerate(order)]))
             else:
                 achievements = UserAchievement.objects.filter(user=request.user)[:5]
+            
+            process_special_achivments(user)
 
             return {
                 'user_profile': user_profile,
@@ -571,6 +573,8 @@ class SelectGroupView(View):
         for word in words:
             if word not in group_words:
                 group.words.add(word)
+
+        group.save()
 
         return redirect('group_words', group_id=group_id)
     
@@ -1255,7 +1259,7 @@ def process_achievements(user, achievement_type, thresholds):
                 groups_with_more_5_words = WordGroup.objects.filter(user=user, is_main=False).annotate(
                     word_count=Count('words')
                 ).filter(word_count__gte=5).count()
-
+                print(groups_with_more_5_words)
                 if groups_with_more_5_words >= 5 and ach.level not in current_levels:
                     if any(existing_level > ach.level for existing_level in current_levels):
                         continue
@@ -1363,13 +1367,20 @@ def update_achievements_words(sender, instance, **kwargs):
     process_special_achivments(instance.user)
     process_interaction_achivments(instance.user)
 
-@receiver(m2m_changed, sender=WordGroup.words.through)
-def update_achievements_on_group_words_change(sender, instance, action, **kwargs):
-    if action in ["post_add", "post_remove"]:
-        thresholds = [1, 5, 10]
-        process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+@receiver(post_save, sender=WordGroup)
+def update_achievements_on_group_words_change(sender, instance, **kwargs):
+    thresholds = [1, 5, 10]
+    process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
     process_special_achivments(instance.user)
     process_interaction_achivments(instance.user)
+
+@receiver(m2m_changed, sender=WordGroup.words.through)
+def update_achievements_on_group_words_change(sender, instance, action, **kwargs):
+    if action in ['post_add', 'post_remove', 'post_clear']:
+        thresholds = [1, 5, 10]
+        process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+        process_special_achivments(instance.user)
+        process_interaction_achivments(instance.user)   
 
 @receiver(post_save, sender=Friendship)
 def update_achievements_friends(sender, instance, **kwargs):
@@ -1422,12 +1433,14 @@ def achievement_view(request):
                 if ach.name not in user_achivments:
                     ach.name = "?"
                     ach.description = f"???"
-                
                 continue
 
             if ach.level > biggest_level_each_type.get(ach_type, 0):
                 ach.name = "?"
-                ach.description = f"???"
+                if ach.level == biggest_level_each_type.get(ach_type, 0) + 1:
+                    ach.description = ach.requirements
+                else:
+                    ach.description = "???"
 
     if user_profile.chenged_order:
         achievements_order = user_profile.achicment_order.strip('[]').replace('"', '').split(",")
