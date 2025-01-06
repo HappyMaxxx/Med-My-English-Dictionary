@@ -858,11 +858,12 @@ def reading_view(request):
     })
 
 def parct_groups_view(request):
-    groups = WordGroup.objects.filter(user__username='grouper', is_main=False)
+    groups = CommunityGroup.objects.filter(state='added').select_related('group')
 
     for group in groups:
-        group.words_count = group.words.count()
-    groups = sorted(groups, key=lambda x: x.words_count, reverse=False)
+        group.words_count = group.group.words.count()
+    
+    groups = sorted(groups, key=lambda x: x.words_count)
 
     paginator = Paginator(groups, 25)
     page_number = request.GET.get('page')
@@ -1002,6 +1003,10 @@ class PracticeGroupWordsListView(ListView):
         group = get_object_or_404(WordGroup, id=group_id)
         context['group'] = group
         context['is_usses'] = group.uses_users.filter(id=self.request.user.id).exists()
+        if CommunityGroup.objects.filter(group=context['group'], state='added').exists():
+            context['is_community'] = True
+        else:
+            context['is_community'] = False
         return context
     
 def add_as_uses(request, group_id):
@@ -1350,15 +1355,22 @@ def process_special_achivments(user):
 
 def process_interaction_achivments(user):
     user_interaction_achivments = UserAchievement.objects.filter(user=user, achievement__ach_type='5').values_list('achievement__name', flat=True)
+    print(user_interaction_achivments)
     # Friendly learner
     if not user_interaction_achivments:
         user_groups = WordGroup.objects.filter(uses_users=user).count()
         if user_groups >= 5:
             UserAchievement.objects.create(user=user, achievement=Achievement.objects.get(ach_type='5', level=1))
-    
-    if user_interaction_achivments == ['Friendly learner']:
-        # TODO!
-        pass
+    # Social Butterfly
+    fl_ach = Achievement.objects.get(ach_type='5', level=1)
+    print('1', fl_ach)
+    if fl_ach.name in user_interaction_achivments:
+        print("1")
+        shered_groups = CommunityGroup.objects.filter(state='added', group__user=user).count()
+        print(shered_groups)
+        if shered_groups >= 10:
+            UserAchievement.objects.create(user=user, achievement=Achievement.objects.get(ach_type='5', level=2))
+            UserAchievement.objects.filter(user=user, achievement=fl_ach).delete()
 
 @receiver(post_save, sender=Word)
 def update_achievements_words(sender, instance, **kwargs):
@@ -1461,6 +1473,36 @@ def achievement_view(request):
         'user_achivments': user_achivments,
         'biggest_level_each_type': biggest_level_each_type,
     })
+
+def send_group_request(request, group_id):
+    group = get_object_or_404(WordGroup, id=group_id, user=request.user)
+
+    CommunityGroup.objects.create(
+        group=group,
+        state='pending',
+    )
+    
+    return redirect('group_words', group_id=group_id)
+
+def approve_group_request(request, group_id):
+    group = get_object_or_404(CommunityGroup, group_id=group_id)
+    group.state = 'added'
+    group.save()
+
+    return redirect('practice_groups')
+
+def reject_group_request(request, group_id):
+    CommunityGroup.objects.filter(group_id=group_id).delete()
+
+    return redirect('practice_groups')
+
+def pending_group_requests(request):
+    if not request.user.is_staff:
+        return redirect('profile', user_name=request.user.username)
+    
+    pending_requests = CommunityGroup.objects.filter(state='pending')
+
+    return render(request, 'med/pending_group_requests.html', {'pending_requests': pending_requests})
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

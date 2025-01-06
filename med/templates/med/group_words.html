@@ -6,21 +6,30 @@
 <h1>{{ group.name }} words</h1>
 
 <div class="word_table_container reading-content group_words">
-    <div class="buttons make-text-btn groups-btn">
-        <a href="{% url 'practice_groups' %}">&lt;</a>
-        
-        {% if not is_usses %}
-        {% if request.user.username != 'grouper' %}
-        <a href="{% url 'add_as_uses' group.id %}">Save</a>
-        {% endif %}
+    <div class="buttons" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+        <div style="margin-right: auto;">
+            <a href="{% url 'practice_groups' %}" class="buttons" style="display: inline-block; text-align: center;">&lt;</a>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+        {% if is_community %}
+            {% if not is_usses %}
+                {% if group.group.user != request.user %}
+                    <a href="{% url 'add_as_uses' group.id %}">Save</a>
+                {% endif %}
+            {% else %}
+            <a href="{% url 'group_words' group.id %}">View</a>
+            <a href="{% url 'leave_group' group_id=group.id fp=1 %}">Leave</a>
+            {% endif %}
+            
+            {% if group.user.username == request.user.username %}
+            <a href="{% url 'group_words' group.id %}">Edit Group</a>
+            {% endif %}
         {% else %}
-        <a href="{% url 'group_words' group.id %}">View</a>
-        <a href="{% url 'leave_group' group_id=group.id fp=1 %}">Leave</a>
+            <a href="{% url 'approve_group_request' group.id %}">Approve</a>
+            <a href="{% url 'delete_group_request' group.id %}">Decline</a>
         {% endif %}
-        
-        {% if request.user.username == 'grouper' %}
-        <a href="{% url 'group_words' group.id %}">Edit Group</a>
-        {% endif %}
+        </div>
     </div>
 
     {% if words %}

@@ -5,22 +5,27 @@
 <h1>Community Groups</h1>
 
 <div class="reading-container">
-    <div class="buttons make-text-btn texts-btn">
-        <a href="{% url 'practice' %}">&lt;</a>
-        {% if request.user.username == 'grouper' %}
-        <a href="{% url 'create_group' %}">Create Group</a>
-        {% endif %}
+    <div class="buttons" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+        <div style="margin-right: auto;">
+            <a href="{% url 'practice' %}" class="buttons" style="display: inline-block; text-align: center;">&lt;</a>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            {% if request.user.is_staff %}
+            <a href="{% url 'pending_requests' %}">Pending Requests</a>
+            {% endif %}
+            <a href="{% url 'create_group' %}">Create Group</a>
+        </div>
     </div>
 
     {% if groups %}
     <ul class="user-list">
         {% for group in groups %}
         <li class="user-item">
-            <a href="{% url 'group_words_practice' group.id %}">
+            <a href="{% url 'group_words_practice' group.group.id %}">
             <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
 
                 <div class="user-title" style="flex: 1; text-align: left; margin-left: 15px;">
-                    <p class="user-name"><strong>{{ group.name }}</strong></p>
+                    <p class="user-name"><strong>{{ group.group.name }}</strong></p>
                 </div>
 
                 <div class="user-stats" style="display: flex; gap: 20px; text-align: center; margin-right: 15px;">

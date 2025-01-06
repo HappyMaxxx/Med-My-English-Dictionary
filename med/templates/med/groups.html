@@ -121,13 +121,16 @@
         </nav>
         {% endif %}
         {% if not is_uses %}
-        <div class="buttons groups-buttons">
+        <div class="buttons groups-buttons" style="margin-top: 15px;">
             <div class="add_word">
                 {% if is_main %}
                 <a href="{% url 'addword' %}" class="add-word-button">Add Word</a>
                 {% else %}
                 <a href="{% url 'words' request.user.username %}" class="add-word-button">Add Word</a>
                 <a href="#" class="add-word-button" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
+                {% if words %}
+                    <a href="{% url 'send_group_request' group_id  %}" class="add-word-button">Share</a>
+                {% endif %}
                 {% endif %}
             </div>
             {% if not is_main %}

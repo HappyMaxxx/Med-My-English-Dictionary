@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Pending groups</h1>
+
+<div class="reading-container">
+    <div class="buttons" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+        <div style="margin-right: auto;">
+            <a href="{% url 'practice_groups' %}" class="buttons" style="display: inline-block; text-align: center;">&lt;</a>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+        </div>
+    </div>
+
+{% if pending_requests %}
+    <ul class="user-list">
+        {% for request in pending_requests %}
+        <li class="user-item">
+            <a href="{% url 'group_words_practice' request.group.id %}">
+            <div class="user-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+
+                <div class="user-title" style="flex: 1; text-align: left; margin-left: 15px;">
+                    <p class="user-name"><strong>{{ request.group.name }}</strong></p>
+                </div>
+
+                <div class="user-stats" style="display: flex; gap: 20px; text-align: center; margin-right: 15px;">
+
+                    <a href="{% url 'approve_group_request' request.group.id %}">Approve</a>
+                    <a href="{% url 'delete_group_request' request.group.id %}">Decline</a>
+
+                    <div class="stat-item reading-item">
+                        <p>{{ request.group.user.username}}</p>
+                    </div>
+                </div>
+            </div>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No pending requests</p>
+{% endif %}
+</div>
+
+{% endblock %}

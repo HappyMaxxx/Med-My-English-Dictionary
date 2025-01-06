@@ -49,6 +49,20 @@ class WordGroup(models.Model):
         ]
 
 
+class CommunityGroup(models.Model):
+    group = models.OneToOneField(WordGroup, on_delete=models.CASCADE)
+    state = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('added', 'Added')], default='public')
+
+    def __str__(self):
+        return self.group.name
+    
+    class Meta:
+        ordering = ['group__name']
+        indexes = [
+            models.Index(fields=['group'])
+        ]
+
+
 class UserProfile(models.Model):
     class Types(models.TextChoices):
         favourite = 'fav', 'Favourite'
