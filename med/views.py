@@ -1039,7 +1039,7 @@ def save_word(request, word_id):
 
         new_word = Word.objects.get(word=word.word, user=request.user)
 
-        add_to_main_group(request.user, new_word)
+        add_to_main_group(request, new_word)
 
     return redirect('words', user_name=request.user.username)
 
