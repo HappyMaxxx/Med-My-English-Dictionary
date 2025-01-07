@@ -28,10 +28,6 @@
                 {% endfor %}
             </div>
             <input type="hidden" name="word_stat_order" id="ach-order">
-
-            <div class="buttons">
-                <a onclick="document.getElementById('achievements-form').submit(); return false;">Update Order</a>
-            </div>
         </form>
     </div>
     {% endif %}
@@ -72,6 +68,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('sortable');
+        const form = document.getElementById('achievements-form');
         const hiddenInput = document.getElementById('ach-order');
 
         let draggedItem = null;
@@ -105,19 +102,16 @@
                 } else {
                     container.insertBefore(draggedItem, target);
                 }
-            }
-        });
 
-        container.addEventListener('dragend', () => {
-            updateOrder();
+                updateOrder();
+            }
         });
 
         function updateOrder() {
             const ids = Array.from(container.children).map(item => item.dataset.id);
-            console.log(ids);
             hiddenInput.value = JSON.stringify(ids);
-        };
+            form.submit();
+        }
     });
-
 </script>
 {% endblock %}
