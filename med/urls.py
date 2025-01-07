@@ -47,6 +47,7 @@ urlpatterns = [
     path('soon/', views.soon_page, name='soon'),
     path('check_word/', views.check_word, name='check_word'),
     path('achievement/', views.achievement_view, name='achievement'),
+    path('add_achievement/<int:ach_id>/', views.add_achievement, name='add_achievement'),
     path('pending_requests/', views.pending_group_requests, name='pending_requests'),
     path('send_grooup_request/<int:group_id>/', views.send_group_request, name='send_group_request'),
     path('approve_group_request/<int:group_id>/', views.approve_group_request, name='approve_group_request'),

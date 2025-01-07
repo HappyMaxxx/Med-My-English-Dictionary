@@ -42,6 +42,8 @@
                 <h2 class="category-title">{{ ach_type }}:</h2>
                 <div class="achievement-list">
                     {% for ach in ach_list %}
+
+                    <div style="display: grid; grid-template-rows: auto; justify-items: center;">
                         <div class="achievement-card">
                             {% if ach.icon and ach.name != '?' %}
                                 <img class="achievement-icon" src="{{ ach.get_icon_url }}" alt="Achievement icon">
@@ -50,6 +52,16 @@
                             {% endif %}
                             <p class="description">{{ ach.description }}</p>
                         </div>
+
+                        {% if ach.name != '?' %}
+                        {% if ach not in prof_ach and ach in prof_ach_biggest_level %}
+                        <div class="buttons" style="margin-top: 15px;">
+                            <a href='{% url "add_achievement" ach.id %}' class="btn">+</a>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
                     {% endfor %}
                 </div>
             </div>

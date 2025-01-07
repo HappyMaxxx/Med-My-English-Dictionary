@@ -1355,7 +1355,6 @@ def process_special_achivments(user):
 
 def process_interaction_achivments(user):
     user_interaction_achivments = UserAchievement.objects.filter(user=user, achievement__ach_type='5').values_list('achievement__name', flat=True)
-    print(user_interaction_achivments)
     # Friendly learner
     if not user_interaction_achivments:
         user_groups = WordGroup.objects.filter(uses_users=user).count()
@@ -1363,11 +1362,8 @@ def process_interaction_achivments(user):
             UserAchievement.objects.create(user=user, achievement=Achievement.objects.get(ach_type='5', level=1))
     # Social Butterfly
     fl_ach = Achievement.objects.get(ach_type='5', level=1)
-    print('1', fl_ach)
     if fl_ach.name in user_interaction_achivments:
-        print("1")
         shered_groups = CommunityGroup.objects.filter(state='added', group__user=user).count()
-        print(shered_groups)
         if shered_groups >= 10:
             UserAchievement.objects.create(user=user, achievement=Achievement.objects.get(ach_type='5', level=2))
             UserAchievement.objects.filter(user=user, achievement=fl_ach).delete()
@@ -1466,13 +1462,50 @@ def achievement_view(request):
     else:
         profile_achievements = UserAchievement.objects.filter(user=request.user)[:5]
 
+    prof_ach = [ach.achievement for ach in profile_achievements]
+
+    user_ach_ach = [ach.achievement for ach in UserAchievement.objects.filter(user=request.user)]
+
+    prof_ach_biggest_level = []
+    for ach in user_ach_ach:
+        ach_type = ach.ach_type
+
+        if ach_type not in prof_ach_biggest_level or ach.level > prof_ach_biggest_level[ach_type].level:
+            prof_ach_biggest_level.append(ach)
+
+    special_ach = Achievement.objects.filter(ach_type='7')
+
+    for ach in special_ach:
+        if ach not in prof_ach_biggest_level:
+            prof_ach_biggest_level.append(ach)
+
     return render(request, 'med/achievements.html', {
         'profile_achievements': profile_achievements,
+        'prof_ach': prof_ach,
+        'prof_ach_biggest_level': prof_ach_biggest_level,
         'achivments': achivments,
         'types': type_list,
         'user_achivments': user_achivments,
         'biggest_level_each_type': biggest_level_each_type,
     })
+
+def add_achievement(request, ach_id):
+    user_profile = UserProfile.objects.get(user=request.user)
+    ach = get_object_or_404(Achievement, id=ach_id)
+    achivemenet = get_object_or_404(UserAchievement, user=request.user, achievement=ach)
+
+    achicment_order = user_profile.achicment_order.strip('[]').replace('"', '').split(",")
+
+    if len(achicment_order) == 5:
+        achicment_order = [str(achivemenet.id)] + achicment_order[:-1]
+
+    achicment_order = str(achicment_order).replace("'", '"')
+
+    user_profile.achicment_order = achicment_order.replace('"', '')
+    user_profile.chenged_order = True
+    user_profile.save()
+
+    return redirect('achievement')
 
 def send_group_request(request, group_id):
     group = get_object_or_404(WordGroup, id=group_id, user=request.user)
