@@ -57,7 +57,11 @@
         <li class="user-item">
             <div class="user-card">
     <h2 class="toggle-header" data-target="#avatar-form">Update Avatar &#9660;</h2>
-    <form id="avatar-form" method="post" enctype="multipart/form-data" style="box-shadow: none; display: none;">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
+    
+    <form method="post" enctype="multipart/form-data" id="avatar-form">
         {% csrf_token %}
         <div style="display: grid; align-items: center; justify-items: center;">
             <input type="file" id="avatar-input" accept="image/*" style="display: block; margin-bottom: 20px;">
