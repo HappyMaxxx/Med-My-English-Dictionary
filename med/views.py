@@ -12,7 +12,7 @@ from django.core.files.storage import default_storage
 from django.views.decorators.cache import cache_page
 from django.db.models import Min, Max, When, Case
 import requests
-
+from django.contrib.auth.signals import user_logged_in
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncDay
 from contextlib import contextmanager
@@ -1334,24 +1334,30 @@ def process_special_achivments(user):
 
     # Marathoner
     if 'Marathoner' not in user_special_achivments:
-        # last_30_days = now().date() - timedelta(days=30)
-        # user_logins = user.logins.filter(date__gte=last_30_days).aggregate(count=Count('date', distinct=True))['count']
-        # if user_logins == 30:
-        #     UserAchievement.objects.create(user=user, achievement=all_achievements['Marathoner'])
-        pass
+        last_30_days = now().date() - timedelta(days=30)
+        user_logins = user.logins.filter(date__gte=last_30_days).aggregate(count=Count('date', distinct=True))['count']
+        print(user_logins)
+        if user_logins == 30:
+            marathoner_achievement = all_achievements.get(name='Marathoner')
+            if marathoner_achievement:
+                UserAchievement.objects.create(user=user, achievement=marathoner_achievement)
 
     # Perfectionist
     if 'Perfectionist' not in user_special_achivments:
         edited_words = UserProfile.objects.filter(user=user).values_list('edited_words', flat=True).first()
         if edited_words and edited_words >= 20:
-            UserAchievement.objects.create(user=user, achievement=all_achievements['Perfectionist'])
+            perfectionist_achievement = all_achievements.get(name='Perfectionist')
+            if perfectionist_achievement:
+                UserAchievement.objects.create(user=user, achievement=perfectionist_achievement)
 
     # Gotta Catch 'Em All
     if "Gotta Catch 'Em All" not in user_special_achivments:
-        ach_count = UserAchievement.objects.filter(user=user).exclude(achievement__ach_type='7').count()
-        user_ach_count = Achievement.objects.exclude(ach_type='7').count()
+        user_ach_count = UserAchievement.objects.filter(user=user).exclude(achievement__ach_type='7').count()
+        ach_count = Achievement.objects.exclude(ach_type='7').count()
         if ach_count == user_ach_count:
-            UserAchievement.objects.create(user=user, achievement=all_achievements["Gotta Catch 'Em All"])
+            gcea_acievement = all_achievements.get(name="Gotta Catch 'Em All")
+            if gcea_acievement:
+                UserAchievement.objects.create(user=user, achievement=gcea_acievement)
 
 def process_interaction_achivments(user):
     user_interaction_achivments = UserAchievement.objects.filter(user=user, achievement__ach_type='5').values_list('achievement__name', flat=True)
@@ -1411,7 +1417,7 @@ def achievement_view(request):
         if order:
             user_profile.achicment_order = order
             user_profile.chenged_order = True
-            user_profile.save()
+            user_profile.save(update_fields=["achicment_order", "chenged_order"]) 
 
     achivments = {}
     for ach in Achievement.objects.all():
@@ -1419,8 +1425,6 @@ def achievement_view(request):
 
     for ach_type in list(achivments.keys()):
         achivments[Achievement.ACH_TYPE_CHOICES[int(ach_type) - 1][1]] = achivments.pop(ach_type)
-
-    type_list = [ach[1] for ach in Achievement.ACH_TYPE_CHOICES]
 
     user_achivments = UserAchievement.objects.filter(user=request.user).values_list('achievement__name', flat=True)
 
@@ -1484,26 +1488,26 @@ def achievement_view(request):
         'prof_ach': prof_ach,
         'prof_ach_biggest_level': prof_ach_biggest_level,
         'achivments': achivments,
-        'types': type_list,
+        'types': [ach[1] for ach in Achievement.ACH_TYPE_CHOICES],
         'user_achivments': user_achivments,
         'biggest_level_each_type': biggest_level_each_type,
     })
 
 def add_achievement(request, ach_id):
-    user_profile = UserProfile.objects.get(user=request.user)
+    user_profile = UserProfile.objects.only('achicment_order', 'chenged_order').get(user=request.user)
+    
     ach = get_object_or_404(Achievement, id=ach_id)
-    achivemenet = get_object_or_404(UserAchievement, user=request.user, achievement=ach)
+    
+    user_achievement = get_object_or_404(UserAchievement, user=request.user, achievement=ach)
 
-    achicment_order = user_profile.achicment_order.strip('[]').replace('"', '').split(",")
+    achicment_order = user_profile.achicment_order.strip('[]').split(",") if user_profile.achicment_order else []
 
-    if len(achicment_order) == 5:
-        achicment_order = [str(achivemenet.id)] + achicment_order[:-1]
+    achicment_order = [str(user_achievement.id)] + achicment_order
+    achicment_order = achicment_order[:5]
 
-    achicment_order = str(achicment_order).replace("'", '"')
-
-    user_profile.achicment_order = achicment_order.replace('"', '')
+    user_profile.achicment_order = ",".join(achicment_order)
     user_profile.chenged_order = True
-    user_profile.save()
+    user_profile.save(update_fields=['achicment_order', 'chenged_order'])
 
     return redirect('achievement')
 

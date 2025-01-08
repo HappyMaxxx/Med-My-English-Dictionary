@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'med.middleware.TrackUserVisitsMiddleware',
 ]
 
 ROOT_URLCONF = 'mad.urls'

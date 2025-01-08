@@ -123,6 +123,14 @@ class UserProfile(models.Model):
         super().save(*args, **kwargs)
 
 
+class UserLogin(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logins')
+    date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date}"
+    
+
 class Friendship(models.Model):
     sender = models.ForeignKey(User, related_name="friendship_requests_sent", on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name="friendship_requests_received", on_delete=models.CASCADE)
