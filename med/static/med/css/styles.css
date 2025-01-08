@@ -1303,14 +1303,12 @@ form .edit-buttons a {
 
 .phrase,
 .word {
-    /* cursor: pointer; */
     color: var(--text-color);
-    /* margin-right: 5px; */
 }
 
-.phrase {
+/* .phrase {
     text-decoration:underline;
-}
+} */
 
 .reading-content {
     max-width: 700px;

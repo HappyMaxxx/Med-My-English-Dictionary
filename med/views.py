@@ -8,17 +8,15 @@ from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUs
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
 from django.views import View
-from django.core.files.storage import default_storage
 from django.views.decorators.cache import cache_page
 from django.db.models import Min, Max, When, Case
 import requests
-from django.contrib.auth.signals import user_logged_in
+
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncDay
-from contextlib import contextmanager
 
+from django.middleware.csrf import get_token
 from django.core.files.base import ContentFile
-from PIL import Image
 import base64
 
 from django.contrib.auth.decorators import login_required
@@ -42,7 +40,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 import os
 from med.models import *
 
-from django.db.models.signals import post_save, m2m_changed, pre_save
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
 MAX_GROUP_COUNT = 20
@@ -220,9 +218,12 @@ class EditWordView(View):
         form = WordForm(request.POST, instance=word)
         if form.is_valid():
             form.save()
-            user_profile = UserProfile.objects.get(user=request.user)
-            user_profile.edited_words += 1
-            user_profile.save()
+
+            if form.has_changed():
+                user_profile = UserProfile.objects.get(user=request.user)
+                user_profile.edited_words += 1
+                user_profile.save()
+
             return redirect('words', user_name=request.user.username)
         return render(request, 'med/edit_word.html', {'form': form, 'word': word})
     
@@ -497,6 +498,7 @@ class ProfileView(View):
                 achievements = UserAchievement.objects.filter(user=request.user)[:5]
             
             process_special_achivments(user)
+            process_interaction_achivments(user)
 
             return {
                 'user_profile': user_profile,
@@ -998,6 +1000,8 @@ class PracticeGroupWordsListView(ListView):
         return words
     
     def get_context_data(self, **kwargs):
+        process_interaction_achivments(self.request.user)
+
         context = super().get_context_data(**kwargs)
         group_id = self.kwargs.get('group_id')
         group = get_object_or_404(WordGroup, id=group_id)
@@ -1366,6 +1370,7 @@ def process_interaction_achivments(user):
         user_groups = WordGroup.objects.filter(uses_users=user).count()
         if user_groups >= 5:
             UserAchievement.objects.create(user=user, achievement=Achievement.objects.get(ach_type='5', level=1))
+
     # Social Butterfly
     fl_ach = Achievement.objects.get(ach_type='5', level=1)
     if fl_ach.name in user_interaction_achivments:
