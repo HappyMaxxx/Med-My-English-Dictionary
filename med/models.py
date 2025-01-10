@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
+from datetime import timedelta, date
 
 class Word(models.Model):
     TYPE_CHOICES = [
@@ -30,6 +31,62 @@ class Word(models.Model):
         indexes = [
             models.Index(fields=['-time_create'])
         ]
+
+    @staticmethod
+    def calculate_streak(user):
+        words = Word.objects.filter(user=user).order_by('time_create')
+        if not words.exists():
+            return 0, 0, None, None, None, None
+
+        longest_streak = 0
+        current_streak = 0
+        streak_start_date = None
+        streak_end_date = None
+        longest_streak_start_date = None
+        longest_streak_end_date = None
+
+        unique_dates = set()
+        previous_date = None
+
+        for word in words:
+            word_date = word.time_create.date()
+            if word_date not in unique_dates:
+                unique_dates.add(word_date)
+                if previous_date and (word_date - previous_date).days == 1:
+                    current_streak += 1
+                    streak_end_date = word_date
+                else:
+                    # Оновлення найдовшого стріка
+                    if current_streak > longest_streak:
+                        longest_streak = current_streak
+                        longest_streak_start_date = streak_start_date
+                        longest_streak_end_date = streak_end_date
+                    # Початок нового стріка
+                    current_streak = 1
+                    streak_start_date = word_date
+                    streak_end_date = word_date
+                previous_date = word_date
+
+        # Перевірка наприкінці циклу
+        if current_streak > longest_streak:
+            longest_streak = current_streak
+            longest_streak_start_date = streak_start_date
+            longest_streak_end_date = streak_end_date
+
+        if words[len(words)-1].time_create.date() != date.today():
+            current_streak = 0
+            streak_end_date = None
+            streak_start_date = None
+
+        return current_streak, longest_streak, streak_start_date, streak_end_date, longest_streak_start_date, longest_streak_end_date
+
+    @staticmethod
+    def format_date_range(start_date, end_date):
+        if start_date and end_date:
+            if start_date == end_date:
+                return start_date.strftime("%b %d, %Y")
+            return start_date.strftime("%b %d, %Y") + " - " + end_date.strftime("%b %d, %Y")
+        return 0
 
 
 class WordGroup(models.Model):

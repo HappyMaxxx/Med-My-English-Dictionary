@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <div class="stats">
+    <div class="stats" style="margin-bottom: 30px;">
         <div class="stat-item">
             <a href="{% url 'words' user.username %}">
                 <p><strong>Words</strong></p>
@@ -88,6 +88,27 @@
         </form>
     </div>
     {% endif %}
+
+    <div class="stats">
+        <div class="stat-item">
+            <p><strong>Current Streak</strong></p>
+            <p>{{ current_streak }} days</p>
+            {% if current_streak_range != 0 %}
+                <p><em>{{ current_streak_range }}</em></p>
+            {% else %}
+            <p>⠀​⠀</p>
+            {% endif %}
+        </div>
+        <div class="stat-item">
+            <p><strong>Longest Streak</strong></p>
+            <p>{{ longest_streak }} days</p>
+            {% if longest_streak_range != 0 %}
+                <p><em>{{ longest_streak_range }}</em></p>
+            {% else %}
+                <p>⠀​⠀</p>
+            {% endif %}
+        </div>
+    </div>
 
     {% if user_profile.show_word_stats != 'nobody' %}
         {% if user_profile.show_word_stats == 'every' or is_my_profile %}

@@ -500,6 +500,13 @@ class ProfileView(View):
             process_special_achivments(user)
             process_interaction_achivments(user)
 
+            streak_data = Word.calculate_streak(user)
+
+            current_streak, max_streak, current_start, current_end, longest_start, longest_end = streak_data
+
+            current_streak_range = Word.format_date_range(current_start, current_end)
+            longest_streak_range = Word.format_date_range(longest_start, longest_end)
+
             return {
                 'user_profile': user_profile,
                 'recent_words': recent_words,
@@ -512,6 +519,10 @@ class ProfileView(View):
                 'daily_chart_data': daily_chart_data,
                 'order': user_profile.charts_order.split(','),
                 'achievements': achievements,
+                'current_streak': current_streak,
+                'current_streak_range': current_streak_range,
+                'longest_streak': max_streak,
+                'longest_streak_range': longest_streak_range,
             }
 
         profile_user = get_object_or_404(User, username=user_name)
