@@ -497,12 +497,13 @@ class ProfileView(View):
             else:
                 achievements = UserAchievement.objects.filter(user=request.user)[:5]
             
+            
             process_special_achivments(user)
             process_interaction_achivments(user)
 
             streak_data = Word.calculate_streak(user)
 
-            current_streak, max_streak, current_start, current_end, longest_start, longest_end = streak_data
+            current_streak, max_streak, current_start, current_end, longest_start, longest_end, ff = streak_data
 
             current_streak_range = Word.format_date_range(current_start, current_end)
             longest_streak_range = Word.format_date_range(longest_start, longest_end)
@@ -523,6 +524,7 @@ class ProfileView(View):
                 'current_streak_range': current_streak_range,
                 'longest_streak': max_streak,
                 'longest_streak_range': longest_streak_range,
+                'ff': ff,
             }
 
         profile_user = get_object_or_404(User, username=user_name)

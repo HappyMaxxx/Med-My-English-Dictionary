@@ -56,29 +56,37 @@ class Word(models.Model):
                     current_streak += 1
                     streak_end_date = word_date
                 else:
-                    # Оновлення найдовшого стріка
                     if current_streak > longest_streak:
                         longest_streak = current_streak
                         longest_streak_start_date = streak_start_date
                         longest_streak_end_date = streak_end_date
-                    # Початок нового стріка
                     current_streak = 1
                     streak_start_date = word_date
                     streak_end_date = word_date
                 previous_date = word_date
 
-        # Перевірка наприкінці циклу
         if current_streak > longest_streak:
             longest_streak = current_streak
             longest_streak_start_date = streak_start_date
             longest_streak_end_date = streak_end_date
 
-        if words[len(words)-1].time_create.date() != date.today():
+        last_word_date = words[len(words) - 1].time_create.date()
+        today = date.today()
+        if (today - last_word_date).days == 1:
+            streak_end_date = last_word_date
+            ff = 0
+        elif last_word_date != today:
             current_streak = 0
             streak_end_date = None
             streak_start_date = None
+        
+        if words[len(words)-1].time_create.date() == today:
+            ff = 1
 
-        return current_streak, longest_streak, streak_start_date, streak_end_date, longest_streak_start_date, longest_streak_end_date
+        if current_streak == 0:
+            ff = None
+
+        return current_streak, longest_streak, streak_start_date, streak_end_date, longest_streak_start_date, longest_streak_end_date, ff
 
     @staticmethod
     def format_date_range(start_date, end_date):

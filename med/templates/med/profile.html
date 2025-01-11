@@ -99,6 +99,19 @@
             <p>⠀​⠀</p>
             {% endif %}
         </div>
+        
+        <div class="stat-item">
+            <p>⠀​⠀</p>
+            {% if current_streak_range != 0 %}
+                {% if ff == 0 %}
+                    <img class='fire_img' src="{% static 'med/img/base/fire_cb.png' %}" alt="Fire">
+                {% elif ff == 1 %}
+                    <img class='fire_img' src="{% static 'med/img/base/fire.png' %}" alt="Fire">
+                {% endif %}
+            {% endif %}
+            <p>⠀​⠀</p>
+        </div>
+
         <div class="stat-item">
             <p><strong>Longest Streak</strong></p>
             <p>{{ longest_streak }} days</p>
