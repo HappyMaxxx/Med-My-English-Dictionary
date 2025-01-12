@@ -1,7 +1,7 @@
 from datetime import datetime
 import re
 import string
-from django.http import FileResponse, Http404, HttpResponseNotFound, HttpResponseRedirect
+from django.http import FileResponse, Http404, HttpResponseNotFound, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm, WordsShowForm, TextForm
@@ -11,6 +11,11 @@ from django.views import View
 from django.views.decorators.cache import cache_page
 from django.db.models import Min, Max, When, Case
 import requests
+
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncDay
@@ -42,6 +47,7 @@ from med.models import *
 
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
+from django.conf import settings
 
 MAX_GROUP_COUNT = 20
 
@@ -1281,7 +1287,6 @@ def process_achievements(user, achievement_type, thresholds):
                 groups_with_more_5_words = WordGroup.objects.filter(user=user, is_main=False).annotate(
                     word_count=Count('words')
                 ).filter(word_count__gte=5).count()
-                print(groups_with_more_5_words)
                 if groups_with_more_5_words >= 5 and ach.level not in current_levels:
                     if any(existing_level > ach.level for existing_level in current_levels):
                         continue
@@ -1353,7 +1358,6 @@ def process_special_achivments(user):
     if 'Marathoner' not in user_special_achivments:
         last_30_days = now().date() - timedelta(days=30)
         user_logins = user.logins.filter(date__gte=last_30_days).aggregate(count=Count('date', distinct=True))['count']
-        print(user_logins)
         if user_logins == 30:
             marathoner_achievement = all_achievements.get(name='Marathoner')
             if marathoner_achievement:
@@ -1558,6 +1562,76 @@ def pending_group_requests(request):
     pending_requests = CommunityGroup.objects.filter(state='pending')
 
     return render(request, 'med/pending_group_requests.html', {'pending_requests': pending_requests})
+
+font_path = os.path.join(settings.BASE_DIR, 'med/static/med/fonts/DejaVuSans.ttf')
+bold_font_path = os.path.join(settings.BASE_DIR, 'med/static/med/fonts/DejaVuSans-Bold.ttf')
+
+pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
+pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', bold_font_path))
+
+def wrap_text(text, max_width, font, font_size, pdf):
+    words = text.split()
+    lines = []
+    line = []
+
+    for word in words:
+        line.append(word)
+        if pdf.stringWidth(' '.join(line), font, font_size) > max_width:
+            line.pop()
+            lines.append(' '.join(line))
+            line = [word]
+
+    if line:
+        lines.append(' '.join(line))
+
+    return lines
+
+@login_required
+def export_pdf(request):
+    words = Word.objects.filter(user=request.user)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{request.user.username}_dictionary.pdf"'
+    
+    pdf = canvas.Canvas(response, pagesize=letter)
+    width, height = letter
+    left_margin = 50
+    right_margin = 50
+    max_width = width - left_margin - right_margin
+    y = height - 50
+
+    pdf.setFont("DejaVuSans", 12)
+    pdf.drawString(left_margin, y, f"Dictionary of {request.user.username}")
+    y -= 30 
+    pdf.setFont("DejaVuSans", 10)
+    pdf.drawString(left_margin, y, "-" * 50)
+    y -= 20
+
+    for word in words:
+        pdf.setFont("DejaVuSans-Bold", 10)
+        pdf.drawString(left_margin, y, f"Word: {word.word}")
+        y -= 15
+
+        pdf.setFont("DejaVuSans", 10)
+        translation_lines = wrap_text(f"Translation: {word.translation}", max_width, "DejaVuSans", 10, pdf)
+        for line in translation_lines:
+            pdf.drawString(left_margin, y, line)
+            y -= 15
+
+        example_lines = wrap_text(f"Example: {word.example}", max_width, "DejaVuSans", 10, pdf)
+        for line in example_lines:
+            pdf.drawString(left_margin, y, line)
+            y -= 15
+
+        y -= 10
+
+        if y < 50:
+            pdf.showPage()
+            pdf.setFont("DejaVuSans", 10)
+            y = height - 100
+
+    pdf.save()
+    return response
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

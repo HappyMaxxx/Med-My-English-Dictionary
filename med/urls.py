@@ -52,4 +52,5 @@ urlpatterns = [
     path('send_grooup_request/<int:group_id>/', views.send_group_request, name='send_group_request'),
     path('approve_group_request/<int:group_id>/', views.approve_group_request, name='approve_group_request'),
     path('delete_group_request/<int:group_id>/', views.reject_group_request, name='delete_group_request'),
+    path('export-pdf/', views.export_pdf, name='export_pdf'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

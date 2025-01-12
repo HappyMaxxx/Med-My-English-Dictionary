@@ -12,7 +12,8 @@
         <a href="{% url 'upload_file' %}" style="margin-left: 0;">From File</a>
         <a href="#" onclick="selectAllWords(); return false;">Select All</a>
         <a href="#" onclick="addWordsToGroup(); return false;">Add To Group</a>
-        <a href="#" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
+        <a href="#" onclick="deleteSelectedWords(); return false;">Delete</a>
+        <a href="{% url 'export_pdf' %}">Export</a>
         <a href="{% url 'addword' %}">Add New Word</a>
         <a id="filter-menu-btn" class="filter-btn" style="display: inline-block; text-align: center; margin-left: auto; margin-right: 0; ">
             <i class="fas fa-filter"></i>

@@ -396,7 +396,7 @@ form .buttons a:hover {
 }
 
 .word_table_container {
-    max-width: 1000px;
+    max-width: 1100px;
     width: 100%;
     margin: 0 auto;
     padding: 10px;
@@ -444,7 +444,7 @@ form .buttons a:hover {
 
 .word_table_container .buttons a {
     margin: 5px 5px;
-    min-width: 16%;
+    min-width: 14%;
 }
 
 .word_table_container .buttons a:last-child {
