@@ -62,7 +62,7 @@ Download and install Docker from the official website: [Docker](https://www.dock
 Start the Redis container using Docker:  
 
 ```bash
-docker run -d -p 6379:6379 redis
+docker run -d --name redis-server -p 6379:6379 redis
 ```
 
 ### 5. Run the Project  
