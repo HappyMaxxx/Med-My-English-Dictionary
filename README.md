@@ -16,7 +16,7 @@
 ## Repository  
 
 The source code for the project is hosted on GitHub. Clone the repository to start:  
-[Med - My English Dictionary](https://github.com/HappyMaxxx/Med-My-English-dictionary-)  
+[Med - My English Dictionary](https://github.com/HappyMaxxx/Med-My-English-Dictionary)  
 
 ---
 
