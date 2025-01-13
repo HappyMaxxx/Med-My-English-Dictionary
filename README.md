@@ -26,7 +26,7 @@ The source code for the project is hosted on GitHub. Clone the repository to sta
 Clone the repository to your local machine and save it under a specific name (e.g., `med`):  
 
 ```bash
-git clone https://github.com/HappyMaxxx/Med-My-English-dictionary- med
+git clone https://github.com/HappyMaxxx/Med-My-English-Dictionary med
 cd med
 ```
 
