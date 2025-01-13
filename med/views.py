@@ -49,6 +49,8 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.conf import settings
 
+from med.tasks import add
+
 MAX_GROUP_COUNT = 20
 
 practice_cards = {
