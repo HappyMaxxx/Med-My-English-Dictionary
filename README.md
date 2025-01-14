@@ -63,6 +63,11 @@ Start the Redis container using Docker:
 
 ```bash
 docker run -d --name redis-server -p 6379:6379 redis
+```
+
+Start the Celery worker:
+
+```bash
 celery -A mad worker -l info
 ```
 
