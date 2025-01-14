@@ -57,12 +57,13 @@ This project uses Redis for caching or managing task queues.
 
 Download and install Docker from the official website: [Docker](https://www.docker.com/).  
 
-#### Run Redis with Docker  
+#### Run Redis with Docker and Celery
 
 Start the Redis container using Docker:  
 
 ```bash
 docker run -d --name redis-server -p 6379:6379 redis
+celery -A mad worker -l info
 ```
 
 ### 5. Run the Project  
