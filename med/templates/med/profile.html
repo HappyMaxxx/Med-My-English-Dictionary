@@ -74,7 +74,7 @@
     <div class="achievements">
         <form style="margin: 20px 0px; padding: 10px;">
             <a href="{% url 'achievement' %}"><h3>Achievements</h3></a>
-            <div class="achievements-container">
+            <div class="achievements-container" style="justify-content: center; justify-content: center;">
                 {% for achievement in achievements %}
                 {% if achievement.achievement.icon %}
                         <img data-id="{{ achievement.id }}" class="achievement-block achievement-icon prof_ach_ic" src="{{ achievement.achievement.get_icon_url }}" alt="Achievement icon">

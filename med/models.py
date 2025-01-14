@@ -36,7 +36,7 @@ class Word(models.Model):
     def calculate_streak(user):
         words = Word.objects.filter(user=user).order_by('time_create')
         if not words.exists():
-            return 0, 0, None, None, None, None
+            return 0, 0, None, None, None, None, None
 
         longest_streak = 0
         current_streak = 0
@@ -44,6 +44,7 @@ class Word(models.Model):
         streak_end_date = None
         longest_streak_start_date = None
         longest_streak_end_date = None
+        ff = None
 
         unique_dates = set()
         previous_date = None
@@ -82,9 +83,6 @@ class Word(models.Model):
         
         if words[len(words)-1].time_create.date() == today:
             ff = 1
-
-        if current_streak == 0:
-            ff = None
 
         return current_streak, longest_streak, streak_start_date, streak_end_date, longest_streak_start_date, longest_streak_end_date, ff
 

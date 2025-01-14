@@ -53,4 +53,5 @@ urlpatterns = [
     path('approve_group_request/<int:group_id>/', views.approve_group_request, name='approve_group_request'),
     path('delete_group_request/<int:group_id>/', views.reject_group_request, name='delete_group_request'),
     path('export-pdf/', views.export_pdf, name='export_pdf'),
+    path('activate/<uidb64>/<token>/', views.activate_account, name='activate_account'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

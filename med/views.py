@@ -40,6 +40,8 @@ from urllib.parse import urlparse
 
 import openpyxl
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import logout, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 import os
@@ -49,7 +51,7 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.conf import settings
 
-from med.tasks import add
+from med.tasks import send_activation_email
 
 MAX_GROUP_COUNT = 20
 
@@ -420,6 +422,23 @@ class CreateGroupView(View):
         return render(request, 'med/create_group.html', {'form': form})
 
 
+def activate_account(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Your account has been activated successfully!")
+        return redirect('login')
+    else:
+        messages.error(request, "Activation link is invalid!")
+        return redirect('register')
+
+
 class RegisterUser(CreateView):
     form_class = RegisterUserForm
     template_name = 'med/register.html'
@@ -428,12 +447,17 @@ class RegisterUser(CreateView):
 
     @transaction.atomic
     def form_valid(self, form):
-        user = form.save()
-        # print(form.cleaned_data)
-        # raw_password = form.cleaned_data.get('password1')
-        # print("Введений пароль:", raw_password)
-        login(self.request, user)
-        return redirect('profile', user_name=user.username)
+        user = form.save(commit=False)
+        if User.objects.filter(email=user.email).exists():
+            form.add_error('email', "User with this email already exists")
+            return self.form_invalid(form)
+        
+        user.is_active = False 
+        user.save()
+
+        send_activation_email.delay(user.id)
+
+        return render(self.request, 'med/activation_email_sent.html')
 
 
 class LoginUser(LoginView):
