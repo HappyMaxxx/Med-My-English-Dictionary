@@ -71,6 +71,15 @@ Start the Celery worker:
 celery -A mad worker -l info
 ```
 
+In another terminal:
+
+```bash
+celery -A mad beat -l info
+```
+
+### Setting up .env
+
+Rename the example.env file to .env and change the mail data in it. First you must generate specific password for your app in gmail settings.
 ### 5. Run the Project  
 
 Start the Django development server:  
