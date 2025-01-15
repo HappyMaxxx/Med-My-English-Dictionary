@@ -174,19 +174,8 @@
 <script src="https://code.highcharts.com/highcharts.js"></script>
 
 <!-- Tubs -->
+<script src="{% static 'med/js/tabs.js' %}"></script>
 <script>
-    document.querySelectorAll(".tab-btn").forEach(button => {
-        button.addEventListener("click", () => {
-            const tab = button.dataset.tab;
-
-            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-            button.classList.add("active");
-
-            document.querySelectorAll(".tab-content").forEach(content => content.classList.add("hidden"));
-            document.getElementById(tab).classList.remove("hidden");
-        });
-    });
-
 document.addEventListener("DOMContentLoaded", () => {
     const firstTabButton = document.querySelector(".tab-btn");
     if (firstTabButton) {

@@ -134,7 +134,7 @@
                 {% endif %}
             </div>
             {% if not is_main %}
-            <div class="delete-button">
+            <div class="delete-button" style="margin-bottom: 15px;">
                 <a href="{% url 'confirm_delete' %}?group_id={{ group_id }}" class="delete-group-button">Delete Group</a>
             </div>
             {% endif %}
