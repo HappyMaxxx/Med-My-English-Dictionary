@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h1>Top Users</h1>
+<p style="font-size: medium; margin-bottom: 15px;">Last update: {{ categories.0.last_update }}</p>
+<div class="friends-container" style="padding-bottom: 0px;">
+    <div class="tabs">
+        {% for category in categories %}
+        <button class="tab-btn {% if forloop.first %}active{% endif %}" data-tab="{{ category.id }}-tab">{{ category.name|capfirst }}</button>
+        {% endfor %}
+    </div>
+
+    {% for category in categories %}
+        <div class="tab-content {% if not forloop.first %}hidden{% endif %}" id="{{ category.id }}-tab">
+            <ul class="user-list">
+                {% for top in category.tops.all %}
+                <li class="user-item {% if forloop.counter <= 3 %}top-three{% endif %}">
+                    <a href="{% url 'profile' top.user.username %}">
+                    <div class="user-card">
+                        <div class="user-info">
+                            <p class="user-name">{{ forloop.counter }}</p>
+                            <p class="user-name">{{ top.user.username }}</p>
+                        </div>
+                        <div class="buttons">
+                            <p>{{ top.points }}</p>
+                        </div>
+                    </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+</div>
+
+<script src="{% static 'med/js/tabs.js' %}"></script>
+{% endblock %}

@@ -1725,6 +1725,38 @@ input[type="number"] {
     max-width: 60px;
 }
 
+.top-three .user-card {
+    background-color: #ffd700;
+    border: 2px solid #ffd700;
+}
+
+.top-three:nth-child(2) .user-card {
+    background-color: #c0c0c0; 
+    border: 2px solid #c0c0c0; 
+}
+
+.top-three:nth-child(3) .user-card {
+    background-color: #cd7f32; 
+    border: 2px solid #cd7f32;
+}
+
+.top-three .user-card:hover {
+    transform: scale(1.03);
+}
+
+.top-three p {
+    color: #f5f5f5;
+}
+
+.top-three .buttons,
+.top-three .user-name {
+    font-weight: bold;
+}
+
+.top-three .buttons p {
+    font-size: 1.2em;
+}
+
 @media (max-width: 900px) {
     .burger-menu {
         display: block;

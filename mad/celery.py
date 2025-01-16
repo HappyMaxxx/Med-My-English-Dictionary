@@ -8,9 +8,9 @@ app = Celery('mad')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
-# app.conf.beat_schedule = {
-#     'add-every-30-seconds': {
-#         'task': 'med.tasks.add',
-#         'schedule': crontab(minute='*/1'),
-#     },
-# }
+app.conf.beat_schedule = {
+    'top_update': {
+        'task': 'med.tasks.update_top',
+        'schedule': crontab(minute='*/10'),
+    },
+}

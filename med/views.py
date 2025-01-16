@@ -51,7 +51,7 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.conf import settings
 
-from med.tasks import send_activation_email
+from med.tasks import send_activation_email, update_top
 
 MAX_GROUP_COUNT = 20
 
@@ -1658,6 +1658,13 @@ def export_pdf(request):
 
     pdf.save()
     return response
+
+def tops_by_category(request):
+    categories = Category.objects.prefetch_related('tops').all()
+    context = {
+        'categories': categories,
+    }
+    return render(request, 'med/tops_by_category.html', context)
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')
