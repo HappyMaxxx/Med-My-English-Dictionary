@@ -77,6 +77,12 @@ In another terminal:
 celery -A mad beat -l info
 ```
 
+To control the celery taps and worker, you can run flower in another terminal:
+
+```bash
+celery -A mad flower
+```
+
 ### Setting up .env
 
 Rename the example.env file to .env and change the mail data in it. First you must generate specific password for your app in gmail settings.
