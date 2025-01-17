@@ -70,6 +70,20 @@
     {% endif %}
     {% endif %}
     
+    {% if user_in_top %}
+    <div class="top-user">
+        <a href="{% url 'tops_by_category' %}">
+        <div class="categories-container">
+            {% for cat in user_in_top %}
+                <div class="category-item top-{{ cat.place }}">
+                    <p><strong>{{ cat.category.name|capfirst }}</strong></p>
+                </div>
+            {% endfor %}
+        </div>
+        </a>
+    </div>
+    {% endif %}
+
     {% if achievements %}
     <div class="achievements">
         <form style="margin: 20px 0px; padding: 10px;">

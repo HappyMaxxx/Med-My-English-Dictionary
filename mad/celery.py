@@ -11,6 +11,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'top_update': {
         'task': 'med.tasks.update_top',
-        'schedule': crontab(minute='*/10'),
+        'schedule': crontab(minute='*/15'),
     },
 }

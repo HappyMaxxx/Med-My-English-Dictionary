@@ -540,6 +540,8 @@ class ProfileView(View):
             current_streak_range = Word.format_date_range(current_start, current_end)
             longest_streak_range = Word.format_date_range(longest_start, longest_end)
 
+            user_in_top = Top.objects.filter(user=user, place__in=[1, 2, 3]) or None
+
             return {
                 'user_profile': user_profile,
                 'recent_words': recent_words,
@@ -557,6 +559,7 @@ class ProfileView(View):
                 'longest_streak': max_streak,
                 'longest_streak_range': longest_streak_range,
                 'ff': ff,
+                'user_in_top': user_in_top,
             }
 
         profile_user = get_object_or_404(User, username=user_name)
@@ -1665,6 +1668,25 @@ def tops_by_category(request):
         'categories': categories,
     }
     return render(request, 'med/tops_by_category.html', context)
+
+def api_get_tops_by_category(request):
+    categories = Category.objects.prefetch_related('tops').all()
+    categories_data = [
+        {
+            'id': category.id,
+            'name': category.name,
+            'last_update': category.last_update,
+            'tops': [
+                {
+                    'id': top.id,
+                    'user': top.user.username,
+                    'points': top.points,
+                } for top in category.tops.all()
+            ]
+        } for category in categories
+    ]
+
+    return JsonResponse({'categories': categories_data})
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

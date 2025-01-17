@@ -1725,16 +1725,19 @@ input[type="number"] {
     max-width: 60px;
 }
 
+.top-1,
 .top-three .user-card {
     background-color: #ffd700;
     border: 2px solid #ffd700;
 }
 
+.top-2,
 .top-three:nth-child(2) .user-card {
     background-color: #c0c0c0; 
     border: 2px solid #c0c0c0; 
 }
 
+.top-3,
 .top-three:nth-child(3) .user-card {
     background-color: #cd7f32; 
     border: 2px solid #cd7f32;
@@ -1744,6 +1747,7 @@ input[type="number"] {
     transform: scale(1.03);
 }
 
+.category-item p,
 .top-three p {
     color: #f5f5f5;
 }
@@ -1755,6 +1759,37 @@ input[type="number"] {
 
 .top-three .buttons p {
     font-size: 1.2em;
+}
+
+.categories-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.category-item {
+    flex: 1 1 calc(33.333% - 20px);
+    border-radius: 8px;
+    padding: 10px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    text-align: center;
+    max-width: 33%;
+}
+
+.category-item p {
+    margin: 0;
+}
+
+.user-item {
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    will-change: transform, opacity;
+}
+
+.user-item.removing {
+    opacity: 0;
+    transform: scale(0.9);
 }
 
 @media (max-width: 900px) {

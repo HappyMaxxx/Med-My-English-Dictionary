@@ -55,4 +55,5 @@ urlpatterns = [
     path('export-pdf/', views.export_pdf, name='export_pdf'),
     path('activate/<uidb64>/<token>/', views.activate_account, name='activate_account'),
     path('tops/', views.tops_by_category, name='tops_by_category'),
+    path('api/get-tops-by-category/', views.api_get_tops_by_category, name='api_get_tops_by_category'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

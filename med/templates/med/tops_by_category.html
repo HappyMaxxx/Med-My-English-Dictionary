@@ -35,4 +35,51 @@
 </div>
 
 <script src="{% static 'med/js/tabs.js' %}"></script>
+<script>
+    function updateData() {
+        fetch("{% url 'api_get_tops_by_category' %}")
+            .then(response => response.json())
+            .then(data => {
+                const formatDate = (isoDate) => {
+                    const date = new Date(isoDate);
+                    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true };
+                    let formattedDate = date.toLocaleString('en-US', options);
+                    formattedDate = formattedDate.replace(/([A-Za-z]+)(?=\s\d)/, '$1.');
+                    formattedDate = formattedDate.replace('AM', 'a.m.').replace('PM', 'p.m.');
+                    return formattedDate;
+                };
+
+                document.querySelector("p[style='font-size: medium; margin-bottom: 15px;']").textContent = `Last update: ${formatDate(data.categories[0].last_update)}`;
+
+                data.categories.forEach(category => {
+                    const tabContent = document.getElementById(`${category.id}-tab`);
+                    if (tabContent) {
+                        const userList = tabContent.querySelector('.user-list');
+                        userList.innerHTML = '';
+
+                        category.tops.forEach((top, index) => {
+                            const isTopThree = index < 3 ? 'top-three' : '';
+                            userList.innerHTML += `
+                                <li class="user-item ${isTopThree}">
+                                    <a href="/profile/${top.user}">
+                                        <div class="user-card">
+                                            <div class="user-info">
+                                                <p class="user-name">${index + 1}</p>
+                                                <p class="user-name">${top.user}</p>
+                                            </div>
+                                            <div class="buttons">
+                                                <p>${top.points}</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>`;
+                        });
+                    }
+                });
+            })
+            .catch(error => console.error('Error updating data:', error));
+    }
+
+    setInterval(updateData, 300000);
+</script>
 {% endblock %}
