@@ -7,10 +7,24 @@
     {% csrf_token %}
 
     {% for field in form %}
-        <p>
-            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+        {% if field.name == "password1" %}
+            <div class="password-container">
+                <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Password *" required>
+                <i id="togglePassword" class="fas fa-eye password-eye-icon"></i>
+            </div>
+            <span id="passwordStrength" class="password-strength"></span>
+        {% elif field.name == "password2" %}
+            <div class="password-container">
+                <input type="password" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Confirm password *" required>
+                <i id="togglePasswordConfirm" class="fas fa-eye password-eye-icon"></i>
+            </div>
+        {% elif field.name == "username" %}
+            <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Username *" required>
+        {% elif field.name == "email" %}
+            <input type="email" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Email *" required>
+        {% else %}
             {{ field }}
-        </p>
+        {% endif %}
         <div class="form-error" id="{{ field.id_for_label }}-error">
             {{ field.errors }}
         </div>
@@ -27,6 +41,11 @@
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('registerForm');
         const submitLink = document.getElementById('submitLink');
+        const passwordInput = document.getElementById('id_password1');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordConfirmInput = document.getElementById('id_password2');
+        const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
         const usernameInput = document.getElementById('id_username');
         const usernameError = document.getElementById('id_username-error');
 
@@ -67,6 +86,46 @@
                 usernameError.textContent = '';
             }
         });
+
+        passwordInput.addEventListener('input', function() {
+            const password = passwordInput.value;
+            const strength = getPasswordStrength(password);
+            passwordStrength.textContent = strength.text;
+            passwordStrength.style.color = strength.color;
+        });
+
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePassword.classList.toggle('fa-eye-slash');
+        });
+
+        togglePasswordConfirm.addEventListener('click', function() {
+            const type = passwordConfirmInput.type === 'password' ? 'text' : 'password';
+            passwordConfirmInput.type = type;
+            togglePasswordConfirm.classList.toggle('fa-eye-slash');
+        });
+
+        function getPasswordStrength(password) {
+            let strength = { text: '', color: '' };
+            const lengthCriteria = password.length >= 8;
+            const numberCriteria = /\d/.test(password);
+            const uppercaseCriteria = /[A-Z]/.test(password);
+            const specialCharacterCriteria = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            if (lengthCriteria && numberCriteria && uppercaseCriteria && specialCharacterCriteria) {
+                strength.text = 'Strong';
+                strength.color = 'green';
+            } else if (lengthCriteria && (numberCriteria || uppercaseCriteria)) {
+                strength.text = 'Medium';
+                strength.color = 'orange';
+            } else {
+                strength.text = 'Weak';
+                strength.color = 'red';
+            }
+
+            return strength;
+        }
     });
 </script>
 {% endblock %}

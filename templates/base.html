@@ -79,10 +79,11 @@
                 <!-- <a href="#" id="theme-toggle-light">Light Mode</a>
                 <a href="#" id="theme-toggle-dark">Dark Mode</a> -->
             </div>
-        {% if request.user.is_authenticated %}
+            
         <div class="buttons">
             <a id="theme-toggle-light" class="no-style"><i class="fas fa-sun"></i></a>
             <a id="theme-toggle-dark" class="no-style"><i class="fas fa-moon"></i></a>
+        {% if request.user.is_authenticated %}
             {% if is_profile or is_dict %}
                 {% if is_my_profile or is_my_dict %}
                 <a href="{% url 'profile' user.username %}">{{request.user.username}}</a>
@@ -96,7 +97,6 @@
             <a href="{% url 'logout' %}">Log out</a>
         </div>
         {% else %}
-        <div class="buttons">
             <a href="{% url 'login' %}">Log in</a>
             <a href="{% url 'register' %}">Register</a>
         </div>
