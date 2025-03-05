@@ -166,6 +166,8 @@ class UserProfile(models.Model):
     chenged_order = models.BooleanField(default=False)
     achicment_order = models.CharField(max_length=30, blank=True)
 
+    hide_warning_message = models.BooleanField(default=False)
+
     def __str__(self):
         return self.user.username
     

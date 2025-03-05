@@ -452,13 +452,14 @@ class RegisterUser(CreateView):
             form.add_error('email', "User with this email already exists")
             return self.form_invalid(form)
         
-        user.is_active = False 
+        # user.is_active = False 
         user.save()
 
-        send_activation_email.delay(user.id)
+        # send_activation_email.delay(user.id)
 
-        return render(self.request, 'med/activation_email_sent.html')
-
+        # return render(self.request, 'med/activation_email_sent.html')
+        login(self.request, user)
+        return redirect('profile', user_name=user.username)
 
 class LoginUser(LoginView):
     form_class =  LoginUserForm
@@ -1080,10 +1081,9 @@ def leave_group(request, group_id, fp):
     return redirect('groups')
 
 
-def save_word(request, word_id):
+def save_word(request, group_id, word_id):
     word = get_object_or_404(Word, id=word_id)
     existing_word = Word.objects.filter(user=request.user, id=word.id).first()
-    group_name = f"All {request.user.username}'s "
 
     if not existing_word:
         Word.objects.create(user=request.user, word=word.word, translation=word.translation,
@@ -1093,7 +1093,10 @@ def save_word(request, word_id):
 
         add_to_main_group(request, new_word)
 
-    return redirect('words', user_name=request.user.username)
+    if group_id:
+        return redirect('group_words_practice', group_id=group_id)
+    else:
+        return redirect('words', user_name=request.user.username)
 
 def save_group_words(request, group_id):
     user = request.user
@@ -1687,6 +1690,15 @@ def api_get_tops_by_category(request):
     ]
 
     return JsonResponse({'categories': categories_data})
+
+@login_required
+def hide_warning_message(request):
+    if request.method == "POST":
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        profile.hide_warning_message = True
+        profile.save()
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False}, status=400)
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

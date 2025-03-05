@@ -51,6 +51,13 @@ class RegisterUserForm(UserCreationForm):
             raise forms.ValidationError('This username is already taken.')
         return username
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.is_bound and not self.is_valid():
+            self.data = self.data.copy() 
+            self.data['password1'] = ''  
+            self.data['password2'] = '' 
+
 
 class LoginUserForm(AuthenticationForm):
     username = forms.CharField(label='Username', widget=forms.TextInput())

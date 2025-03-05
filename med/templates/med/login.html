@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{{title}}</h1>
+<h1>{{ title }}</h1>
 
 <form method="post" id="loginForm">
     {% csrf_token %}
@@ -22,7 +22,7 @@
         <a href="#" id="submitLink">Log in</a>
     </div>
 
-    <p>Not a member? <a href="{% url 'register' %}">Signup now</a></p>
+    <p>Not a member? <a href="{% url 'register' %}">Sign up</a></p>
 </form>
 
 <script>
@@ -38,10 +38,9 @@
         });
 
         submitLink.addEventListener('click', function(event) {
-        event.preventDefault(); 
-        form.submit();
+            event.preventDefault(); 
+            form.submit();
         });
     });
 </script>
-
 {% endblock %}

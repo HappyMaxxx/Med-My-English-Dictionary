@@ -140,8 +140,11 @@
     {% if user_profile.show_word_stats != 'nobody' %}
         {% if user_profile.show_word_stats == 'every' or is_my_profile %}
             {% if word_count < 5 %}
-                {% if is_my_profile %}
-                    <div style="text-align: center; margin-top: 30px;">
+                {% if is_my_profile and not user_profile.hide_warning_message %}
+                    <div class="warning-message" id="warning-message">
+                        <div class="buttons">
+                            <a class="warning-message-but" href="#" id="close-warning">✖</a>
+                        </div>
                         <p>You need at least 5 words to see the statistics</p>
                     </div>
                 {% endif %}
@@ -198,6 +201,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 </script>
+
+<!-- Close warning message -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const closeButton = document.getElementById("close-warning");
+        const warningMessage = document.getElementById("warning-message");
+        
+        if (closeButton && warningMessage) {
+            closeButton.addEventListener("click", function (e) {
+                e.preventDefault();
+                warningMessage.style.display = "none";
+    
+                fetch("{% url 'hide-warning-message' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Error hiding warning message');
+                        warningMessage.style.display = "block";
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    warningMessage.style.display = "block";
+                });
+            });
+        }
+    });
+</script>
+
 <!-- Pie diagram -->
 <script>
     var word_type_data = JSON.parse('{{ word_type_data|safe }}');

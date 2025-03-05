@@ -19,9 +19,9 @@
                 <i id="togglePasswordConfirm" class="fas fa-eye password-eye-icon"></i>
             </div>
         {% elif field.name == "username" %}
-            <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Username *" required>
+            <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Username *" value="{{ field.value|default:'' }}" required>
         {% elif field.name == "email" %}
-            <input type="email" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Email *" required>
+            <input type="email" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Email *" value="{{ field.value|default:'' }}" required>
         {% else %}
             {{ field }}
         {% endif %}
@@ -34,7 +34,7 @@
         <a href="#" class="register-button" id="submitLink">Register</a>
     </div>
 
-    <p>Already have an account? <a href="{% url 'login' %}">Login now</a></p>
+    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
 </form>
 
 <script>

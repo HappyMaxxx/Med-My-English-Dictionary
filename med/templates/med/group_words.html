@@ -51,7 +51,7 @@
                     </td>
                     {% else %}
                     <td class="img_td">
-                        <a href="{% url 'save_word' word.id %}">
+                        <a href="{% url 'save_word' group.id word.id %}">
                         <img class="f_img" src="{% static 'med/img/groups/add_light.png' %}" data-light-src="{% static 'med/img/groups/add_light.png' %}" data-dark-src="{% static 'med/img/groups/add_dark.png' %}" alt="Add img">
                         </a>
                     </td>

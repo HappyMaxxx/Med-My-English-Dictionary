@@ -24,14 +24,15 @@
                     <p class="user-name"><strong>{{ request.group.name }}</strong></p>
                 </div>
 
+                <div class="stat-item reading-item">
+                    <p>({{ request.group.user.username}})</p>
+                </div>
+
                 <div class="user-stats" style="display: flex; gap: 20px; text-align: center; margin-right: 15px;">
 
                     <a href="{% url 'approve_group_request' request.group.id %}">Approve</a>
                     <a href="{% url 'delete_group_request' request.group.id %}">Decline</a>
 
-                    <div class="stat-item reading-item">
-                        <p>{{ request.group.user.username}}</p>
-                    </div>
                 </div>
             </div>
             </a>

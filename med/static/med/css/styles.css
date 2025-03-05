@@ -355,8 +355,8 @@ header .buttons a:hover {
     list-style: none; 
     color: red;
     font-size: 0.9em;
-    /* margin-top: -15px; */
-    /* margin-bottom: 25px; */
+    margin-top: -15px;
+    margin-bottom: 5px;
 
 }
 
@@ -1836,6 +1836,25 @@ input[type="number"] {
 #registerForm,
 #loginForm {
     max-width: 500px;
+}
+
+.warning-message-but {
+    margin-left: 80%;
+    margin-bottom: 5px;
+    padding: 6px 12px !important;
+    margin-right: 5px !important;
+}
+
+.warning-message-but a {
+    color: white;
+}
+
+.warning-message {
+    background-color: var(--background-color);
+    border-radius: 10px;
+    padding-top: 11px;
+    padding-bottom: 3px;
+    text-align: center;
 }
 
 @media (max-width: 900px) {
