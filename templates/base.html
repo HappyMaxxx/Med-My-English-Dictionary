@@ -81,6 +81,30 @@
             </div>
             
         <div class="buttons">
+
+            <a href="{% url 'notifications' %}" class="no-style" id="notifications-link">
+                <i class="fas fa-bell"></i>
+                {% if unread_notifications_count > 0 %}
+                    {% if unread_notifications_count > 99 %}
+                        <span class="notification-count">99+</span>
+                    {% else %}
+                        <span class="notification-count">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                {% endif %}
+            </a>
+
+            {% if request.user.is_authenticated %}
+            <div class="notifications-dropdown" id="notifications-dropdown">
+                <ul>
+                    {% for notification in recent_notifications %}
+                        <li>{{ notification.message }} <small>{{ notification.created_at|date:"d.m.Y H:i" }}</small></li>
+                    {% empty %}
+                        <li>There are no unread messages</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
             <a id="theme-toggle-light" class="no-style"><i class="fas fa-sun"></i></a>
             <a id="theme-toggle-dark" class="no-style"><i class="fas fa-moon"></i></a>
         {% if request.user.is_authenticated %}
@@ -119,8 +143,12 @@
 </div>
 
 <script src="{% static 'med/js/script.js' %}"></script>
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const notificationsLink = document.getElementById('notifications-link');
+    const notificationsDropdown = document.getElementById('notifications-dropdown');
     const burgerMenu = document.getElementById('burger-menu');
     const navItems = document.getElementById('nav-items');
 

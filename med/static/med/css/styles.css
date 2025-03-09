@@ -1857,6 +1857,65 @@ input[type="number"] {
     text-align: center;
 }
 
+.notifications-dropdown {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 112.55px;
+    background-color: var(--feature-background);
+    border: 1px solid ;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.notifications-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notifications-dropdown li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.notifications-dropdown li:last-child {
+    border-bottom: none;
+}
+
+.notifications-dropdown small {
+    display: block;
+    color: #888;
+    font-size: 12px;
+}
+
+#notifications-link {
+    position: relative;
+    margin-right: 10px;
+    color: var(--text-color);
+}
+
+#notifications-link:hover + .notifications-dropdown,
+.notifications-dropdown:hover {
+    display: block;
+}
+
+.notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 12px;
+}
+
 @media (max-width: 900px) {
     .burger-menu {
         display: block;

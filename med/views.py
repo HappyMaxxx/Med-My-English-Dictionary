@@ -593,6 +593,7 @@ class ProfileView(View):
             'is_profile': True,
             'is_requests_in': is_requests_in,
             'is_requests_out': is_requests_out,
+            # 'unread_notifications_count': 99,
         })
     
 
@@ -1699,6 +1700,11 @@ def hide_warning_message(request):
         profile.save()
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
+
+@login_required
+def notifications_view(request):
+    # TODO
+    return render(request, 'med/soon.html')
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')
