@@ -504,15 +504,17 @@ class ProfileView(View):
             n_days = 7
             today = now().date()
             start_date = today - timedelta(days=n_days)
-            daily_word_count = words.filter(time_create__date__gte=start_date).annotate(
+
+            daily_word_count = Word.objects.filter(
+                user=user,
+                time_create__gte=start_date
+            ).annotate(
                 day=TruncDay('time_create')
-            ).values('day').annotate(count=Count('id')).order_by('day')
+            ).values('day').annotate(
+                count=Count('id')
+            ).order_by('day')
 
-            daily_data = {
-                str(entry['day'].date()): entry['count']
-                for entry in daily_word_count
-            }
-
+            daily_data = {str(entry['day']): entry['count'] for entry in daily_word_count}
             daily_chart_data = json.dumps({
                 'categories': [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(n_days + 1)],
                 'data': [daily_data.get((start_date + timedelta(days=i)).strftime('%Y-%m-%d'), 0) for i in range(n_days + 1)],
@@ -634,7 +636,7 @@ class SelectGroupView(View):
 @method_decorator(login_required, name='dispatch')
 class EditProfileView(View):
     def get_user_profile(self, user):
-        return UserProfile.objects.get_or_create(user=user)
+        return UserProfile.objects.get_or_create(user=user)[0]
 
     def get_forms(self, request, user_profile):
         return {
@@ -673,25 +675,35 @@ class EditProfileView(View):
                     os.remove(user_profile.avatar.path.replace('/media/', '/media/avatars/'))
 
                 user_profile.avatar.save(new_name, avatar_file)
+                return True
             except Exception as e:
-                pass
+                return False
+        return False
 
     def get(self, request, *args, **kwargs):
-        user_profile, _ = self.get_user_profile(request.user)
+        user_profile = self.get_user_profile(request.user)
         return self.render_profile_page(request, user_profile)
 
     def post(self, request, *args, **kwargs):
-        user_profile, _ = self.get_user_profile(request.user)
+        user_profile = self.get_user_profile(request.user)
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
         if 'delete_avatar' in request.POST:
             self.handle_delete_avatar(user_profile)
+            if is_ajax:
+                return JsonResponse({'status': 'success', 'message': 'Avatar deleted'})
             return redirect('profile', user_name=request.user.username)
 
         if 'update_profile' in request.POST:
             profile_form = EditProfileForm(request.POST, instance=request.user)
             if profile_form.is_valid():
                 profile_form.save()
+                if is_ajax:
+                    return JsonResponse({'status': 'success', 'message': 'Profile updated'})
                 return redirect('profile', user_name=request.user.username)
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'errors': profile_form.errors})
+            return self.render_profile_page(request, user_profile, profile_form=profile_form)
 
         if 'update_words_show' in request.POST:
             words_show_form = WordsShowForm(request.POST, instance=user_profile)
@@ -700,9 +712,9 @@ class EditProfileView(View):
                 user_profile.charts_order = charts_order
                 user_profile.save()
 
-            pie_visible = True if request.POST.get('pie-visible') == 'true' else False
-            bar_visible = True if request.POST.get('bar-visible') == 'true' else False
-            line_visible = True if request.POST.get('time-visible') == 'true' else False
+            pie_visible = request.POST.get('pie-visible') == 'true'
+            bar_visible = request.POST.get('bar-visible') == 'true'
+            line_visible = request.POST.get('time-visible') == 'true'
 
             if pie_visible != user_profile.show_pie_chart:
                 user_profile.show_pie_chart = pie_visible
@@ -713,10 +725,21 @@ class EditProfileView(View):
 
             if words_show_form.is_valid():
                 words_show_form.save()
+                user_profile.save()
+                if is_ajax:
+                    return JsonResponse({'status': 'success', 'message': 'Words settings updated'})
                 return redirect('profile', user_name=request.user.username)
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'errors': words_show_form.errors})
+            return self.render_profile_page(request, user_profile, words_show_form=words_show_form)
 
         if 'cropped_avatar' in request.POST:
-            self.handle_cropped_avatar(request, user_profile)
+            success = self.handle_cropped_avatar(request, user_profile)
+            if is_ajax:
+                return JsonResponse({
+                    'status': 'success' if success else 'error',
+                    'message': 'Avatar updated' if success else 'Failed to update avatar'
+                })
             return redirect('profile', user_name=request.user.username)
 
         if 'change_password' in request.POST:
@@ -724,8 +747,15 @@ class EditProfileView(View):
             if password_form.is_valid():
                 password_form.save()
                 update_session_auth_hash(request, request.user)
+                if is_ajax:
+                    return JsonResponse({'status': 'success', 'message': 'Password updated'})
                 return redirect('profile', user_name=request.user.username)
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'errors': password_form.errors})
+            return self.render_profile_page(request, user_profile, password_form=password_form)
 
+        if is_ajax:
+            return JsonResponse({'status': 'error', 'message': 'Invalid request'})
         return self.render_profile_page(request, user_profile)
         
 

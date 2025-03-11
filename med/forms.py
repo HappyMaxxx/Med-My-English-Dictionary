@@ -113,13 +113,14 @@ class GroupForm(forms.ModelForm):
         }
 
 class EditProfileForm(forms.ModelForm):
-    email = forms.EmailField(label='Email', widget=forms.EmailInput())
+    # email = forms.EmailField(label='Email', widget=forms.EmailInput())
     first_name = forms.CharField(label='First Name', required=False, widget=forms.TextInput())
     last_name = forms.CharField(label='Last Name', required=False, widget=forms.TextInput())
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name']
+        # fields = ['email', 'first_name', 'last_name']
+        fields = ['first_name', 'last_name']
 
 class WordsShowForm(forms.ModelForm):
     class Meta:
