@@ -297,6 +297,22 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
 
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    time_create = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.message}"
+    
+    class Meta:
+        ordering = ['-time_create']
+        indexes = [
+            models.Index(fields=['-time_create'])
+        ]
+
+
 class Top(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="tops")
     user = models.ForeignKey(User, on_delete=models.CASCADE)

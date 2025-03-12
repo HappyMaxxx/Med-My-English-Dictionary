@@ -1,4 +1,5 @@
 {% load static %}
+{% load notification_tags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -82,22 +83,24 @@
             
         <div class="buttons">
 
+            {% if request.user.is_authenticated %}
             <a href="{% url 'notifications' %}" class="no-style" id="notifications-link">
                 <i class="fas fa-bell"></i>
-                {% if unread_notifications_count > 0 %}
-                    {% if unread_notifications_count > 99 %}
+                {% get_unread_notifications_count request as unread_count %}
+                {% if unread_count > 0 %}
+                    {% if unread_count > 99 %}
                         <span class="notification-count">99+</span>
                     {% else %}
-                        <span class="notification-count">{{ unread_notifications_count }}</span>
+                        <span class="notification-count">{{ unread_count }}</span>
                     {% endif %}
                 {% endif %}
             </a>
-
-            {% if request.user.is_authenticated %}
+            
             <div class="notifications-dropdown" id="notifications-dropdown">
                 <ul>
-                    {% for notification in recent_notifications %}
-                        <li>{{ notification.message }} <small>{{ notification.created_at|date:"d.m.Y H:i" }}</small></li>
+                    {% get_latest_unread_notifications request as notifications %}
+                    {% for notification in notifications %}
+                        <li>{{ notification.message }} <small>{{ notification.time_create|date:"d.m.Y H:i" }}</small></li>
                     {% empty %}
                         <li>There are no unread messages</li>
                     {% endfor %}

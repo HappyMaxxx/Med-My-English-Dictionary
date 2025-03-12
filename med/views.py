@@ -587,6 +587,13 @@ class ProfileView(View):
             friendship = friendships.filter(sender=profile_user, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=profile_user).first()
             profile_user.friendship_id = friendship.id if friendship else None
 
+        # For test adding new notifications
+        # Notification.objects.create(
+        #     user=request.user,
+        #    message='This is a test notification',
+        #     is_read=False,
+        # )
+
         return render(request, 'med/profile.html', {
             **profile_data,
             'user': profile_user,
