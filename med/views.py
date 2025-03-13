@@ -830,6 +830,12 @@ def send_friend_request(request, username):
     
     friendship, created = Friendship.objects.get_or_create(sender=request.user, receiver=receiver)
 
+    Notification.objects.create(
+        user=receiver,
+        message=f"{request.user.username} sent you a friend request",
+        is_read=False,
+    )
+
     return redirect('profile', user_name=request.user.username)
 
 @login_required
@@ -1618,10 +1624,23 @@ def approve_group_request(request, group_id):
     group.state = 'added'
     group.save()
 
+    Notification.objects.create(
+        user=group.group.user,
+        message=f"Your group {group.group.name} was approved",
+        is_read=False,
+    )
+
     return redirect('practice_groups')
 
 def reject_group_request(request, group_id):
     CommunityGroup.objects.filter(group_id=group_id).delete()
+    group = get_object_or_404(WordGroup, id=group_id)
+
+    Notification.objects.create(
+        user=group.user,
+        message=f"Your group {group.name} was rejected",
+        is_read=False,
+    )
 
     return redirect('practice_groups')
 
