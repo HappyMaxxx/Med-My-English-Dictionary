@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load group_tags %}
 
 {% block content %}
 <div class="group-container">
@@ -129,7 +130,10 @@
                 <a href="{% url 'words' request.user.username %}" class="add-word-button">Add Word</a>
                 <a href="#" class="add-word-button" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
                 {% if words %}
-                    <a href="{% url 'send_group_request' group_id  %}" class="add-word-button">Share</a>
+                    {% get_user_pending_groups request as groups %}
+                    {% if group_ not in groups %}
+                        <a href="{% url 'send_group_request' group_id  %}" class="add-word-button">Share</a>
+                    {% endif %}
                 {% endif %}
                 {% endif %}
             </div>

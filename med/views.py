@@ -368,6 +368,7 @@ class GroupWordsView(BaseGroupView):
             'title1': f"{group.name} Words ({group.user.username})" if not is_my_group else f"{group.name} Words",
             'is_main': group.is_main,
             'group_id': group_id,
+            'group_': group,
             'is_group': True,
             'words_f_g': True,
         })
