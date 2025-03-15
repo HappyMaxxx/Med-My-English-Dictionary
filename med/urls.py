@@ -58,4 +58,5 @@ urlpatterns = [
     path('api/get-tops-by-category/', views.api_get_tops_by_category, name='api_get_tops_by_category'),
     path("hide-warning/", views.hide_warning_message, name="hide-warning-message"),
     path('notifications/', views.notifications_view, name='notifications'),
+    path('api/notifications/', views.notifications_api, name='notifications_api'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

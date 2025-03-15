@@ -11,6 +11,7 @@
     <link rel="icon" href="{% static 'med/img/base/icon.png' %}" type="image/png"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
+
 <body>
 
 <header>
@@ -147,29 +148,67 @@
 
 <script src="{% static 'med/js/script.js' %}"></script>
 
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const notificationsLink = document.getElementById('notifications-link');
-    const notificationsDropdown = document.getElementById('notifications-dropdown');
-    const burgerMenu = document.getElementById('burger-menu');
-    const navItems = document.getElementById('nav-items');
+    document.addEventListener('DOMContentLoaded', function() {
+        const burgerMenu = document.getElementById('burger-menu');
+        const navItems = document.getElementById('nav-items');
 
-    burgerMenu.addEventListener('click', function() {
-        navItems.classList.toggle('active');
+        burgerMenu.addEventListener('click', function() {
+            navItems.classList.toggle('active');
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!navItems.contains(event.target) && !burgerMenu.contains(event.target)) {
+                navItems.classList.remove('active');
+            }
+        });
+
+        navItems.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
     });
-
-    document.addEventListener('click', function(event) {
-        if (!navItems.contains(event.target) && !burgerMenu.contains(event.target)) {
-            navItems.classList.remove('active');
-        }
-    });
-
-    navItems.addEventListener('click', function(event) {
-        event.stopPropagation();
-    });
-});
-
 </script>
+
+<!-- Notifications auto update -->
+<script>
+    function updateNotifications() {
+        fetch('{% url "notifications_api" %}')
+            .then(response => response.json())
+            .then(data => {
+                const notifCount = document.querySelector('.notification-count');
+                const notifDropdown = document.getElementById('notifications-dropdown').querySelector('ul');
+    
+                if (data.count > 0) {
+                    if (data.count > 99) {
+                        notifCount.textContent = "99+";
+                    } else {
+                        notifCount.textContent = data.count;
+                    }
+                    notifCount.style.display = "inline-block";
+                } else {
+                    notifCount.style.display = "none";
+                }
+    
+                notifDropdown.innerHTML = ""; 
+    
+                if (data.notifications.length > 0) {
+                    data.notifications.forEach(n => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `${n.message} <small>${n.time}</small>`;
+                        notifDropdown.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = "There are no unread messages";
+                    notifDropdown.appendChild(li);
+                }
+            });
+    }
+    
+    setInterval(updateNotifications, 30000);
+    
+    document.addEventListener('DOMContentLoaded', updateNotifications);
+</script>
+    
 </body>
 </html>

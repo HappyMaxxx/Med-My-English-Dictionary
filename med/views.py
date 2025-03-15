@@ -1763,6 +1763,24 @@ def notifications_view(request):
     # TODO
     return render(request, 'med/soon.html')
 
+@login_required
+def notifications_api(request):
+    user = request.user
+    unread_notifications = Notification.objects.filter(user=user, is_read=False).order_by('-time_create')[:5]
+    count = unread_notifications.count()
+    
+    notifications_list = [
+        {
+            "message": n.message,
+            "time": n.time_create.strftime("%d.%m.%Y %H:%M")
+        } for n in unread_notifications
+    ]
+
+    return JsonResponse({
+        "count": count,
+        "notifications": notifications_list
+    })
+
 def page_not_found(request, exception):
     return render(request, 'med/404.html')
 
