@@ -1916,6 +1916,56 @@ input[type="number"] {
     font-size: 12px;
 }
 
+.notification-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: var(--feature-background);
+    border-radius: 10px;
+    box-shadow: var(--feature-shadow);
+    text-align: left !important;
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    border: 1px solid var(--button-background);
+    border-radius: 5px;
+    background-color: var(--background-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.notification.unread {
+    background-color: var(--feature-background);
+    border-color: var(--button-background);
+}
+
+.notification.read {
+    background-color: var(--tab-background);
+    border-color: var(--tab-border-color);
+    opacity: 0.85;
+}
+
+.notification:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.notification-body {
+    flex: 1;
+}
+
+.notification-body p {
+    margin: 0;
+    width: 100%;
+    font-size: 1em;
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
 @media (max-width: 900px) {
     .burger-menu {
         display: block;

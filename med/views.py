@@ -1758,10 +1758,36 @@ def hide_warning_message(request):
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
 
-@login_required
-def notifications_view(request):
-    # TODO
-    return render(request, 'med/soon.html')
+
+@method_decorator(login_required, name='dispatch')
+class NotiListView(ListView):
+    model = Notification
+    template_name = 'med/notification.html'
+    context_object_name = 'notifications'
+    paginate_by = 25
+
+    def get_queryset(self):
+        # Отримуємо ім'я користувача з self.request.user
+        user_name = self.request.user.username
+        user = get_object_or_404(User, username=user_name)
+
+        # Фільтруємо нотифікації для цього користувача
+        queryset = Notification.objects.filter(user=user).order_by('-time_create')
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        user_name = self.request.user.username
+        user = get_object_or_404(User, username=user_name)
+
+        context.update({
+            'user': user,
+            'title': f"{user_name}'s Notifications",
+        })
+        return context
+
 
 @login_required
 def notifications_api(request):
