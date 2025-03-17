@@ -1767,11 +1767,9 @@ class NotiListView(ListView):
     paginate_by = 25
 
     def get_queryset(self):
-        # Отримуємо ім'я користувача з self.request.user
         user_name = self.request.user.username
         user = get_object_or_404(User, username=user_name)
 
-        # Фільтруємо нотифікації для цього користувача
         queryset = Notification.objects.filter(user=user).order_by('-time_create')
 
         return queryset
@@ -1787,7 +1785,6 @@ class NotiListView(ListView):
             'title': f"{user_name}'s Notifications",
         })
         return context
-
 
 @login_required
 def notifications_api(request):
@@ -1806,6 +1803,14 @@ def notifications_api(request):
         "count": count,
         "notifications": notifications_list
     })
+
+@login_required
+def mark_notification_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    if not notification.is_read:
+        notification.is_read = True
+        notification.save()
+    return JsonResponse({'status': 'success', 'is_read': True})
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

@@ -8,7 +8,8 @@
 <div class="notification-container">
     {% if notifications %}
         {% for notification in notifications %}
-            <div class="notification">
+            <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
+                 data-notification-id="{{ notification.id }}">
                 <div class="notification-body">
                     <p>{{notification.message}}</p>
                 </div>
@@ -42,5 +43,32 @@
     </nav>
     {% endif %}
 </div>
-    
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notifications = document.querySelectorAll('.notification');
+        
+        notifications.forEach(notification => {
+            notification.addEventListener('click', function() {
+                const notificationId = this.getAttribute('data-notification-id');
+                
+                fetch(`/notification/${notificationId}/read/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        notification.classList.remove('unread');
+                        notification.classList.add('read');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    });
+</script>
 {% endblock %}
