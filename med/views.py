@@ -1786,6 +1786,7 @@ class NotiListView(ListView):
         })
         return context
 
+
 @login_required
 def notifications_api(request):
     user = request.user
