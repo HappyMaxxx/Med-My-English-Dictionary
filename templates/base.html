@@ -99,8 +99,8 @@
             
             <div class="notifications-dropdown" id="notifications-dropdown">
                 <ul>
-                    {% get_latest_unread_notifications request as notifications %}
-                    {% for notification in notifications %}
+                    {% get_latest_unread_notifications request as header_notifications %}
+                    {% for notification in header_notifications %}
                         <li>{{ notification.message }} <small>{{ notification.time_create|date:"d.m.Y H:i" }}</small></li>
                     {% empty %}
                         <li>There are no unread messages</li>
