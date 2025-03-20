@@ -6,6 +6,10 @@
 <h1>{{title}}</h1>
 
 <div class="notification-container">
+    <div class="buttons" style="margin-bottom: 20px;">
+        <a href="#" id="mark-all-read" style="margin-left: 0px;">Mark all as read</a>
+    </div>
+    
     {% if notifications %}
         {% for notification in notifications %}
             <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
@@ -70,5 +74,33 @@
             });
         });
     });
+</script>
+
+<script>
+    document.getElementById('mark-all-read').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const unreadNotifications = document.querySelectorAll('.notification.unread');
+
+    unreadNotifications.forEach(notification => {
+        const notificationId = notification.getAttribute('data-notification-id');
+
+        fetch(`/notification/${notificationId}/read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                notification.classList.remove('unread');
+                notification.classList.add('read');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
 </script>
 {% endblock %}
