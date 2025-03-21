@@ -1928,7 +1928,8 @@ input[type="number"] {
 
 .notification {
     display: flex;
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-start; 
     gap: 15px;
     padding: 15px 20px;
     border: 1px solid var(--button-background);
@@ -1964,6 +1965,14 @@ input[type="number"] {
     font-size: 1em;
     color: var(--text-color);
     line-height: 1.5;
+}
+
+.notification-tail {
+    flex: 0 0 auto; 
+    width: 30%; 
+    font-size: medium;
+    color: var(--text-color);
+    text-align: right; 
 }
 
 @media (max-width: 900px) {
@@ -2055,7 +2064,7 @@ input[type="number"] {
     }
 
     .notification {
-        flex-direction: column; 
+        flex-direction: row;
         align-items: flex-start; 
         gap: 10px; 
         padding: 10px; 
@@ -2069,6 +2078,11 @@ input[type="number"] {
     .notification-body p {
         font-size: 0.9em; 
         line-height: 1.4; 
+    }
+
+    .notification-tail {
+        width: 30%; 
+        font-size: 0.7em; 
     }
 
     .notifications-dropdown {

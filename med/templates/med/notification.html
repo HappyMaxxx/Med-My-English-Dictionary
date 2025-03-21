@@ -8,6 +8,7 @@
 <div class="notification-container">
     <div class="buttons" style="margin-bottom: 20px;">
         <a href="#" id="mark-all-read" style="margin-left: 0px;">Mark all as read</a>
+        <label><input type="checkbox" id="show-unread-only"> Unread only</label>
     </div>
     
     {% if notifications %}
@@ -16,6 +17,9 @@
                  data-notification-id="{{ notification.id }}">
                 <div class="notification-body">
                     <p>{{notification.message}}</p>
+                </div>
+                <div class="notification-tail">
+                    <p style="margin-bottom: 0px; font-size:medium;"> {{ notification.time_create|date:"d.m.Y H:i" }}</p>
                 </div>
             </div>
         {% endfor %}
@@ -100,6 +104,19 @@
             }
         })
         .catch(error => console.error('Error:', error));
+    });
+});
+</script>
+
+<script>
+    document.getElementById('show-unread-only').addEventListener('change', function() {
+    const notifications = document.querySelectorAll('.notification');
+    notifications.forEach(notif => {
+        if (this.checked && notif.classList.contains('read')) {
+            notif.style.display = 'none';
+        } else {
+            notif.style.display = 'block';
+        }
     });
 });
 </script>
