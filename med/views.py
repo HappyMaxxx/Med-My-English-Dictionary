@@ -20,13 +20,11 @@ from reportlab.pdfgen import canvas
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncDay
 
-from django.middleware.csrf import get_token
 from django.core.files.base import ContentFile
 import base64
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.utils.decorators import method_decorator
 
 from django.db import transaction
 from django.db.models import Q, Count
@@ -105,7 +103,6 @@ def add_to_main_group(request, word):
     group.words.add(word)
 
 
-@method_decorator(login_required, name='dispatch')
 class AddWordView(LoginRequiredMixin, CreateView):
     form_class = AddWordForm
     template_name = 'med/add_word.html'
@@ -135,8 +132,7 @@ class AddWordView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-@method_decorator(login_required, name='dispatch')
-class ConfirmDeleteView(View):
+class ConfirmDeleteView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         word_ids = request.GET.getlist('word_ids')
         group_id = request.GET.get('group_id')
@@ -216,8 +212,7 @@ class ConfirmDeleteView(View):
                 "Are you sure you want to delete this word?")
 
 
-@method_decorator(login_required, name='dispatch')
-class EditWordView(View):
+class EditWordView(LoginRequiredMixin, View):
     def get(self, request, word_id, *args, **kwargs):
         word = get_object_or_404(Word, id=word_id, user=request.user)
         form = WordForm(instance=word)
@@ -238,8 +233,7 @@ class EditWordView(View):
         return render(request, 'med/edit_word.html', {'form': form, 'word': word})
     
 
-@method_decorator(login_required, name='dispatch')
-class WordListView(ListView):
+class WordListView(LoginRequiredMixin, ListView):
     model = Word
     template_name = 'med/words.html'
     context_object_name = 'words'
@@ -392,8 +386,7 @@ class GroupWordsView(BaseGroupView):
         return group.words.all()
 
 
-@method_decorator(login_required, name='dispatch')
-class CreateGroupView(View):
+class CreateGroupView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
 
         len_groups = WordGroup.objects.filter(user=request.user).count()
@@ -471,8 +464,7 @@ class LoginUser(LoginView):
         return reverse_lazy('profile', kwargs={'user_name': self.request.user.username})
 
 
-@method_decorator(login_required, name='dispatch')
-class ProfileView(View):
+class ProfileView(LoginRequiredMixin, View):
     def get(self, request, user_name, **kwargs):
         def get_user_data(user):
             user_profile, created = UserProfile.objects.get_or_create(user=user)
@@ -641,8 +633,7 @@ class SelectGroupView(View):
         return redirect('group_words', group_id=group_id)
     
 
-@method_decorator(login_required, name='dispatch')
-class EditProfileView(View):
+class EditProfileView(LoginRequiredMixin, View):
     def get_user_profile(self, user):
         return UserProfile.objects.get_or_create(user=user)[0]
 
@@ -866,8 +857,6 @@ def respond_to_friend_request(request, friendship_id=None, user1_id=None, user2_
 
     return redirect('friends_list', user_name=request.user.username)
 
-
-
 def delete_friend(request, friendship_id):
     friendship = get_object_or_404(Friendship, id=friendship_id)
 
@@ -1054,8 +1043,7 @@ def text_add_view(request):
     return render(request, 'med/add_text.html', {'form': form})
 
 
-@method_decorator(login_required, name='dispatch')
-class EditTextView(View):
+class EditTextView(LoginRequiredMixin, View):
     def get(self, request, text_id, *args, **kwargs):
         text = get_object_or_404(ReadingText, id=text_id)
         form = TextForm(instance=text)
@@ -1074,8 +1062,7 @@ class EditTextView(View):
         return render(request, 'med/edit_text.html', {'form': form, 'text': text})
 
 
-@method_decorator(login_required, name='dispatch')
-class PracticeGroupWordsListView(ListView):
+class PracticeGroupWordsListView(LoginRequiredMixin, ListView):
     model = Word
     template_name = 'med/group_words.html'
     context_object_name = 'words'
@@ -1759,8 +1746,7 @@ def hide_warning_message(request):
     return JsonResponse({"success": False}, status=400)
 
 
-@method_decorator(login_required, name='dispatch')
-class NotiListView(ListView):
+class NotiListView(LoginRequiredMixin, ListView):
     model = Notification
     template_name = 'med/notification.html'
     context_object_name = 'notifications'
