@@ -529,12 +529,12 @@ class ProfileView(LoginRequiredMixin, View):
             process_special_achivments(user)
             process_interaction_achivments(user)
 
-            streak_data = Word.calculate_streak(user)
+            streak_data = UserProfile.calculate_streak(user)
 
             current_streak, max_streak, current_start, current_end, longest_start, longest_end, ff = streak_data
 
-            current_streak_range = Word.format_date_range(current_start, current_end)
-            longest_streak_range = Word.format_date_range(longest_start, longest_end)
+            current_streak_range = UserProfile.format_date_range(current_start, current_end)
+            longest_streak_range = UserProfile.format_date_range(longest_start, longest_end)
 
             user_in_top = Top.objects.filter(user=user, place__in=[1, 2, 3]) or None
 
@@ -595,7 +595,6 @@ class ProfileView(LoginRequiredMixin, View):
             'is_profile': True,
             'is_requests_in': is_requests_in,
             'is_requests_out': is_requests_out,
-            # 'unread_notifications_count': 99,
         })
     
 
@@ -1665,6 +1664,10 @@ def wrap_text(text, max_width, font, font_size, pdf):
 
 @login_required
 def export_pdf(request):
+
+    if not request.user.user_profile.is_premium:
+        return redirect('soon')
+    
     words = Word.objects.filter(user=request.user)
     
     response = HttpResponse(content_type='application/pdf')

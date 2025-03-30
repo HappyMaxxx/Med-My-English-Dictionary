@@ -357,7 +357,7 @@ header .buttons a:hover {
     font-size: 0.9em;
     margin-top: -15px;
     margin-bottom: 5px;
-
+    padding: 5px 0px;
 }
 
 .errorlist {
