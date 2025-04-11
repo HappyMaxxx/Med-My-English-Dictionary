@@ -48,7 +48,7 @@ def update_top():
 
 def calculate_words_top():
     word_counts = (
-        Word.objects.values('user')
+        UserProfile.objects.values('user')
         .annotate(points=Count('id'))
         .order_by('-points')[:10]
     )
@@ -57,7 +57,7 @@ def calculate_words_top():
 def calculate_streak_top():
     streaks = []
     for user in User.objects.all():
-        _, longest_streak, *_ = Word.calculate_streak(user)
+        _, longest_streak, *_ = UserProfile.calculate_streak(user)
         if longest_streak > 0:
             streaks.append((user, longest_streak))
     streaks.sort(key=lambda x: x[1], reverse=True)
