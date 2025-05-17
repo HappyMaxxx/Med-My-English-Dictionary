@@ -507,7 +507,10 @@ class ProfileView(LoginRequiredMixin, View):
                 count=Count('id')
             ).order_by('day')
 
-            daily_data = {str(entry['day']): entry['count'] for entry in daily_word_count}
+            daily_data = {
+                entry['day'].date().isoformat(): entry['count']
+                for entry in daily_word_count
+            }
             daily_chart_data = json.dumps({
                 'categories': [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(n_days + 1)],
                 'data': [daily_data.get((start_date + timedelta(days=i)).strftime('%Y-%m-%d'), 0) for i in range(n_days + 1)],
@@ -526,8 +529,8 @@ class ProfileView(LoginRequiredMixin, View):
                 achievements = UserAchievement.objects.filter(user=request.user)[:5]
             
             
-            process_special_achivments(user)
-            process_interaction_achivments(user)
+            # process_special_achivments(user)
+            # process_interaction_achivments(user)
 
             streak_data = UserProfile.calculate_streak(user)
 
@@ -801,6 +804,9 @@ def user_search(request):
     paginator = Paginator(users, 15)
     page_number = request.GET.get('page')
     paginated_users = paginator.get_page(page_number)
+    
+    for user in users:
+        user.img = user.user_profile.get_avatar_url()
 
     return render(request, 'med/user_search.html', {
         'users': paginated_users,
@@ -1404,7 +1410,7 @@ def process_words_achivments(user, thresholds):
     for ach_type in achievement_type:
         process_achievements(user, ach_type, thresholds)
 
-SITE_LAUNCH_DATE = datetime(2025, 1, 1)
+SITE_LAUNCH_DATE = datetime(2025, 5, 15)
 
 def process_special_achivments(user):
     user_special_achivments = UserAchievement.objects.filter(user=user, achievement__ach_type='7').values_list('achievement__name', flat=True)
@@ -1435,11 +1441,11 @@ def process_special_achivments(user):
                 UserAchievement.objects.create(user=user, achievement=perfectionist_achievement)
 
     # Gotta Catch 'Em All
-    if "Gotta Catch 'Em All" not in user_special_achivments:
+    if "Gotta Catch 'Em All!" not in user_special_achivments:
         user_ach_count = UserAchievement.objects.filter(user=user).exclude(achievement__ach_type='7').count()
         ach_count = Achievement.objects.exclude(ach_type='7').count()
         if ach_count == user_ach_count:
-            gcea_acievement = all_achievements.get(name="Gotta Catch 'Em All")
+            gcea_acievement = all_achievements.get(name="Gotta Catch 'Em All!")
             if gcea_acievement:
                 UserAchievement.objects.create(user=user, achievement=gcea_acievement)
 
@@ -1462,38 +1468,38 @@ def process_interaction_achivments(user):
 @receiver(post_save, sender=Word)
 def update_achievements_words(sender, instance, **kwargs):
     thresholds = [10, 50, 100]
-    process_words_achivments(instance.user, thresholds)
-    process_special_achivments(instance.user)
-    process_interaction_achivments(instance.user)
+    # process_words_achivments(instance.user, thresholds)
+    # process_special_achivments(instance.user)
+    # process_interaction_achivments(instance.user)
 
 @receiver(post_save, sender=WordGroup)
 def update_achievements_on_group_words_change(sender, instance, **kwargs):
     thresholds = [1, 5, 10]
-    process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
-    process_special_achivments(instance.user)
-    process_interaction_achivments(instance.user)
+    # process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+    # process_special_achivments(instance.user)
+    # process_interaction_achivments(instance.user)
 
 @receiver(m2m_changed, sender=WordGroup.words.through)
 def update_achievements_on_group_words_change(sender, instance, action, **kwargs):
     if action in ['post_add', 'post_remove', 'post_clear']:
         thresholds = [1, 5, 10]
-        process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
-        process_special_achivments(instance.user)
-        process_interaction_achivments(instance.user)   
+        # process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+        # process_special_achivments(instance.user)
+        # process_interaction_achivments(instance.user)   
 
 @receiver(post_save, sender=Friendship)
 def update_achievements_friends(sender, instance, **kwargs):
     thresholds = [5, 20, 50]
     
-    process_achievements(instance.sender, achievement_type='3', thresholds=thresholds)
-    process_achievements(instance.receiver, achievement_type='3', thresholds=thresholds)
+    # process_achievements(instance.sender, achievement_type='3', thresholds=thresholds)
+    # process_achievements(instance.receiver, achievement_type='3', thresholds=thresholds)
 
 @receiver(post_save, sender=UserProfile)
 def update_achievements_reading(sender, instance, **kwargs):
     thresholds = [(5, 1), (50, 10), (100, 20)]
-    process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
-    process_special_achivments(instance.user)
-    process_interaction_achivments(instance.user)
+    # process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
+    # process_special_achivments(instance.user)
+    # process_interaction_achivments(instance.user)
 
 def achievement_view(request):
     user_profile = UserProfile.objects.get(user=request.user)

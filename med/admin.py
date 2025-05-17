@@ -39,9 +39,15 @@ class UserAchievementAdmin(admin.ModelAdmin):
     list_filter = ('user', 'achievement')
     search_fields = ('user', 'achievement')
 
+class TopAdmin(admin.ModelAdmin):
+    list_display = ('user', 'category', 'place', 'points')
+    list_filter = ('user', 'category', 'points')
+    search_fields = ('user', 'category', 'place')
+
 admin.site.register(Word, WordAdmin)
 admin.site.register(WordGroup, WordGroupAdmin)
 admin.site.register(Friendship, FriendshipAdmin)
 admin.site.register(ReadingText, TextAdmin)
 admin.site.register(Achievement, AchievementAdmin)
 admin.site.register(UserAchievement, UserAchievementAdmin)
+admin.site.register(Top, TopAdmin)

@@ -1,3 +1,8 @@
 media/avatars/*
 !media/avatars/.gitkeep
 .env
+pytest.ini
+med/tests
+med/signals.py
+mad/__pychache__
+med/__pychache__
