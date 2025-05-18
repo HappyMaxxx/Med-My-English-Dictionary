@@ -4,5 +4,5 @@ media/avatars/*
 pytest.ini
 med/tests
 med/signals.py
-mad/__pychache__
-med/__pychache__
+mad/__pycache__
+med/__pycache__
