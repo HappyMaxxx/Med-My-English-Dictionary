@@ -60,4 +60,9 @@ urlpatterns = [
     path('notifications/', views.NotiListView.as_view(), name='notifications'),
     path('api/notifications/', views.notifications_api, name='notifications_api'),
     path('notification/<int:notification_id>/read/', views.mark_notification_as_read, name='mark_notification_read'),
+    path('send_group_to_friend/<int:group_id>/<int:user_id>', views.send_group_to_friend, name='send_group_to_friend'),
+    path('decline_friend_group/<int:notif_id>/', views.decline_friend_group, name='decline_friend_group'),
+    path('accept_friend_group/<int:notif_id>/', views.accept_friend_group, name='accept_friend_group'),
+    path('friend_group_words/<int:notif_id>/<int:group_id>/', views.FriendGroupWordsListView.as_view(), name='friend_group_words'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

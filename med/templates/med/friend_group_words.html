@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>{{ group.name }} words</h1>
+
+<div class="word_table_container reading-content group_words">
+    <div class="buttons" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px;">
+        <div style="margin-right: auto;">
+            <a href="{% url 'notifications' %}" class="buttons" style="display: inline-block; text-align: center;">&lt;</a>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+        {% if not is_usses %}
+            <a href="{% url 'accept_friend_group' notif_id %}">Approve</a>
+            <a href="{% url 'decline_friend_group' notif_id %}">Decline</a>
+        {% else %}
+        <a href="{% url 'group_words' group.id %}">View</a>
+        <a href="{% url 'leave_group' group_id=group.id fp=1 %}">Leave</a>
+        {% endif %}
+
+        </div>
+    </div>
+
+    {% if words %}
+    <table class="word_table">
+        <thead>
+            <tr>
+                <th class="edit">Add</th>
+                <th>Word</th>
+                <th>Translation</th>
+                <th>Example</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for word in words %}
+                <tr>
+                    {% if word.is_saved %}
+                    <td class="img_td">
+                        <img class="f_img cm_img" src="{% static 'med/img/groups/cm_light.png' %}" data-light-src="{% static 'med/img/groups/cm_light.png' %}" data-dark-src="{% static 'med/img/groups/cm_dark.png' %}" alt="IS Saved img">
+                    </td>
+                    {% else %}
+                    <td class="img_td">
+                        <a href="{% url 'save_word' group.id word.id %}">
+                        <img class="f_img" src="{% static 'med/img/groups/add_light.png' %}" data-light-src="{% static 'med/img/groups/add_light.png' %}" data-dark-src="{% static 'med/img/groups/add_dark.png' %}" alt="Add img">
+                        </a>
+                    </td>
+                    {% endif %}
+                    <td>{{ word.word }}</td>
+                    <td>{{ word.translation }}</td>
+                    <td>{{ word.example }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    {% else %}
+    <p> </p>
+    <p><b>There are no words yet</b></p>
+    {% endif %}
+    </table>
+
+    {% if paginator.num_pages > 1 %}
+    <nav class="list-pages"> 
+        <ul>
+            {% if page_obj.has_previous %}
+            <li class="page-num">
+                <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+            </li>
+            {% endif %}
+
+            {% for p in paginator.page_range %}
+                {% if page_obj.number == p %}
+                <li class="page-num page-num-selected">{{ p }}</li>
+                {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-num">
+                <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+{% endblock %}

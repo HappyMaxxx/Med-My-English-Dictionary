@@ -67,19 +67,15 @@
                             <td><input type="checkbox" name="word_checkbox" value="{{ word.id }}"></td>
                             {% else %}
                             {% if word.is_saved %}
-
                             <td class="img_td">
                                 <img class="f_img cm_img" src="{% static 'med/img/groups/cm_light.png' %}" data-light-src="{% static 'med/img/groups/cm_light.png' %}" data-dark-src="{% static 'med/img/groups/cm_dark.png' %}" alt="IS Saved img">
                             </td>
-
                             {% else %}
-
                             <td class="img_td">
-                                <a href="{% url 'save_word' word.id %}">
+                                <a href="{% url 'save_word' group_id word.id %}">
                                 <img class="f_img" src="{% static 'med/img/groups/add_light.png' %}" data-light-src="{% static 'med/img/groups/add_light.png' %}" data-dark-src="{% static 'med/img/groups/add_dark.png' %}" alt="Add img">
                                 </a>
                             </td>
-
                             {% endif %}
                             {% endif %}
                             {% endif %}
@@ -101,7 +97,7 @@
             <ul>
                 {% if page_obj.has_previous %}
                 <li class="page-num">
-                    <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+                    <a href="?page={{ page_obj.previous_page_number }}"><</a>
                 </li>
                 {% endif %}
 
@@ -115,7 +111,7 @@
 
                 {% if page_obj.has_next %}
                 <li class="page-num">
-                    <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+                    <a href="?page={{ page_obj.next_page_number }}">></a>
                 </li>
                 {% endif %}
             </ul>
@@ -130,10 +126,7 @@
                 <a href="{% url 'words' request.user.username %}" class="add-word-button">Add Word</a>
                 <a href="#" class="add-word-button" onclick="deleteSelectedWords(); return false;">Delete Selected</a>
                 {% if words %}
-                    {% get_user_pending_groups request as groups %}
-                    {% if group_ not in groups %}
-                        <a href="{% url 'send_group_request' group_id  %}" class="add-word-button">Share</a>
-                    {% endif %}
+                    <a href="#" class="add-word-button" onclick="openShareModal(); return false;">Share</a>
                 {% endif %}
                 {% endif %}
             </div>
@@ -151,11 +144,48 @@
             <div class="delete-button">
                 <a href="{% url 'leave_group' group_id=group_id fp=0 %}" class="delete-group-button">Leave</a>
             </div>
-        {% endif %}
         </div>
         {% endif %}
     </div>  
 </div>
+{% endif %}
+
+<!-- Modal for Share Options -->
+{% if group_id %}
+<div id="shareModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeShareModal()">×</span>
+        <h3>Share Group</h3>
+        <p>Choose how you want to share this group:</p>
+        <div class="modal-buttons">
+            {% get_user_pending_groups request as groups %}
+                {% if group_ not in groups %}
+                    <a href="{% url 'send_group_request' group_id %}" class="modal-button">Share to Community</a>
+                {% endif %}
+            <a href="#" class="modal-button" onclick="openFriendModal(); return false;">Share to Friend</a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Friend Selection -->
+<div id="friendModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeFriendModal()">×</span>
+        <h3>Select a Friend</h3>
+        <input type="text" id="friendSearch" class="friend-search" placeholder="Search friends..." onkeyup="filterFriends()">
+        <div id="friendList" class="friend-list">
+            {% for friend in friends %}
+            <div class="friend-item" data-username="{{ friend.username }}">
+                <a href="{% url 'send_group_to_friend' group_id friend.id %}" class="friend-link">{{ friend.username }}</a>
+            </div>
+            {% endfor %}
+            {% if not friends %}
+            <p>No friends available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <script>
 function deleteSelectedWords() {
@@ -168,6 +198,49 @@ function deleteSelectedWords() {
     }
     if (wordIds.length > 0) {
         window.location.href = "{% url 'confirm_delete' %}?group_id={{ group_id }}&word_ids=" + wordIds.join('&word_ids=');
+    }
+}
+
+function openShareModal() {
+    document.getElementById('shareModal').style.display = 'block';
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').style.display = 'none';
+}
+
+function openFriendModal() {
+    closeShareModal();
+    document.getElementById('friendModal').style.display = 'block';
+    document.getElementById('friendSearch').value = ''; 
+    filterFriends(); // Reset friend list
+}
+
+function closeFriendModal() {
+    document.getElementById('friendModal').style.display = 'none';
+}
+
+function filterFriends() {
+    var input = document.getElementById('friendSearch').value.toLowerCase();
+    var friends = document.getElementsByClassName('friend-item');
+    for (var i = 0; i < friends.length; i++) {
+        var username = friends[i].getAttribute('data-username').toLowerCase();
+        if (username.includes(input)) {
+            friends[i].style.display = 'block';
+        } else {
+            friends[i].style.display = 'none';
+        }
+    }
+}
+
+window.onclick = function(event) {
+    var shareModal = document.getElementById('shareModal');
+    var friendModal = document.getElementById('friendModal');
+    if (event.target == shareModal) {
+        shareModal.style.display = 'none';
+    }
+    if (event.target == friendModal) {
+        friendModal.style.display = 'none';
     }
 }
 </script>

@@ -305,6 +305,11 @@ class Notification(models.Model):
     message = models.TextField()
     time_create = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    type = models.CharField(max_length=20, choices=[
+        ('1', 'Base'),
+        ('2', 'Group_r'),
+    ], default='1')
+    group = models.ForeignKey(WordGroup, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.message}"

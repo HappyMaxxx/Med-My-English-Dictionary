@@ -13,6 +13,7 @@
     
     {% if notifications %}
         {% for notification in notifications %}
+            {% if notification.type == '1' %}
             <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
                  data-notification-id="{{ notification.id }}">
                 <div class="notification-body">
@@ -22,6 +23,29 @@
                     <p style="margin-bottom: 0px; font-size:medium;"> {{ notification.time_create|date:"d.m.Y H:i" }}</p>
                 </div>
             </div>
+            {% elif notification.type == '2' %}
+            <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
+            data-notification-id="{{ notification.id }}">
+                <div class="notification-body">
+                    <p>{{notification.message}}</p>
+                </div>
+                {% if not notification.is_read %}
+                <div>
+                    <div class="buttons" style="margin-top: 10% !important;">
+                        <a href="{% url 'friend_group_words' notification.id notification.group.id %}">Watch</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="buttons" style="margin-top: 10% !important;">
+                        <a href="{% url 'decline_friend_group' notification.id %}">Decline</a>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="notification-tail">
+                    <p style="margin-bottom: 0px; font-size:medium;"> {{ notification.time_create|date:"d.m.Y H:i" }}</p>
+                </div>
+            </div>
+            {% endif %}
         {% endfor %}
     {% endif %}
 

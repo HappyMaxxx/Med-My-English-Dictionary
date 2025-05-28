@@ -346,6 +346,7 @@ class GroupWordsView(BaseGroupView):
 
         if request.user != group.user and request.user not in group.uses_users.all():
             return HttpResponseRedirect(reverse('groups'))
+        
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -354,6 +355,11 @@ class GroupWordsView(BaseGroupView):
         group_id = self.kwargs.get('group_id')
         group = get_object_or_404(WordGroup, id=group_id)
         is_my_group = group.user == self.request.user
+
+        friends = User.objects.filter(
+            Q(friendship_requests_sent__receiver=self.request.user, friendship_requests_sent__status='accepted') |
+            Q(friendship_requests_received__sender=self.request.user, friendship_requests_received__status='accepted')
+        ).distinct()
 
         context.update({
             'is_my_group': is_my_group,
@@ -365,6 +371,7 @@ class GroupWordsView(BaseGroupView):
             'group_': group,
             'is_group': True,
             'words_f_g': True,
+            'friends': friends,
         })
 
         if context['is_uses']:
@@ -1285,6 +1292,7 @@ def find_word_type(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         word = data.get('word', None)
+
         if word:
             api_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
             response = requests.get(api_url)
@@ -1611,6 +1619,80 @@ def send_group_request(request, group_id):
     )
     
     return redirect('group_words', group_id=group_id)
+
+def send_group_to_friend(request, group_id, user_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    group = WordGroup.objects.get(user=request.user, id=group_id)
+    user = User.objects.get(id=user_id)
+    if group:
+        Notification.objects.create(
+            user=user,
+            message=f"Your friend {request.user} sends you an invitation to save his group '{group.name}'",
+            is_read=False,
+            type='2',
+            group=group,
+        )
+
+        return redirect('groups')
+    else:
+        return redirect('groups')
+
+class FriendGroupWordsListView(LoginRequiredMixin, ListView):
+    model = Word
+    template_name = 'med/friend_group_words.html'
+    context_object_name = 'words'
+    paginate_by = 25
+
+    def get_queryset(self):
+        group_id = self.kwargs.get('group_id')
+        group = get_object_or_404(WordGroup, id=group_id)
+
+        user_word_titles = [word.word.lower() for word in Word.objects.filter(user=self.request.user)]
+
+        words = group.words.all()
+        for word in words:
+                word.is_saved = word.word.lower() in user_word_titles
+
+        return words
+    
+    def get_context_data(self, **kwargs):
+        process_interaction_achivments(self.request.user)
+
+        context = super().get_context_data(**kwargs)
+        group_id = self.kwargs.get('group_id')
+        group = get_object_or_404(WordGroup, id=group_id)
+        notif_id = self.kwargs.get('notif_id')
+        context['group'] = group
+
+        context['notif_id'] = notif_id
+        notif = Notification.objects.get(id=notif_id)
+        notif.is_read = True
+        notif.save()
+        context['is_usses'] = group.uses_users.filter(id=self.request.user.id).exists()
+        if CommunityGroup.objects.filter(group=context['group'], state='added').exists():
+            context['is_community'] = True
+        else:
+            context['is_community'] = False
+        return context
+
+def accept_friend_group(request, notif_id):
+    notif = Notification.objects.get(id=notif_id)
+
+    group = notif.group
+    if group:
+        group.uses_users.add(request.user)
+
+    return redirect('groups')
+
+def decline_friend_group(request, notif_id):
+    notif = Notification.objects.get(id=notif_id)
+    
+    if notif:
+        notif.delete()
+    
+    return redirect('notifications')
 
 def approve_group_request(request, group_id):
     group = get_object_or_404(CommunityGroup, group_id=group_id)
