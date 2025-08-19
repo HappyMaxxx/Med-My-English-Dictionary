@@ -1338,33 +1338,57 @@ def process_achievements(user, achievement_type, thresholds):
 
     processed_signals[user.pk] = True
 
-    achievements = Achievement.objects.filter(ach_type=achievement_type)
-    user_profile = UserProfile.objects.get(user=user)
+    try:
+        achievements = Achievement.objects.filter(ach_type=achievement_type)
+        user_profile = UserProfile.objects.get(user=user)
 
-    current_user_achievements = UserAchievement.objects.filter(user=user, achievement__ach_type=achievement_type)
-    current_levels = {ua.achievement.level for ua in current_user_achievements}
-    if achievement_type == '1':
-        item_count = Word.objects.filter(user=user).count()
-    elif achievement_type == '2':
-        item_count = WordGroup.objects.filter(user=user, is_main=False).count()
-    elif achievement_type == '3':
-        item_count = Friendship.objects.filter(Q(sender=user, status='accepted') | Q(receiver=user, status='accepted')).count()
-    elif achievement_type == '4':
-        item_count = (user_profile.text_read, user_profile.words_added_from_text)
-    elif achievement_type == '6':
-        item_count = Word.objects.filter(user=user).exclude(example='').count()
-    else:
-        item_count = 0
+        current_user_achievements = UserAchievement.objects.filter(
+            user=user,
+            achievement__ach_type=achievement_type
+        )
+        current_levels = {ua.achievement.level for ua in current_user_achievements}
 
-    for i, ach in enumerate(achievements):
-        threshold = thresholds[i] if i < len(thresholds) else thresholds[-1]
+        if achievement_type == '1':
+            item_count = Word.objects.filter(user=user).count()
+        elif achievement_type == '2':
+            item_count = WordGroup.objects.filter(user=user, is_main=False).count()
+        elif achievement_type == '3':
+            item_count = Friendship.objects.filter(
+                Q(sender=user, status='accepted') | Q(receiver=user, status='accepted')
+            ).count()
+        elif achievement_type == '4':
+            item_count = (user_profile.text_read, user_profile.words_added_from_text)
+        elif achievement_type == '6':
+            item_count = Word.objects.filter(user=user).exclude(example='').count()
+        else:
+            item_count = 0
 
-        if achievement_type in ['1', '2', '3', '6']:
-            if achievement_type == '2' and current_levels == {2}:
-                groups_with_more_5_words = WordGroup.objects.filter(user=user, is_main=False).annotate(
-                    word_count=Count('words')
-                ).filter(word_count__gte=5).count()
-                if groups_with_more_5_words >= 5 and ach.level not in current_levels:
+        for i, ach in enumerate(achievements):
+            threshold = thresholds[i] if i < len(thresholds) else thresholds[-1]
+
+            if achievement_type in ['1', '2', '3', '6']:
+                if achievement_type == '2' and current_levels == {2}:
+                    groups_with_more_5_words = WordGroup.objects.filter(
+                        user=user, is_main=False
+                    ).annotate(
+                        word_count=Count('words')
+                    ).filter(word_count__gte=5).count()
+
+                    if groups_with_more_5_words >= 5 and ach.level not in current_levels:
+                        if any(existing_level > ach.level for existing_level in current_levels):
+                            continue
+
+                        UserAchievement.objects.filter(
+                            user=user,
+                            achievement__ach_type=achievement_type,
+                            achievement__level__lt=ach.level
+                        ).delete()
+                        UserAchievement.objects.create(user=user, achievement=ach)
+                        current_levels.add(ach.level)
+
+                    continue
+
+                if item_count >= threshold and ach.level not in current_levels:
                     if any(existing_level > ach.level for existing_level in current_levels):
                         continue
 
@@ -1373,39 +1397,26 @@ def process_achievements(user, achievement_type, thresholds):
                         achievement__ach_type=achievement_type,
                         achievement__level__lt=ach.level
                     ).delete()
-
                     UserAchievement.objects.create(user=user, achievement=ach)
-
                     current_levels.add(ach.level)
-                
-                continue
 
-            if item_count >= threshold and ach.level not in current_levels:
-                if any(existing_level > ach.level for existing_level in current_levels):
-                    continue
+            elif achievement_type == '4':
+                if (
+                    item_count[0] >= threshold[0]
+                    and item_count[1] >= threshold[1]
+                    and ach.level not in current_levels
+                ):
+                    if any(existing_level > ach.level for existing_level in current_levels):
+                        continue
 
-                UserAchievement.objects.filter(
-                    user=user,
-                    achievement__ach_type=achievement_type,
-                    achievement__level__lt=ach.level
-                ).delete()
-
-                UserAchievement.objects.create(user=user, achievement=ach)
-
-                current_levels.add(ach.level)
-        elif achievement_type == '4':
-            if item_count[0] >= threshold[0] and item_count[1] >= threshold[1] and ach.level not in current_levels:
-                if any(existing_level > ach.level for existing_level in current_levels):
-                    continue
-
-                UserAchievement.objects.filter(
-                    user=user,
-                    achievement__level__lt=ach.level
-                ).delete()
-
-                UserAchievement.objects.create(user=user, achievement=ach)
-
-                current_levels.add(ach.level)
+                    UserAchievement.objects.filter(
+                        user=user,
+                        achievement__level__lt=ach.level
+                    ).delete()
+                    UserAchievement.objects.create(user=user, achievement=ach)
+                    current_levels.add(ach.level)
+    finally:
+        processed_signals.pop(user.pk, None)
 
 def process_words_achivments(user, thresholds):
     if user.pk in process_wrods_signals:
@@ -1476,38 +1487,38 @@ def process_interaction_achivments(user):
 @receiver(post_save, sender=Word)
 def update_achievements_words(sender, instance, **kwargs):
     thresholds = [10, 50, 100]
-    # process_words_achivments(instance.user, thresholds)
-    # process_special_achivments(instance.user)
-    # process_interaction_achivments(instance.user)
+    process_words_achivments(instance.user, thresholds)
+    process_special_achivments(instance.user)
+    process_interaction_achivments(instance.user)
 
 @receiver(post_save, sender=WordGroup)
 def update_achievements_on_group_words_change(sender, instance, **kwargs):
     thresholds = [1, 5, 10]
-    # process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
-    # process_special_achivments(instance.user)
-    # process_interaction_achivments(instance.user)
+    process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+    process_special_achivments(instance.user)
+    process_interaction_achivments(instance.user)
 
 @receiver(m2m_changed, sender=WordGroup.words.through)
 def update_achievements_on_group_words_change(sender, instance, action, **kwargs):
     if action in ['post_add', 'post_remove', 'post_clear']:
         thresholds = [1, 5, 10]
-        # process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
-        # process_special_achivments(instance.user)
-        # process_interaction_achivments(instance.user)   
+        process_achievements(instance.user, achievement_type='2', thresholds=thresholds)
+        process_special_achivments(instance.user)
+        process_interaction_achivments(instance.user)   
 
 @receiver(post_save, sender=Friendship)
 def update_achievements_friends(sender, instance, **kwargs):
     thresholds = [5, 20, 50]
     
-    # process_achievements(instance.sender, achievement_type='3', thresholds=thresholds)
-    # process_achievements(instance.receiver, achievement_type='3', thresholds=thresholds)
+    process_achievements(instance.sender, achievement_type='3', thresholds=thresholds)
+    process_achievements(instance.receiver, achievement_type='3', thresholds=thresholds)
 
 @receiver(post_save, sender=UserProfile)
 def update_achievements_reading(sender, instance, **kwargs):
     thresholds = [(5, 1), (50, 10), (100, 20)]
-    # process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
-    # process_special_achivments(instance.user)
-    # process_interaction_achivments(instance.user)
+    process_achievements(instance.user, achievement_type='4', thresholds=thresholds)
+    process_special_achivments(instance.user)
+    process_interaction_achivments(instance.user)
 
 def achievement_view(request):
     user_profile = UserProfile.objects.get(user=request.user)

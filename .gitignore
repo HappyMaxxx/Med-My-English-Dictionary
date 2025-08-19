@@ -4,5 +4,8 @@ media/avatars/*
 pytest.ini
 med/tests
 med/signals.py
-mad/__pycache__
-med/__pycache__
+__pycache__
+db.sqlite3
+celerybeat-schedule.db
+cache/
+db.sqlite3

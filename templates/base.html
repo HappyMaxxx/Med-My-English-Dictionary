@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My English Dictionary</title>
     <link rel="stylesheet" type="text/css" href="{% static 'med/css/styles.css' %}">
-    <link rel="icon" href="{% static 'med/img/base/icon.png' %}" type="image/png"/>
+    <link rel="icon" href="{% static 'med/img/base/icon.svg' %}" type="image/png"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
@@ -21,22 +21,22 @@
         {% if is_profile or is_dict %}
             {% if is_my_profile or is_my_dict %}
                 <a href="{% url 'profile' user.username %}">
-                    <img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" 
-                         data-light-src="{% static 'med/img/base/light_logo.png' %}" 
-                         data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo">
+                    <img id="logo_img" src="{% static 'med/img/base/light_logo.svg' %}" 
+                         data-light-src="{% static 'med/img/base/light_logo.svg' %}" 
+                         data-dark-src="{% static 'med/img/base/dark_logo.svg' %}" alt="MED Logo">
                 </a>
             {% else %}
                 <a href="{% url 'profile' logged_user.username %}">
-                    <img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" 
-                         data-light-src="{% static 'med/img/base/light_logo.png' %}" 
-                         data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo">
+                    <img id="logo_img" src="{% static 'med/img/base/light_logo.svg' %}" 
+                         data-light-src="{% static 'med/img/base/light_logo.svg' %}" 
+                         data-dark-src="{% static 'med/img/base/dark_logo.svg' %}" alt="MED Logo">
                 </a>
             {% endif %}
         {% else %}
             <a href="{% url 'profile' user.username %}">
-                <img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" 
-                     data-light-src="{% static 'med/img/base/light_logo.png' %}" 
-                     data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo">
+                <img id="logo_img" src="{% static 'med/img/base/light_logo.svg' %}" 
+                     data-light-src="{% static 'med/img/base/light_logo.svg' %}" 
+                     data-dark-src="{% static 'med/img/base/dark_logo.svg' %}" alt="MED Logo">
             </a>
         {% endif %}
     </div>
