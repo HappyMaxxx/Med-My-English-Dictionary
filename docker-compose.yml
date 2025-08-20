@@ -1,0 +1,67 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - TZ=Europe/Kyiv
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/app_db
+    command: ["./wait-for-it.sh", "db:5432", "--", "python3", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - ./media:/app/media
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=Europe/Kyiv
+
+  celery:
+    build: .
+    command: celery -A mad worker --loglevel=info
+    depends_on:
+      - redis
+      - db
+    environment:
+      - TZ=Europe/Kyiv
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/app_db
+
+  celery-beat:
+    build: .
+    command: celery -A mad beat --loglevel=info
+    depends_on:
+      - redis
+      - db
+      - web
+    environment:
+      - TZ=Europe/Kyiv
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/app_db
+
+  flower:
+    image: mher/flower
+    environment:
+      - TZ=Europe/Kyiv
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
