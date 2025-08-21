@@ -1,30 +1,19 @@
 from datetime import datetime
-import re
-import string
-from django.http import FileResponse, Http404, HttpResponseNotFound, HttpResponseRedirect, HttpResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
-from med.forms import AddWordForm, ChengePasswordForm, RegisterUserForm, LoginUserForm, WordForm, GroupForm, EditProfileForm, AvatarUpdateForm, WordsShowForm, TextForm
+from med.forms import (ChengePasswordForm, RegisterUserForm, LoginUserForm, EditProfileForm, 
+                       AvatarUpdateForm, WordsShowForm)
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.views import LoginView
 from django.views import View
 from django.views.decorators.cache import cache_page
-from django.db.models import Min, Max, When, Case
-import requests
-
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+from django.db.models import When, Case
 
 from django.utils.timezone import now, timedelta
 from django.db.models.functions import TruncDay
 
-from django.core.files.base import ContentFile
-import base64
-
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 
 from django.db import transaction
 from django.db.models import Q, Count
@@ -34,16 +23,16 @@ import json
 
 from django.core.paginator import Paginator
 
-from urllib.parse import urlparse
-
-import openpyxl
-
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import logout, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 import os
-from med.models import *
+from med.models import (User, UserProfile, UserAchievement, Achievement, Category, Top,
+                        Friendship, Notification)
+from dictionary.models import Word, WordGroup
+
+from practice.models import ReadingText, CommunityGroup
 
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
@@ -51,28 +40,10 @@ from django.conf import settings
 
 from med.tasks import send_activation_email, update_top
 
-MAX_GROUP_COUNT = 20
+import logging
 
-practice_cards = {
-    'test': {
-        'word': 'Test',
-        'img': 'med/img/practice/dice_light.png',
-        'dark_img': 'med/img/practice/dice_dark.png',
-        'href': 'soon'
-    },
-    'reading': {
-        'word': 'Reading',
-        'img': 'med/img/practice/read_light.png',
-        'dark_img': 'med/img/practice/read_dark.png',
-        'href': 'practice_reading'
-    },
-    'groups': {
-        'word': 'Groups',
-        'img': 'med/img/practice/group_light.png',
-        'dark_img': 'med/img/practice/group_dark.png',
-        'href': 'practice_groups'
-    },
-}
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 processed_signals = {}
 process_wrods_signals = {}
@@ -101,35 +72,6 @@ def add_to_main_group(request, word):
         word = Word.objects.get(word=word, user=request.user)
 
     group.words.add(word)
-
-
-class AddWordView(LoginRequiredMixin, CreateView):
-    form_class = AddWordForm
-    template_name = 'med/add_word.html'
-    extra_context = {'title': 'Add Word'}
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['from_text'] = self.request.GET.get('from') == 'text'
-        return context
-
-    def get_success_url(self):
-        return reverse_lazy('words', kwargs={'user_name': self.request.user.username})
-
-    def form_valid(self, form):
-        word = form.save(commit=False)
-        word.user = self.request.user
-        word.save()
-
-        add_to_main_group(self.request, word)
-
-        from_text = self.request.POST.get('from_text', '') == 'true'
-        if from_text:
-            user_profile = UserProfile.objects.get(user=self.request.user)
-            user_profile.words_added_from_text += 1
-            user_profile.save()
-
-        return super().form_valid(form)
 
 
 class ConfirmDeleteView(LoginRequiredMixin, View):
@@ -212,217 +154,6 @@ class ConfirmDeleteView(LoginRequiredMixin, View):
                 "Are you sure you want to delete this word?")
 
 
-class EditWordView(LoginRequiredMixin, View):
-    def get(self, request, word_id, *args, **kwargs):
-        word = get_object_or_404(Word, id=word_id, user=request.user)
-        form = WordForm(instance=word)
-        return render(request, 'med/edit_word.html', {'form': form, 'word': word})
-
-    def post(self, request, word_id, *args, **kwargs):
-        word = get_object_or_404(Word, id=word_id, user=request.user)
-        form = WordForm(request.POST, instance=word)
-        if form.is_valid():
-            form.save()
-
-            if form.has_changed():
-                user_profile = UserProfile.objects.get(user=request.user)
-                user_profile.edited_words += 1
-                user_profile.save()
-
-            return redirect('words', user_name=request.user.username)
-        return render(request, 'med/edit_word.html', {'form': form, 'word': word})
-    
-
-class WordListView(LoginRequiredMixin, ListView):
-    model = Word
-    template_name = 'med/words.html'
-    context_object_name = 'words'
-    paginate_by = 25
-
-    def get(self, request, *args, **kwargs):
-        if 'sort_alphabet' not in request.GET and 'sort_date' not in request.GET:
-            query_params = request.GET.copy()
-            query_params['sort_date'] = 'desc' 
-            return HttpResponseRedirect(f"{request.path}?{query_params.urlencode()}")
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        user_name = self.kwargs['user_name']
-        user = get_object_or_404(User, username=user_name)
-
-        self.is_my_dict = user == self.request.user
-        queryset = Word.objects.filter(user=user)
-        
-        word_type = self.request.GET.get('type')
-        if word_type:
-            queryset = queryset.filter(word_type=word_type)
-
-        filter_word = self.request.GET.get('filter_word', '')
-        filter_translation = self.request.GET.get('filter_translation', '')
-
-        if filter_word:
-            queryset = queryset.filter(word__icontains=filter_word)
-        if filter_translation:
-            queryset = queryset.filter(translation__icontains=filter_translation)
-
-        sort_alphabet = self.request.GET.get('sort_alphabet')
-        sort_date = self.request.GET.get('sort_date')
-
-        if sort_alphabet == 'asc':
-            queryset = queryset.order_by('word')
-        elif sort_alphabet == 'desc':
-            queryset = queryset.order_by('-word')
-
-        if sort_date == 'asc':
-            queryset = queryset.order_by('time_create')
-        elif sort_date == 'desc':
-            queryset = queryset.order_by('-time_create')
-
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = get_object_or_404(User, username=self.kwargs['user_name'])
-        request_user = self.request.user
-
-        friends = User.objects.filter(
-            Q(friendship_requests_sent__receiver=user, friendship_requests_sent__status='accepted') |
-            Q(friendship_requests_received__sender=user, friendship_requests_received__status='accepted')
-        ).distinct()
-
-        is_friends = request_user in friends
-
-        types = Word.TYPE_CHOICES
-
-        context.update({
-            'user_name': self.kwargs['user_name'],
-            'user': user,
-            'title': f"{self.kwargs['user_name']}'s Dictionary",
-            'is_my_dict': getattr(self, 'is_my_dict', False),
-            'is_dict': True,
-            'logged_user': request_user,
-            'access': UserProfile.objects.get(user=user).access_dictionary,
-            'is_friends': is_friends,
-            'filter_word': self.request.GET.get('filter_word', ''),
-            'filter_translation': self.request.GET.get('filter_translation', ''),
-            'sort_alphabet': self.request.GET.get('sort_alphabet', 'asc'),
-            'sort_date': self.request.GET.get('sort_date', 'asc'),
-            'types': types,
-        })
-        return context
-
-
-class BaseGroupView(ListView):
-    template_name = 'med/groups.html'
-
-    def get_common_context(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['groups'] = WordGroup.objects.filter(user=self.request.user).order_by('-is_main', 'name')
-        context['used_groups'] = WordGroup.objects.filter(uses_users=self.request.user)
-        context['len_groups'] = max(context['groups'].count() + context['used_groups'].count() - 1, 0)
-        context['max_group_count'] = MAX_GROUP_COUNT if self.request.user.username != 'grouper' else 100
-        return context
-
-
-class GroupListView(BaseGroupView):
-    model = WordGroup
-
-    def get_context_data(self, **kwargs):
-        context = self.get_common_context(**kwargs)
-        context['title'] = "Groups"
-        context['title1'] = "Words"
-        context['is_group'] = False
-        return context
-
-
-class GroupWordsView(BaseGroupView):
-    model = Word
-    context_object_name = 'words'
-    paginate_by = 25
-
-    def dispatch(self, request, *args, **kwargs):
-        group_id = self.kwargs.get('group_id')
-        group = get_object_or_404(WordGroup, id=group_id)
-
-        if request.user != group.user and request.user not in group.uses_users.all():
-            return HttpResponseRedirect(reverse('groups'))
-        
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = self.get_common_context(**kwargs)
-
-        group_id = self.kwargs.get('group_id')
-        group = get_object_or_404(WordGroup, id=group_id)
-        is_my_group = group.user == self.request.user
-
-        friends = User.objects.filter(
-            Q(friendship_requests_sent__receiver=self.request.user, friendship_requests_sent__status='accepted') |
-            Q(friendship_requests_received__sender=self.request.user, friendship_requests_received__status='accepted')
-        ).distinct()
-
-        context.update({
-            'is_my_group': is_my_group,
-            'is_uses': not is_my_group and group.uses_users.filter(id=self.request.user.id).exists(),
-            'title': "Groups",
-            'title1': f"{group.name} Words ({group.user.username})" if not is_my_group else f"{group.name} Words",
-            'is_main': group.is_main,
-            'group_id': group_id,
-            'group_': group,
-            'is_group': True,
-            'words_f_g': True,
-            'friends': friends,
-        })
-
-        if context['is_uses']:
-            all_words = Word.objects.filter(user=self.request.user)
-
-            user_word_titles = [word.word.lower() for word in all_words]
-
-            group_words = group.words.all()
-
-            for word in group_words:
-                word.is_saved = word.word.lower() in user_word_titles
-
-            context['words'] = group_words
-        return context
-
-    def get_queryset(self):
-        group_id = self.kwargs.get('group_id')
-        group = get_object_or_404(WordGroup, id=group_id)
-        return group.words.all()
-
-
-class CreateGroupView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-
-        len_groups = WordGroup.objects.filter(user=request.user).count()
-
-        if request.user.username == 'grouper' and len_groups >= 101:
-            return redirect('groups')
-
-        if len_groups >= (MAX_GROUP_COUNT + 1) and request.user.username != 'grouper':
-            return redirect('groups')
-        
-        form = GroupForm()
-        return render(request, 'med/create_group.html', {'form': form})
-
-    def post(self, request, *args, **kwargs):
-        form = GroupForm(request.POST)
-        if form.is_valid():
-            group_name = form.cleaned_data['name']
-            if WordGroup.objects.filter(name=group_name, user=request.user).exists():
-                form.add_error('name', "Group with this name already exists")
-                return render(request, 'med/create_group.html', {'form': form})
-
-            group = form.save(commit=False)
-            group.user = request.user
-            group.save()
-            return redirect('groups')
-
-        return render(request, 'med/create_group.html', {'form': form})
-
-
 def activate_account(request, uidb64, token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode()
@@ -433,10 +164,16 @@ def activate_account(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success(request, "Your account has been activated successfully!")
+        create_notification(
+            receiver=request.user,
+            message="Your account has been activated successfully!"
+        )
         return redirect('login')
     else:
-        messages.error(request, "Activation link is invalid!")
+        create_notification(
+            receiver=request.user,
+            message="Activation link is invalid!"
+        )
         return redirect('register')
 
 
@@ -590,13 +327,6 @@ class ProfileView(LoginRequiredMixin, View):
             friendship = friendships.filter(sender=profile_user, receiver=request.user).first() or friendships.filter(sender=request.user, receiver=profile_user).first()
             profile_user.friendship_id = friendship.id if friendship else None
 
-        # For test adding new notifications
-        # Notification.objects.create(
-        #     user=request.user,
-        #    message='This is a test notification',
-        #     is_read=False,
-        # )
-
         return render(request, 'med/profile.html', {
             **profile_data,
             'user': profile_user,
@@ -606,40 +336,6 @@ class ProfileView(LoginRequiredMixin, View):
             'is_requests_in': is_requests_in,
             'is_requests_out': is_requests_out,
         })
-    
-
-class SelectGroupView(View):
-    def get(self, request):
-        word_ids = request.GET.getlist('word_ids')
-        if not word_ids:
-            return redirect('words', user_name=request.user.username)
-        words = Word.objects.filter(id__in=word_ids)
-        groups = WordGroup.objects.filter(user=request.user, is_main=False)
-        return render(request, 'med/select_group.html', {
-            'words': words,
-            'word_ids': word_ids,
-            'groups': groups,
-        })
-
-    def post(self, request, *args, **kwargs):
-        word_ids = request.POST.getlist('word_ids')
-        group_id = request.POST.get('group')
-
-        if group_id:
-            group = get_object_or_404(WordGroup, id=group_id, user=request.user)
-        else:
-            redirect('words', user_name=request.user.username)
-        
-        group_words = group.words.all()
-        words = Word.objects.filter(id__in=word_ids, user=request.user)
-
-        for word in words:
-            if word not in group_words:
-                group.words.add(word)
-
-        group.save()
-
-        return redirect('group_words', group_id=group_id)
     
 
 class EditProfileView(LoginRequiredMixin, View):
@@ -671,16 +367,16 @@ class EditProfileView(LoginRequiredMixin, View):
             user_profile.save()
 
     def handle_cropped_avatar(self, request, user_profile):
-        avatar_data = request.POST.get('cropped_avatar')
-        if avatar_data:
+        avatar_file = request.FILES.get('cropped_avatar')
+        if avatar_file:
             try:
-                format, imgstr = avatar_data.split(';base64,')
-                extension = format.split('/')[-1]
-                avatar_file = ContentFile(base64.b64decode(imgstr))
-                new_name = f"{request.user.username}_{now().strftime('%Y%m%d%H%M')}_{request.user.id}.{extension}"
+                new_name = f"{request.user.username}_{now().strftime('%Y%m%d%H%M')}_{request.user.id}.png"
 
                 if user_profile.avatar:
-                    os.remove(user_profile.avatar.path.replace('/media/', '/media/avatars/'))
+                    try:
+                        os.remove(user_profile.avatar.path.replace('/media/', '/media/avatars/'))
+                    except FileNotFoundError:
+                        pass
 
                 user_profile.avatar.save(new_name, avatar_file)
                 return True
@@ -741,12 +437,13 @@ class EditProfileView(LoginRequiredMixin, View):
                 return JsonResponse({'status': 'error', 'errors': words_show_form.errors})
             return self.render_profile_page(request, user_profile, words_show_form=words_show_form)
 
-        if 'cropped_avatar' in request.POST:
+        if 'cropped_avatar' in request.FILES:
             success = self.handle_cropped_avatar(request, user_profile)
             if is_ajax:
                 return JsonResponse({
                     'status': 'success' if success else 'error',
-                    'message': 'Avatar updated' if success else 'Failed to update avatar'
+                    'message': 'Avatar updated' if success else 'Failed to update avatar',
+                    'redirect_url': reverse('profile', kwargs={'user_name': request.user.username})
                 })
             return redirect('profile', user_name=request.user.username)
 
@@ -770,15 +467,6 @@ class EditProfileView(LoginRequiredMixin, View):
 def logout_user(request):
     logout(request)
     return redirect('login')
-
-def make_favourite(request, word_id):
-    try:
-        word = get_object_or_404(Word, id=word_id, user=request.user)
-        word.is_favourite = not word.is_favourite
-        word.save()
-        return redirect('words', user_name=request.user.username)
-    except:
-        return redirect('login')
 
 def check_username(request):
     if request.method == 'POST':
@@ -834,10 +522,9 @@ def send_friend_request(request, username):
     
     friendship, created = Friendship.objects.get_or_create(sender=request.user, receiver=receiver)
 
-    Notification.objects.create(
-        user=receiver,
+    create_notification(
+        receiver=receiver,
         message=f"{request.user.username} sent you a friend request",
-        is_read=False,
     )
 
     return redirect('profile', user_name=request.user.username)
@@ -908,354 +595,6 @@ def friends_list_view(request, user_name):
         'is_my_friends': is_my_friends,
     })
 
-def practice_view(request):
-    return render(request, 'med/practice.html', {'cards': practice_cards.values()})
-
-def reading_view(request):
-    texts = ReadingText.objects.all()
-    
-    word_stats = texts.aggregate(min_words=Min('word_count'), max_words=Max('word_count'))
-    min_words = word_stats['min_words'] or 0 
-    max_words = word_stats['max_words'] or 0
-
-    if request.method == 'GET':
-        if 'words_min' not in request.GET or 'words_max' not in request.GET:
-            query_params = request.GET.copy()
-            if 'words_min' not in request.GET:
-                query_params['words_min'] = min_words
-            if 'words_max' not in request.GET:
-                query_params['words_max'] = max_words
-            return HttpResponseRedirect(f"{request.path}?{query_params.urlencode()}")
-
-    level = request.GET.get('level')
-    if level:
-        texts = texts.filter(eng_level=level)
-
-    words_min = request.GET.get('words_min', min_words)
-    if words_min:
-        texts = texts.filter(word_count__gte=int(words_min))
-
-    words_max = request.GET.get('words_max', max_words)
-    if words_max:
-        texts = texts.filter(word_count__lte=int(words_max))
-
-    paginator = Paginator(texts, 25)
-    page_number = request.GET.get('page')
-    paginated_texts = paginator.get_page(page_number)
-
-    levels = ReadingText.ENG_LEVEL_CHOICES
-
-    return render(request, 'med/reading.html', {
-        'texts': paginated_texts,
-        'paginator': paginator,
-        'page_obj': paginated_texts,
-        'levels': levels,
-        'min_words': min_words,
-        'max_words': max_words,
-    })
-
-def parct_groups_view(request):
-    groups = CommunityGroup.objects.filter(state='added').select_related('group')
-
-    for group in groups:
-        group.words_count = group.group.words.count()
-    
-    groups = sorted(groups, key=lambda x: x.words_count)
-
-    paginator = Paginator(groups, 25)
-    page_number = request.GET.get('page')
-    paginated_groups = paginator.get_page(page_number)
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, 'med/practice_groups.html', {'groups': paginated_groups, 'paginator': paginator, 'page_obj': page_obj})
-
-def split_content_by_phrases(content, translations):
-    words = content.split()
-    result = []
-    i = 0
-    lower_translations = {k.lower(): v for k, v in translations.items()}
-
-    def clean_word(word):
-        return word.strip(string.punctuation).lower()
-
-    while i < len(words):
-        match = None
-        for j in range(len(words), i, -1):
-            phrase = " ".join(words[i:j])
-            cleaned_phrase = clean_word(phrase)
-            if cleaned_phrase in lower_translations:
-                match = (phrase, lower_translations[cleaned_phrase])
-                i = j
-                break
-        if match:
-            result.append(match)
-        else:
-            word = words[i]
-            result.append((word, None))
-            i += 1
-    return result
-
-def reading_text_view(request, text_id):
-    text = get_object_or_404(ReadingText, id=text_id)
-    base_url = None
-    if text.is_auth_a:
-        url = text.auth
-        parsed_url = urlparse(url)
-        base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/"
-
-    content_phrases = []
-    for paragraph in text.content.splitlines():
-        phrases = split_content_by_phrases(paragraph, text.words_with_translations)
-        content_phrases.append(phrases)
-
-    paginator = Paginator(content_phrases, 5)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    user_profile = UserProfile.objects.get(user=request.user)
-    user_profile.text_read += 1
-    user_profile.save()
-
-    return render(request, 'med/read_text.html', {
-        'text': text,
-        'base_url': base_url,
-        'page_obj': page_obj,
-        'paginator': paginator,
-    })
-
-def word_detail_view(request, word, text_id):
-    text = get_object_or_404(ReadingText, content__icontains=word, id=text_id)
-    translation = text.words_with_translations.get(word.lower(), 'The translation is not found')
-
-    sentences = re.split(r'(?<=[.!?])[\s\n]+', text.content)
-    example_sentence = next((sentence for sentence in sentences if word in sentence), 'The example sentence is not found')
-
-    return render(request, 'med/word_detail.html', {'word': word, 'translation': translation, 'example': example_sentence, 'text_id': text_id})
-
-def word_couner(text):
-    words = text.split()
-    return len(words)
-
-def time_counter(words):
-    return round(words / 60)
-
-def text_add_view(request):
-    form = TextForm()
-
-    if request.method == 'POST':
-        form = TextForm(request.POST)
-        word_count = word_couner(form.data['content'])
-        time_count = time_counter(word_count)
-        if form.is_valid():
-            form.instance.word_count = word_count
-            form.instance.time_to_read = time_count
-            form.save()
-            return redirect('practice_reading')
-        
-    return render(request, 'med/add_text.html', {'form': form})
-
-
-class EditTextView(LoginRequiredMixin, View):
-    def get(self, request, text_id, *args, **kwargs):
-        text = get_object_or_404(ReadingText, id=text_id)
-        form = TextForm(instance=text)
-        return render(request, 'med/edit_text.html', {'form': form, 'text': text})
-
-    def post(self, request, text_id, *args, **kwargs):
-        text = get_object_or_404(ReadingText, id=text_id)
-        form = TextForm(request.POST, instance=text)
-        word_count = word_couner(form.data['content'])
-        time_count = time_counter(word_count)
-        if form.is_valid():
-            form.instance.word_count = word_count
-            form.instance.time_to_read = time_count
-            form.save()
-            return redirect('reading_text', text_id=text_id)
-        return render(request, 'med/edit_text.html', {'form': form, 'text': text})
-
-
-class PracticeGroupWordsListView(LoginRequiredMixin, ListView):
-    model = Word
-    template_name = 'med/group_words.html'
-    context_object_name = 'words'
-    paginate_by = 25
-
-    def get_queryset(self):
-        group_id = self.kwargs.get('group_id')
-        group = get_object_or_404(WordGroup, id=group_id)
-
-        user_word_titles = [word.word.lower() for word in Word.objects.filter(user=self.request.user)]
-
-        words = group.words.all()
-        for word in words:
-                word.is_saved = word.word.lower() in user_word_titles
-
-        return words
-    
-    def get_context_data(self, **kwargs):
-        process_interaction_achivments(self.request.user)
-
-        context = super().get_context_data(**kwargs)
-        group_id = self.kwargs.get('group_id')
-        group = get_object_or_404(WordGroup, id=group_id)
-        context['group'] = group
-        context['is_usses'] = group.uses_users.filter(id=self.request.user.id).exists()
-        if CommunityGroup.objects.filter(group=context['group'], state='added').exists():
-            context['is_community'] = True
-        else:
-            context['is_community'] = False
-        return context
-    
-def add_as_uses(request, group_id):
-    group = get_object_or_404(WordGroup, id=group_id)
-    group.uses_users.add(request.user)
-    return redirect('group_words_practice', group_id=group_id)
-
-def leave_group(request, group_id, fp):
-
-    if fp.lower() in ['true', '1', 'yes']:
-        is_fp = True
-    elif fp.lower() in ['false', '0', 'no']:
-        is_fp = False
-
-    group = get_object_or_404(WordGroup, id=group_id)
-    group.uses_users.remove(request.user)
-    if is_fp:
-        return redirect('group_words_practice', group_id=group_id)
-    return redirect('groups')
-
-
-def save_word(request, group_id, word_id):
-    word = get_object_or_404(Word, id=word_id)
-    existing_word = Word.objects.filter(user=request.user, id=word.id).first()
-
-    if not existing_word:
-        Word.objects.create(user=request.user, word=word.word, translation=word.translation,
-                            word_type=word.word_type, example=word.example, is_favourite=False)
-
-        new_word = Word.objects.get(word=word.word, user=request.user)
-
-        add_to_main_group(request, new_word)
-
-    if group_id:
-        return redirect('group_words_practice', group_id=group_id)
-    else:
-        return redirect('words', user_name=request.user.username)
-
-def save_group_words(request, group_id):
-    user = request.user
-    group = get_object_or_404(WordGroup, id=group_id)
-    words = group.words.all()
-    word_ids = [word.id for word in words]
-    group_name = f"All {user.username}'s "
-    all_my_words = Word.objects.filter(user=user)
-
-    new_group = WordGroup.objects.create(
-        name=f"{group.name}",
-        user=user
-    )
-
-    for word_id in word_ids:
-        original_word = get_object_or_404(Word, id=word_id)
-
-        if not all_my_words.filter(word=original_word.word).exists():
-            copied_word = Word.objects.create(
-                word=original_word.word,
-                translation=original_word.translation,
-                example=original_word.example,
-                word_type=original_word.word_type,
-                user=user,
-            )
-            
-            # all words groop
-            group1, created = WordGroup.objects.get_or_create(
-                name=group_name,
-                is_main=True,
-                user=user
-            )
-
-            group1.words.add(copied_word)
-
-            new_group.words.add(copied_word)
-
-        else:
-            word = all_my_words.get(word=original_word.word)
-            new_group.words.add(word)
-    
-    group.uses_users.remove(user)
-    return redirect('groups')
-
-def upload_file(request):
-    if request.method == 'POST' and request.FILES.get('file'):
-        group_name = f"All {request.user.username}'s "
-        group, created = WordGroup.objects.get_or_create(
-            name=group_name,
-            is_main=True,
-            user=request.user
-        )
-        uploaded_file = request.FILES['file']
-        file_name = uploaded_file.name.lower()
-
-        try:
-            if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
-                wb = openpyxl.load_workbook(uploaded_file)
-                sheet = wb[wb.sheetnames[0]]
-                words = []
-                for row in sheet.iter_rows(values_only=True):
-                    if len(row) == 3:
-                        words.append(row)
-                wb.close()
-
-                if words[0] == ('Word', 'Translation', 'Example'):
-                    for word in words[1:]:
-                        word = Word.objects.create(
-                            word=word[0],
-                            translation=word[1],
-                            example=word[2],
-                            user=request.user,
-                        )
-                        group.words.add(word)
-                    return redirect('words', user_name=request.user.username)
-                else:
-                    messages.error(request, "Excel file format is incorrect. First row should be 'Word', 'Translation', 'Example'.")
-                    return render(request, 'med/words_ff.html')
-
-            elif file_name.endswith('.txt'):
-                content = uploaded_file.read().decode('utf-8')
-                try:
-                    json_data = json.loads(content)
-                    if isinstance(json_data, list):
-                        for item in json_data:
-                            if all(k in item for k in ('word', 'translation', 'example')):
-                                word_type = item.get('word_type', 'other') 
-                                
-                                word = Word.objects.create(
-                                    word=item['word'],
-                                    translation=item['translation'],
-                                    example=item['example'],
-                                    word_type=word_type, 
-                                    user=request.user,
-                                )
-                                group.words.add(word)
-                        return redirect('words', user_name=request.user.username)
-                    else:
-                        messages.error(request, "JSON file should contain a list of objects with keys: 'word', 'translation', 'example'.")
-                        return render(request, 'med/words_ff.html')
-                except json.JSONDecodeError:
-                    messages.error(request, "Invalid JSON format in text file.")
-                    return render(request, 'med/words_ff.html')
-
-            else:
-                messages.error(request, "Unsupported file format. Please upload .xlsx, .xls, or .txt file.")
-                return render(request, 'med/words_ff.html')
-
-        except Exception as e:
-            messages.error(request, f"An error occurred while processing the file: {e}")
-            return render(request, 'med/words_ff.html')
-
-    return render(request, 'med/words_ff.html')
-
-
 def download_file(request, file):
     base_dir = 'media'
     file_path = os.path.join(base_dir, file)
@@ -1266,68 +605,6 @@ def download_file(request, file):
     response = FileResponse(open(file_path, 'rb'), as_attachment=True)
     response['Content-Disposition'] = 'attachment; filename=' + file
     return response
-
-def save_all_words_as_json(request):
-    user = request.user
-    words = Word.objects.filter(user=user)
-    data = []
-
-    for word in words:
-        data.append({
-            'word': word.word,
-            'translation': word.translation,
-            'example': word.example,
-            'word_type': word.word_type,
-        })
-    
-    file_name = f"{user.username}_words.json"
-    file_path = os.path.join('media', file_name)
-
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
-
-    return redirect('download_file', file=file_name)
-
-def find_word_type(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        word = data.get('word', None)
-
-        if word:
-            api_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
-            response = requests.get(api_url)
-
-            if response.status_code == 200:
-                word_type = response.json()[0]['meanings'][0]['partOfSpeech']
-                try:
-                    all_types = set()
-                    for meaning in response.json()[0]['meanings']:
-                        all_types.add(meaning['partOfSpeech'])
-                    all_types.remove(word_type)
-                    all_types = list(all_types)
-
-                    if len(all_types) > 1:
-                        return JsonResponse({'word_type': word_type, 'all_types': all_types}, status=200)
-                    else:
-                        return JsonResponse({'word_type': word_type}, status=200)
-                except:
-                    return JsonResponse({'word_type': word_type}, status=200)
-            else:
-                return JsonResponse({'word_type': 'other'}, status=200)
-        
-        return JsonResponse({'word_type': 'other'}, status=200)
-    
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
-
-def check_word(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        word = data.get('word', None)
-        if word:
-            if Word.objects.filter(word=word, user=request.user).exists():
-                return JsonResponse({'error': 'This word already exists in your dictionary.'}, status=200)
-            return JsonResponse({'error': ''}, status=200)
-        return JsonResponse({'error': 'Invalid word'}, status=200)
 
 def process_achievements(user, achievement_type, thresholds):
     if achievement_type == '6':
@@ -1621,16 +898,6 @@ def add_achievement(request, ach_id):
 
     return redirect('achievement')
 
-def send_group_request(request, group_id):
-    group = get_object_or_404(WordGroup, id=group_id, user=request.user)
-
-    CommunityGroup.objects.create(
-        group=group,
-        state='pending',
-    )
-    
-    return redirect('group_words', group_id=group_id)
-
 def send_group_to_friend(request, group_id, user_id):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -1638,10 +905,9 @@ def send_group_to_friend(request, group_id, user_id):
     group = WordGroup.objects.get(user=request.user, id=group_id)
     user = User.objects.get(id=user_id)
     if group:
-        Notification.objects.create(
-            user=user,
-            message=f"Your friend {request.user} sends you an invitation to save his group '{group.name}'",
-            is_read=False,
+        create_notification(
+            receiver=user,
+            message="Your friend {request.user} sends you an invitation to save his group '{group.name}'",
             type='2',
             group=group,
         )
@@ -1704,113 +970,6 @@ def decline_friend_group(request, notif_id):
         notif.delete()
     
     return redirect('notifications')
-
-def approve_group_request(request, group_id):
-    group = get_object_or_404(CommunityGroup, group_id=group_id)
-    group.state = 'added'
-    group.save()
-
-    Notification.objects.create(
-        user=group.group.user,
-        message=f"Your group {group.group.name} was approved",
-        is_read=False,
-    )
-
-    return redirect('practice_groups')
-
-def reject_group_request(request, group_id):
-    CommunityGroup.objects.filter(group_id=group_id).delete()
-    group = get_object_or_404(WordGroup, id=group_id)
-
-    Notification.objects.create(
-        user=group.user,
-        message=f"Your group {group.name} was rejected",
-        is_read=False,
-    )
-
-    return redirect('practice_groups')
-
-def pending_group_requests(request):
-    if not request.user.is_staff:
-        return redirect('profile', user_name=request.user.username)
-    
-    pending_requests = CommunityGroup.objects.filter(state='pending')
-
-    return render(request, 'med/pending_group_requests.html', {'pending_requests': pending_requests})
-
-font_path = os.path.join(settings.BASE_DIR, 'med/static/med/fonts/DejaVuSans.ttf')
-bold_font_path = os.path.join(settings.BASE_DIR, 'med/static/med/fonts/DejaVuSans-Bold.ttf')
-
-pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
-pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', bold_font_path))
-
-def wrap_text(text, max_width, font, font_size, pdf):
-    words = text.split()
-    lines = []
-    line = []
-
-    for word in words:
-        line.append(word)
-        if pdf.stringWidth(' '.join(line), font, font_size) > max_width:
-            line.pop()
-            lines.append(' '.join(line))
-            line = [word]
-
-    if line:
-        lines.append(' '.join(line))
-
-    return lines
-
-@login_required
-def export_pdf(request):
-
-    if not request.user.user_profile.is_premium:
-        return redirect('soon')
-    
-    words = Word.objects.filter(user=request.user)
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{request.user.username}_dictionary.pdf"'
-    
-    pdf = canvas.Canvas(response, pagesize=letter)
-    width, height = letter
-    left_margin = 50
-    right_margin = 50
-    max_width = width - left_margin - right_margin
-    y = height - 50
-
-    pdf.setFont("DejaVuSans", 12)
-    pdf.drawString(left_margin, y, f"Dictionary of {request.user.username}")
-    y -= 30 
-    pdf.setFont("DejaVuSans", 10)
-    pdf.drawString(left_margin, y, "-" * 50)
-    y -= 20
-
-    for word in words:
-        pdf.setFont("DejaVuSans-Bold", 10)
-        pdf.drawString(left_margin, y, f"Word: {word.word}")
-        y -= 15
-
-        pdf.setFont("DejaVuSans", 10)
-        translation_lines = wrap_text(f"Translation: {word.translation}", max_width, "DejaVuSans", 10, pdf)
-        for line in translation_lines:
-            pdf.drawString(left_margin, y, line)
-            y -= 15
-
-        example_lines = wrap_text(f"Example: {word.example}", max_width, "DejaVuSans", 10, pdf)
-        for line in example_lines:
-            pdf.drawString(left_margin, y, line)
-            y -= 15
-
-        y -= 10
-
-        if y < 50:
-            pdf.showPage()
-            pdf.setFont("DejaVuSans", 10)
-            y = height - 100
-
-    pdf.save()
-    return response
 
 def tops_by_category(request):
     categories = Category.objects.prefetch_related('tops').all()
@@ -1900,6 +1059,19 @@ def mark_notification_as_read(request, notification_id):
         notification.is_read = True
         notification.save()
     return JsonResponse({'status': 'success', 'is_read': True})
+
+def create_notification(receiver, message, type='1', is_read=False, group=None):
+    try:
+        Notification.objects.create(
+            user=receiver,
+            message=message,
+            is_read=is_read,
+            type=type,
+            group=group,
+        )
+        return 0
+    except:
+        return 1
 
 def page_not_found(request, exception):
     return render(request, 'med/404.html')

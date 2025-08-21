@@ -16,12 +16,12 @@
 
     {% for paragraph in page_obj %}
         <p>⠀​⠀
-            {% for phrase, translation in paragraph %}
-                {% with cleaned_phrase=phrase|clean_word %}
-                    {% if translation %}
-                        <a href="{% url 'word_detail' word=cleaned_phrase text_id=text.id %}" class="phrase" title="{{ translation }}">{{ phrase }}</a>
+            {% for item in paragraph %}
+                {% with cleaned_phrase=item.word|clean_word %}
+                    {% if item.translation %}
+                        <a href="{% url 'word_detail' word=cleaned_phrase text_id=text.id %}" class="phrase" title="{{ item.translation }}">{{ item.word }}</a>
                     {% else %}
-                        <span class="word">{{ phrase }}</span>
+                        <span class="word">{{ item.word }}</span>
                     {% endif %}
                 {% endwith %}
             {% endfor %}

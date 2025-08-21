@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # 'debug_toolbar',
     'med.apps.MedConfig',
+    'practice.apps.PracticeConfig',
+    'dictionary.apps.DictionaryConfig',
 ]
 
 MIDDLEWARE = [

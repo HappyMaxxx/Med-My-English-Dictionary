@@ -1,38 +1,7 @@
-import re
 from django import forms
-from django.urls import reverse_lazy
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from .models import *
-
-
-class AddWordForm(forms.ModelForm):
-    class Meta:
-        model = Word
-        fields = ['word', 'translation', 'example', 'word_type']
-        labels = {
-            'word': 'Word',
-            'translation': 'Translation',
-            'example': 'Example',
-            'word_type': 'Word type'
-        }
-        widgets = {
-            'example': forms.Textarea(attrs={'rows': 3})
-        }
-        required = {
-            'example': False
-        }
-
-    def clean_example(self):
-        example = self.cleaned_data.get('example')
-        if len(example) > 1000:
-            raise forms.ValidationError('Example is too long, max 1000 characters.')
-        
-        word = self.cleaned_data.get('word')
-        if not re.match("^[a-zA-Z ']+$", word) or re.match("^[ ]+$", word):
-            raise forms.ValidationError("Word can contain only Latin characters.")
-        
-        return example
     
 
 class RegisterUserForm(UserCreationForm):
@@ -62,55 +31,7 @@ class RegisterUserForm(UserCreationForm):
 class LoginUserForm(AuthenticationForm):
     username = forms.CharField(label='Username', widget=forms.TextInput())
     password = forms.CharField(label='Password', widget=forms.PasswordInput())
-
-
-class WordForm(forms.ModelForm):
-    class Meta:
-        model = Word
-        fields = ['word', 'translation', 'example', 'word_type']
-        labels = {
-            'word': 'Word',
-            'translation': 'Translation',
-            'example': 'Example',
-            'word_type': 'Word type'
-        }
-        widgets = {
-            'example': forms.Textarea(attrs={'rows': 3})
-        }
-
-
-class TextForm(forms.ModelForm):
-    class Meta:
-        model = ReadingText
-        fields = ['title', 'eng_level', 'content', 'words_with_translations', 'auth', 'is_auth_a']
-        labels = {
-            'title': 'Title',
-            'eng_level': 'English level',
-            'content': 'Text',
-            'words_with_translations': 'Words with translations',
-            'auth': 'Author',
-            'is_auth_a': 'Author is a link'
-        }
-        widgets = {
-            'content': forms.Textarea(attrs={'rows': 10}),
-            'eng_level': forms.Select(attrs={'class': 'form-select'}),
-            'words_with_translations': forms.Textarea(),
-            'is_auth_a': forms.CheckboxInput()
-        }
     
-    eng_level = forms.ChoiceField(
-        choices=[(choice[0], choice[1]) for choice in ReadingText.ENG_LEVEL_CHOICES],
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        required=True
-    )
-
-class GroupForm(forms.ModelForm):
-    class Meta:
-        model = WordGroup
-        fields = ['name']
-        labels = {
-            'name': 'Group name',
-        }
 
 class EditProfileForm(forms.ModelForm):
     # email = forms.EmailField(label='Email', widget=forms.EmailInput())

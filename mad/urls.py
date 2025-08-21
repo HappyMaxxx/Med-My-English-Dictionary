@@ -7,6 +7,8 @@ from django.conf.urls import handler404
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('med.urls')),
+    path('', include('practice.urls')),
+    path('', include('dictionary.urls')),
 ]
 
 # if settings.DEBUG:

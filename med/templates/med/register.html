@@ -61,30 +61,36 @@
             form.submit();
         });
 
-        usernameInput.addEventListener('blur', function () {
+        let debounceTimeout;
+        usernameInput.addEventListener('input', function () {
             const username = usernameInput.value;
-
-            if (username) {
-                fetch('{% url "check_username" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify({ username: username })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        usernameError.textContent = data.error;
-                        usernameError.style.color = 'red';
-                    } else {
-                        usernameError.textContent = '';
-                    }
-                });
-            } else {
-                usernameError.textContent = '';
-            }
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                if (username) {
+                    fetch('{% url "check_username" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({ username: username })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            usernameError.textContent = data.error;
+                            usernameError.style.color = 'red';
+                        } else {
+                            usernameError.textContent = '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                } else {
+                    usernameError.textContent = '';
+                }
+            }, 300);
         });
 
         passwordInput.addEventListener('input', function() {
@@ -105,27 +111,6 @@
             passwordConfirmInput.type = type;
             togglePasswordConfirm.classList.toggle('fa-eye-slash');
         });
-
-        function getPasswordStrength(password) {
-            let strength = { text: '', color: '' };
-            const lengthCriteria = password.length >= 8;
-            const numberCriteria = /\d/.test(password);
-            const uppercaseCriteria = /[A-Z]/.test(password);
-            const specialCharacterCriteria = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-            if (lengthCriteria && numberCriteria && uppercaseCriteria && specialCharacterCriteria) {
-                strength.text = 'Strong';
-                strength.color = 'green';
-            } else if (lengthCriteria && (numberCriteria || uppercaseCriteria)) {
-                strength.text = 'Medium';
-                strength.color = 'orange';
-            } else {
-                strength.text = 'Weak';
-                strength.color = 'red';
-            }
-
-            return strength;
-        }
     });
 </script>
 {% endblock %}

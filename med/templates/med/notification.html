@@ -6,12 +6,11 @@
 <h1>{{title}}</h1>
 
 <div class="notification-container">
-    <div class="buttons" style="margin-bottom: 20px;">
-        <a href="#" id="mark-all-read" style="margin-left: 0px;">Mark all as read</a>
-        <label><input type="checkbox" id="show-unread-only"> Unread only</label>
-    </div>
-    
     {% if notifications %}
+        <div class="buttons" style="margin-bottom: 20px;">
+            <a href="#" id="mark-all-read" style="margin-left: 0px;">Mark all as read</a>
+            <label><input type="checkbox" id="show-unread-only"> Unread only</label>
+        </div>
         {% for notification in notifications %}
             {% if notification.type == '1' %}
             <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
@@ -47,6 +46,13 @@
             </div>
             {% endif %}
         {% endfor %}
+    {% else %}
+        <div style="text-align: center; width: 100%;">
+            <h2>There are no notifications yet!</h2>
+            <div class="buttons" style="margin-top: 5%;">
+                <a href="{% url 'profile' request.user.username %}">Go to Profile</a>
+            </div>
+        </div>
     {% endif %}
 
     {% if paginator.num_pages > 1 %}

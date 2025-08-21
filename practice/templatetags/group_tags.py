@@ -1,5 +1,5 @@
 from django import template
-from med.models import CommunityGroup
+from practice.models import CommunityGroup
 
 register = template.Library()
 

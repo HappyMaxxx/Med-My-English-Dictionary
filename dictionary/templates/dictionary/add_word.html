@@ -13,7 +13,7 @@
         </label>
         {{ form.word }} 
     </p>
-    <div class="form-error" id="{{ form.word.id_for_label }}-error">{{ form.word.errors }}</div>
+    <div class="form-error" id="{{ form.word.id_for_label }}-error" style="margin-top: 3%;">{{ form.word.errors }}</div>
 
     <p>
         <label class="form-label" for="{{ form.translation.id_for_label }}">
@@ -95,58 +95,62 @@ document.addEventListener('DOMContentLoaded', function () {
     const typeInput = document.getElementById('{{ form.word_type.id_for_label }}');
     const isDarkTheme = document.body.classList.contains('dark-theme');
     const textColor = isDarkTheme ? 'var(--text-color)' : 'var(--text-color)';
-    wordInput.addEventListener('blur', function (event) {
+    let debounceTimeout;
+
+    wordInput.addEventListener('input', function (event) {
         event.preventDefault();
 
-        const word = wordInput.value.trim();
-        wordError.textContent = "";
-        wordTypeError.textContent = "";
+        clearTimeout(debounceTimeout);
 
-        if (word) {
-            fetch('{% url "find_word_type" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({ word: word })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    wordTypeError.textContent = data.error;
-                    wordTypeError.style.color = 'red';
-                } else {
-                    typeInput.value = data.word_type;
-                    console.log(data.all_types);
-                    if (data.all_types) {
-                        wordTypeError.textContent = "Also depending on the context can be: " + data.all_types;
-                        wordTypeError.style.color = textColor;
+        debounceTimeout = setTimeout(() => {
+            const word = wordInput.value.trim();
+            wordError.textContent = "";
+            wordTypeError.textContent = "";
+
+            if (word) {
+                fetch('{% url "find_word_type" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ word: word })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        wordTypeError.textContent = data.error;
+                        wordTypeError.style.color = 'red';
+                    } else {
+                        typeInput.value = data.word_type;
+                        console.log(data.all_types);
+                        if (data.all_types) {
+                            wordTypeError.textContent = "Also depending on the context can be: " + data.all_types;
+                            wordTypeError.style.color = textColor;
+                        }
                     }
-                }
-            });
-        } else {
-            wordTypeError.textContent = "First fill in the 'Word' field";
-            wordTypeError.style.color = 'red';
-        }
+                });
 
-        if (word) {
-            fetch('{% url "check_word" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                },
-                body: JSON.stringify({ word: word })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    wordError .textContent = data.error;
-                    wordTypeError.style.color = 'red';
-                }
-            });
-        }
+                fetch('{% url "check_word" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ word: word })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        wordError.textContent = data.error;
+                        wordError.style.color = 'red';
+                    }
+                });
+            } else {
+                wordTypeError.textContent = "First fill in the 'Word' field";
+                wordTypeError.style.color = 'red';
+            }
+        }, 300);
     });
 });
 </script>

@@ -54,7 +54,7 @@
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css">
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js"></script>
                 
-                <form method="post" enctype="multipart/form-data" id="avatar-form">
+                <form method="post" enctype="multipart/form-data" id="avatar-form" action="{% url 'edit_profile' %}">
                     {% csrf_token %}
                     <div style="display: grid; align-items: center; justify-items: center;">
                         <input type="file" id="avatar-input" accept="image/*" style="display: block; margin-bottom: 20px;">
@@ -181,14 +181,40 @@
     });
 
     function submitAvatarForm() {
+        const form = document.getElementById('avatar-form');
+        const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
         if (cropper) {
-            const canvas = cropper.getCroppedCanvas();
-            if (canvas) {
-                const croppedDataURL = canvas.toDataURL('image/png');
-                croppedAvatarInput.value = croppedDataURL;
-            }
+            cropper.getCroppedCanvas().toBlob((blob) => {
+                const formData = new FormData();
+                formData.append('cropped_avatar', blob, 'avatar.png');
+
+                const deleteCheckbox = document.getElementById('delete-avatar');
+                if (deleteCheckbox && deleteCheckbox.checked) {
+                    formData.append('delete_avatar', 'on');
+                }
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert(data.message || 'Failed to update avatar');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }, 'image/png');
+        } else {
+            form.submit();
         }
-        document.getElementById('avatar-form').submit();
     }
 
     // Drag and drop handling

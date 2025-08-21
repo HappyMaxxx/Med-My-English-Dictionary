@@ -48,8 +48,8 @@ def update_top():
 
 def calculate_words_top():
     word_counts = (
-        UserProfile.objects.values('user')
-        .annotate(points=Count('id'))
+        Word.objects.values('user')  
+        .annotate(points=Count('id'))  
         .order_by('-points')[:10]
     )
     return [(User.objects.get(pk=data['user']), data['points']) for data in word_counts]
