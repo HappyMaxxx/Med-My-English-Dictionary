@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('med', '0041_remove_communitygroup_group_delete_readingtext_and_more'),
+        ('med', '0040_remove_communitygroup_group_delete_readingtext_and_more'),
     ]
 
     operations = [

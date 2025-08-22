@@ -117,9 +117,9 @@
         <div class="stat-item">
             <p>⠀​⠀</p>
             {% if current_streak_range != 0 %}
-                {% if ff == 0 %}
+                {% if status == 0 %}
                     <img class='fire_img' src="{% static 'med/img/base/fire_cb.png' %}" alt="Fire">
-                {% elif ff == 1 %}
+                {% elif status == 1 %}
                     <img class='fire_img' src="{% static 'med/img/base/fire.png' %}" alt="Fire">
                 {% endif %}
             {% endif %}

@@ -68,12 +68,12 @@
                             {% else %}
                             {% if word.is_saved %}
                             <td class="img_td">
-                                <img class="f_img cm_img" src="{% static 'med/img/groups/cm_light.png' %}" data-light-src="{% static 'med/img/groups/cm_light.png' %}" data-dark-src="{% static 'med/img/groups/cm_dark.png' %}" alt="IS Saved img">
+                                <img class="f_img cm_img" src="{% static 'dictionary/img/cm_light.png' %}" data-light-src="{% static 'dictionary/img/cm_light.png' %}" data-dark-src="{% static 'dictionary/img/cm_dark.png' %}" alt="IS Saved img">
                             </td>
                             {% else %}
                             <td class="img_td">
                                 <a href="{% url 'save_word' group_id word.id %}">
-                                <img class="f_img" src="{% static 'med/img/groups/add_light.png' %}" data-light-src="{% static 'med/img/groups/add_light.png' %}" data-dark-src="{% static 'med/img/groups/add_dark.png' %}" alt="Add img">
+                                <img class="f_img" src="{% static 'dictionary/img/add_light.png' %}" data-light-src="{% static 'dictionary/img/add_light.png' %}" data-dark-src="{% static 'dictionary/img/add_dark.png' %}" alt="Add img">
                                 </a>
                             </td>
                             {% endif %}

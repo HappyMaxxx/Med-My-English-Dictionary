@@ -19,7 +19,7 @@
                     <div class="user-card">
                         <a href="{% url 'profile' user.username %}" class="user-link">
                             <div class="user-info">
-                                <img src="{{ user.img }}" alt="{{ user.username }}'s avatar" class="user-avatar">
+                                <img src="{{ user.user_profile.get_avatar_url }}" alt="{{ user.username }}'s avatar" class="user-avatar">
                                 <p class="user-name">{{ user.username }}</p>
                             </div>
                         </a>

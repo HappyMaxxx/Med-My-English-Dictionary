@@ -9,6 +9,9 @@ urlpatterns = [
     path('', include('med.urls')),
     path('', include('practice.urls')),
     path('', include('dictionary.urls')),
+    path('', include('friendship.urls')),
+    path('', include('achievements.urls')),
+    path('', include('notifications.urls')),
 ]
 
 # if settings.DEBUG:

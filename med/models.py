@@ -1,9 +1,9 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
-from datetime import date
-from dictionary.models import Word, WordGroup
-
+from datetime import date, timedelta
+import os
 
 class UserProfile(models.Model):
     class Types(models.TextChoices):
@@ -54,10 +54,15 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
-    
+
     def get_avatar_url(self):
         if self.avatar:
-            return f'/media/avatars/{self.avatar.name.split("/")[-1]}'
+            filename = self.avatar.name.split("/")[-1]
+            media_path = f"avatars/{filename}" 
+            file_path = os.path.join(settings.MEDIA_ROOT, media_path) 
+            
+            if os.path.exists(file_path):
+                return f"{settings.MEDIA_URL}{media_path}"
         return '/static/med/img/base/default_avatar.png'
     
     def save(self, *args, **kwargs):
@@ -72,60 +77,6 @@ class UserProfile(models.Model):
         super().save(*args, **kwargs)
 
     @staticmethod
-    def calculate_streak(user):
-        words = Word.objects.filter(user=user).order_by('time_create')
-        if not words.exists():
-            return 0, 0, None, None, None, None, None
-
-        longest_streak = 0
-        current_streak = 0
-        streak_start_date = None
-        streak_end_date = None
-        longest_streak_start_date = None
-        longest_streak_end_date = None
-        ff = None
-
-        unique_dates = set()
-        previous_date = None
-
-        for word in words:
-            word_date = word.time_create.date()
-            if word_date not in unique_dates:
-                unique_dates.add(word_date)
-                if previous_date and (word_date - previous_date).days == 1:
-                    current_streak += 1
-                    streak_end_date = word_date
-                else:
-                    if current_streak > longest_streak:
-                        longest_streak = current_streak
-                        longest_streak_start_date = streak_start_date
-                        longest_streak_end_date = streak_end_date
-                    current_streak = 1
-                    streak_start_date = word_date
-                    streak_end_date = word_date
-                previous_date = word_date
-
-        if current_streak > longest_streak:
-            longest_streak = current_streak
-            longest_streak_start_date = streak_start_date
-            longest_streak_end_date = streak_end_date
-
-        last_word_date = words[len(words) - 1].time_create.date()
-        today = date.today()
-        if (today - last_word_date).days == 1:
-            streak_end_date = last_word_date
-            ff = 0
-        elif last_word_date != today:
-            current_streak = 0
-            streak_end_date = None
-            streak_start_date = None
-        
-        if words[len(words)-1].time_create.date() == today:
-            ff = 1
-
-        return current_streak, longest_streak, streak_start_date, streak_end_date, longest_streak_start_date, longest_streak_end_date, ff
-
-    @staticmethod
     def format_date_range(start_date, end_date):
         if start_date and end_date:
             if start_date == end_date:
@@ -134,68 +85,70 @@ class UserProfile(models.Model):
         return 0
 
 
+class UserStreak(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="streak")
+    current_streak = models.PositiveIntegerField(default=0)
+    longest_streak = models.PositiveIntegerField(default=0)
+    last_activity_date = models.DateField(null=True, blank=True)
+
+    streak_start_date = models.DateField(null=True, blank=True)
+    streak_end_date = models.DateField(null=True, blank=True)
+
+    longest_streak_start_date = models.DateField(null=True, blank=True)
+    longest_streak_end_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} streak"
+
+    def update_streak(self, activity_date=None):
+        today = activity_date or date.today()
+
+        if self.last_activity_date == today:
+            return
+
+        if self.last_activity_date == today - timedelta(days=1):
+            self.current_streak += 1
+            self.streak_end_date = today
+        else:
+            self.current_streak = 1
+            self.streak_start_date = today
+            self.streak_end_date = today
+
+        if self.current_streak > self.longest_streak:
+            self.longest_streak = self.current_streak
+            self.longest_streak_start_date = self.streak_start_date
+            self.longest_streak_end_date = self.streak_end_date
+
+        self.last_activity_date = today
+        self.save()
+    
+    def get_today_status(self):
+        today = date.today()
+
+        if self.last_activity_date == today:
+            return 1
+        elif self.last_activity_date == today - timedelta(days=1):
+            return 0
+        return None
+
+    def get_streak_data(self):
+        return (
+            self.current_streak,
+            self.longest_streak,
+            self.streak_start_date,
+            self.streak_end_date,
+            self.longest_streak_start_date,
+            self.longest_streak_end_date,
+            self.get_today_status(),
+        )
+
+
 class UserLogin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logins')
     date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.date}"
-    
-
-class Friendship(models.Model):
-    sender = models.ForeignKey(User, related_name="friendship_requests_sent", on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name="friendship_requests_received", on_delete=models.CASCADE)
-    status = models.CharField(
-        max_length=20,
-        choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')],
-        default='pending'
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('sender', 'receiver')
-
-
-class Achievement(models.Model):
-    ACH_TYPE_CHOICES = [
-        ('1', 'Words'),
-        ('2', 'Groups'),
-        ('3', 'Friends'),
-        ('4', 'Reading'),
-        ('5', 'Interaction'),
-        ('6', 'Content Quality'),
-        ('7', 'Special')
-    ]
-
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    requirements = models.TextField(blank=True)
-    level = models.PositiveIntegerField()
-    icon = models.ImageField(upload_to='achievements/', blank=True)
-    ach_type = models.CharField(max_length=20, choices=ACH_TYPE_CHOICES)
-
-    def get_icon_url(self):
-        if self.icon:
-            return f'/media/achievements/{self.icon.name.split("/")[-1]}'
-        return self.name
-
-    def __str__(self):
-        return f"{self.name} (Level {self.level})"
-    
-
-class UserAchievement(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-    time_get = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.achievement.name}"
-    
-    class Meta:
-        ordering = ['-time_get']
-        indexes = [
-            models.Index(fields=['-time_get'])
-        ]
 
 
 class Category(models.Model):
@@ -212,27 +165,6 @@ class Category(models.Model):
     class Meta:
         verbose_name = "Category"
         verbose_name_plural = "Categories"
-
-
-class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    message = models.TextField()
-    time_create = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
-    type = models.CharField(max_length=20, choices=[
-        ('1', 'Base'),
-        ('2', 'Group_r'),
-    ], default='1')
-    group = models.ForeignKey(WordGroup, on_delete=models.CASCADE, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.user.username} - {self.message}"
-    
-    class Meta:
-        ordering = ['-time_create']
-        indexes = [
-            models.Index(fields=['-time_create'])
-        ]
 
 
 class Top(models.Model):

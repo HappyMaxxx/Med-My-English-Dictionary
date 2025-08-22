@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('med', '0043_alter_notification_group_delete_wordgroup'),
+        ('med', '0042_alter_notification_group_delete_wordgroup'),
     ]
 
     operations = [

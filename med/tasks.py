@@ -7,6 +7,7 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from med.models import *
+from dictionary.models import Word
 from django.db.models import Count, F
 from django.db import transaction
 
@@ -57,7 +58,7 @@ def calculate_words_top():
 def calculate_streak_top():
     streaks = []
     for user in User.objects.all():
-        _, longest_streak, *_ = UserProfile.calculate_streak(user)
+        _, longest_streak, *_ = user.streak.get_streak_data()
         if longest_streak > 0:
             streaks.append((user, longest_streak))
     streaks.sort(key=lambda x: x[1], reverse=True)

@@ -20,10 +20,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_beat',
     # 'debug_toolbar',
     'med.apps.MedConfig',
     'practice.apps.PracticeConfig',
     'dictionary.apps.DictionaryConfig',
+    'friendship.apps.FriendshipConfig',
+    'achievements.apps.AchievementsConfig',
+    'notifications.apps.NotificationsConfig',
 ]
 
 MIDDLEWARE = [
@@ -148,6 +152,7 @@ CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 LOGGING = {
     'version': 1,

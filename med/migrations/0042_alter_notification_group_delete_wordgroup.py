@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dictionary', '0002_wordgroup'),
-        ('med', '0042_alter_wordgroup_words_delete_word'),
+        ('med', '0041_alter_wordgroup_words_delete_word'),
         ('practice', '0002_alter_communitygroup_group'),
     ]
 

@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('med', '0040_initial_data'),
+        ('med', '0039_notification_group'),
     ]
 
     operations = [

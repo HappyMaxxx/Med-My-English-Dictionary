@@ -1,7 +1,7 @@
 from django.db import migrations
 
 def initial_achievements(apps, schema_editor):
-    Achievement = apps.get_model('med', 'Achievement') 
+    Achievement = apps.get_model('achievements', 'Achievement') 
     if not Achievement.objects.filter(ach_type='1').exists():
         Achievement.objects.create(
             name="Word Newbie",
@@ -204,8 +204,10 @@ def initial_achievements(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
+    initial = True
+
     dependencies = [
-        ('med', '0039_notification_group'),
+        ('achievements', '0001_initial'),
     ]
 
     operations = [

@@ -1,5 +1,5 @@
 from django.db import models
-from med.models import WordGroup
+from dictionary.models import WordGroup
 
 class ReadingText(models.Model):
     ENG_LEVEL_CHOICES = [

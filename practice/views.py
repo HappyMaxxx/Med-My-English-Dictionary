@@ -13,9 +13,13 @@ from urllib.parse import urlparse
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from med.models import *
+from dictionary.models import Word, WordGroup
 from .models import CommunityGroup, ReadingText
 
-from med.views import process_interaction_achivments, add_to_main_group
+from med.views import add_to_main_group
+from achievements.views import process_interaction_achivments
+from notifications.views import create_notification
+
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -361,10 +365,9 @@ def approve_group_request(request, group_id):
     group.state = 'added'
     group.save()
 
-    Notification.objects.create(
-        user=group.group.user,
+    create_notification(
+        receiver=group.group.user,
         message=f"Your group {group.group.name} was approved",
-        is_read=False,
     )
 
     return redirect('practice_groups')
@@ -373,10 +376,9 @@ def reject_group_request(request, group_id):
     CommunityGroup.objects.filter(group_id=group_id).delete()
     group = get_object_or_404(WordGroup, id=group_id)
 
-    Notification.objects.create(
-        user=group.user,
+    create_notification(
+        receiver=group.user,
         message=f"Your group {group.name} was rejected",
-        is_read=False,
     )
 
     return redirect('practice_groups')

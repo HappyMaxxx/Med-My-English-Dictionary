@@ -27,7 +27,8 @@ from django.contrib.auth.models import User
 from med.models import UserProfile
 from .models import Word, WordGroup
 
-from med.views import add_to_main_group, create_notification
+from med.views import add_to_main_group
+from notifications.views import create_notification
 
 import logging
 
