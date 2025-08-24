@@ -1916,6 +1916,10 @@ input[type="number"] {
     font-size: 12px;
 }
 
+.notification-count.hidden {
+    display: none;
+}
+
 .notification-container {
     max-width: 800px;
     margin: 20px auto;

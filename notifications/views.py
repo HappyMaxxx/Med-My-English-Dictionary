@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class NotiListView(LoginRequiredMixin, ListView):
     model = Notification
-    template_name = 'med/notification.html'
+    template_name = 'notifications/notification.html'
     context_object_name = 'notifications'
     paginate_by = 25
 

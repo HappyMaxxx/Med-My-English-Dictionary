@@ -9,7 +9,7 @@ services:
     environment:
       - TZ=Europe/Kyiv
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/app_db
-    command: ["./wait-for-it.sh", "db:5432", "--", "python3", "manage.py", "runserver", "0.0.0.0:8000"]
+    command: daphne -b 0.0.0.0 -p 8000 mad.asgi:application
     volumes:
       - ./media:/app/media
 

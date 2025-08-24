@@ -88,13 +88,13 @@
             <a href="{% url 'notifications' %}" class="no-style" id="notifications-link">
                 <i class="fas fa-bell"></i>
                 {% get_unread_notifications_count request as unread_count %}
-                {% if unread_count > 0 %}
+                <span class="notification-count {% if unread_count == 0 %}hidden{% endif %}">
                     {% if unread_count > 99 %}
-                        <span class="notification-count">99+</span>
+                        99+
                     {% else %}
-                        <span class="notification-count">{{ unread_count }}</span>
+                        {{ unread_count }}
                     {% endif %}
-                {% endif %}
+                </span>
             </a>
             
             <div class="notifications-dropdown" id="notifications-dropdown">
@@ -169,46 +169,53 @@
     });
 </script>
 
-<!-- Notifications auto update -->
+{% if user.is_authenticated %}
 <script>
-    function updateNotifications() {
-        fetch('{% url "notifications_api" %}')
-            .then(response => response.json())
-            .then(data => {
-                const notifCount = document.querySelector('.notification-count');
-                const notifDropdown = document.getElementById('notifications-dropdown').querySelector('ul');
-    
-                if (data.count > 0) {
-                    if (data.count > 99) {
-                        notifCount.textContent = "99+";
-                    } else {
-                        notifCount.textContent = data.count;
-                    }
-                    notifCount.style.display = "inline-block";
-                } else {
-                    notifCount.style.display = "none";
-                }
-    
-                notifDropdown.innerHTML = ""; 
-    
-                if (data.notifications.length > 0) {
-                    data.notifications.forEach(n => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `${n.message} <small>${n.time}</small>`;
-                        notifDropdown.appendChild(li);
-                    });
-                } else {
-                    const li = document.createElement('li');
-                    li.textContent = "There are no unread messages";
-                    notifDropdown.appendChild(li);
-                }
+const userId = "{{ user.id }}";
+const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+const wsUrl = `${wsProtocol}//${window.location.host}/ws/notifications/${userId}/`;
+
+const socket = new WebSocket(wsUrl);
+
+socket.onopen = function(event) {
+    console.log("WebSocket connection established for user " + userId);
+};
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+
+    if (data.type === "notification") {
+        const badge = document.querySelector(".notification-count");
+        if (badge) {
+            badge.textContent = data.count > 99 ? "99+" : data.count;
+            badge.style.display = data.count > 0 ? "inline" : "none";
+        }
+
+        const notificationList = document.querySelector("#notifications-dropdown ul");
+        if (notificationList) {
+            notificationList.innerHTML = "";
+            data.notifications.forEach(notification => {
+                const li = document.createElement("li");
+                li.textContent = `${notification.message} ${notification.time}`;
+                notificationList.appendChild(li);
             });
+
+            if (data.notifications.length === 0) {
+                notificationList.innerHTML = "<li>There are no unread messages</li>";
+            }
+        }
     }
-    
-    setInterval(updateNotifications, 10000);
-    
-    document.addEventListener('DOMContentLoaded', updateNotifications);
+};
+
+socket.onerror = function(error) {
+    console.error("WebSocket error:", error);
+};
+
+socket.onclose = function(event) {
+    console.log("WebSocket connection closed:", event);
+};
 </script>
-    
+{% endif %}
+
 </body>
 </html>

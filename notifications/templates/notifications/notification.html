@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>{{title}}</h1>
+
+<div class="notification-container">
+    {% if notifications %}
+        <div class="buttons" style="margin-bottom: 20px;">
+            <a href="#" id="mark-all-read" style="margin-left: 0px;">Mark all as read</a>
+            <label><input type="checkbox" id="show-unread-only"> Unread only</label>
+        </div>
+        {% for notification in notifications %}
+            {% if notification.type == '1' %}
+            <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
+                 data-notification-id="{{ notification.id }}">
+                <div class="notification-body">
+                    <p>{{notification.message}}</p>
+                </div>
+                <div class="notification-tail">
+                    <p style="margin-bottom: 0px; font-size:medium;"> {{ notification.time_create|date:"d.m.Y H:i" }}</p>
+                </div>
+            </div>
+            {% elif notification.type == '2' %}
+            <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
+            data-notification-id="{{ notification.id }}">
+                <div class="notification-body">
+                    <p>{{notification.message}}</p>
+                </div>
+                {% if not notification.is_read %}
+                <div>
+                    <div class="buttons" style="margin-top: 10% !important;">
+                        <a href="{% url 'friend_group_words' notification.id notification.group.id %}">Watch</a>
+                    </div>
+                </div>
+                <div>
+                    <div class="buttons" style="margin-top: 10% !important;">
+                        <a href="{% url 'decline_friend_group' notification.id %}">Decline</a>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="notification-tail">
+                    <p style="margin-bottom: 0px; font-size:medium;"> {{ notification.time_create|date:"d.m.Y H:i" }}</p>
+                </div>
+            </div>
+            {% elif notification.type == '3' %}
+            <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
+            data-notification-id="{{ notification.id }}">
+                <div class="notification-body">
+                    <p>{{notification.message}}</p>
+                </div>
+                {% if not notification.is_read %}
+                <div class="buttons friend-request-buttons">
+                    <a href="{% url 'respond_friend_request' notification.friendship_id 'accept' %}" class="btn accept friend-request-btn" data-action="accept" data-friendship-id="{{ notification.friendship_id }}">Accept</a>
+                    <a href="{% url 'respond_friend_request' notification.friendship_id 'reject' %}" class="btn reject friend-request-btn" data-action="reject" data-friendship-id="{{ notification.friendship_id }}">Reject</a>
+                </div>
+                {% endif %}
+                <div class="notification-tail">
+                    <p style="margin-bottom: 0px; font-size:medium;"> {{ notification.time_create|date:"d.m.Y H:i" }}</p>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; width: 100%;">
+            <h2>There are no notifications yet!</h2>
+            <div class="buttons" style="margin-top: 5%;">
+                <a href="{% url 'profile' request.user.username %}">Go to Profile</a>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if paginator.num_pages > 1 %}
+    <nav class="list-pages">
+        <ul>
+            {% if page_obj.has_previous %}
+            <li class="page-num">
+                <a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+            </li>
+            {% endif %}
+
+            {% for p in paginator.page_range %}
+                {% if page_obj.number == p %}
+                <li class="page-num page-num-selected">{{ p }}</li>
+                {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                <li class="page-num"><a href="?page={{ p }}">{{ p }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-num">
+                <a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const notifications = document.querySelectorAll('.notification');
+        
+        notifications.forEach(notification => {
+            notification.addEventListener('click', function() {
+                const notificationId = this.getAttribute('data-notification-id');
+                
+                fetch(`/notification/${notificationId}/read/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        notification.classList.remove('unread');
+                        notification.classList.add('read');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+
+        // Handle friend request buttons
+        const friendRequestButtons = document.querySelectorAll('.friend-request-btn');
+        
+        friendRequestButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const friendshipId = this.getAttribute('data-friendship-id');
+                const action = this.getAttribute('data-action');
+                const url = this.getAttribute('href');
+                const notification = this.closest('.notification');
+                const notificationId = notification.getAttribute('data-notification-id');
+                const buttonsContainer = this.closest('.friend-request-buttons');
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Check if response is JSON
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json();
+                        } else {
+                            // If not JSON, assume success for redirect or HTML response
+                            return { status: 'success' };
+                        }
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Hide the buttons
+                        buttonsContainer.style.display = 'none';
+                        
+                        // Mark notification as read
+                        fetch(`/notification/${notificationId}/read/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                                'Content-Type': 'application/json',
+                            },
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                const contentType = response.headers.get('content-type');
+                                if (contentType && contentType.includes('application/json')) {
+                                    return response.json();
+                                } else {
+                                    return { status: 'success' };
+                                }
+                            } else {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                        })
+                        .then(data => {
+                            if (data.status === 'success') {
+                                notification.classList.remove('unread');
+                                notification.classList.add('read');
+                            }
+                        })
+                        .catch(error => console.error('Error marking as read:', error));
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    });
+</script>
+
+<script>
+    document.getElementById('mark-all-read').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const unreadNotifications = document.querySelectorAll('.notification.unread');
+
+    unreadNotifications.forEach(notification => {
+        const notificationId = notification.getAttribute('data-notification-id');
+
+        fetch(`/notification/${notificationId}/read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                notification.classList.remove('unread');
+                notification.classList.add('read');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+</script>
+
+<script>
+    document.getElementById('show-unread-only').addEventListener('change', function() {
+    const notifications = document.querySelectorAll('.notification');
+    notifications.forEach(notif => {
+        if (this.checked && notif.classList.contains('read')) {
+            notif.style.display = 'none';
+        } else {
+            notif.style.display = 'flex';
+        }
+    });
+});
+</script>
+{% endblock %}

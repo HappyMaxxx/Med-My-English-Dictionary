@@ -1,5 +1,13 @@
 {% load static %}
 
+<script src="{% static 'med/js/highcharts/highcharts.js' %}"></script>
+<script src="{% static 'med/js/highcharts/modules/exporting.js' %}"></script>
+<script src="{% static 'med/js/highcharts/modules/accessibility.js' %}"></script>
+<script src="{% static 'med/js/highcharts/modules/data.js' %}"></script>
+<script src="{% static 'med/js/highcharts/modules/drilldown.js' %}"></script>
+<script src="{% static 'med/js/highcharts/modules/export-data.js' %}"></script>
+<script src="{% static 'med/js/highcharts/modules/series-label.js' %}"></script>
+
 <div class="tabs" style="margin-top: 10px;">
     {% if is_profile %}
         {% for tab in order %}
@@ -49,27 +57,27 @@
 
 {% if is_profile %}
 <div class="tab-content hidden" id="pie-tab">
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <!-- <script src="https://code.highcharts.com/modules/accessibility.js"></script> -->
     <figure class="highcharts-figure" style="margin-top: 20px;">
         <div id="word_stat_pie"></div>
     </figure>
 </div>
 
 <div class="tab-content hidden" id="bar-tab">
-    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <!-- <script src="https://code.highcharts.com/modules/data.js"></script>
     <script src="https://code.highcharts.com/modules/drilldown.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script> -->
     <figure class="highcharts-figure" style="margin-top: 20px;">
         <div id="word_stat_bar"></div>
     </figure>
 </div>
 
 <div class="tab-content hidden" id="time-tab">
-    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <!-- <script src="https://code.highcharts.com/modules/data.js"></script>
     <script src="https://code.highcharts.com/modules/series-label.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script> -->
     <figure class="highcharts-figure" style="margin-top: 20px;">
         <div id="word_stat_time"></div>
     </figure>

@@ -9,3 +9,4 @@ celerybeat-schedule.db
 cache/
 db.sqlite3
 diff.txt
+staticfiles/
