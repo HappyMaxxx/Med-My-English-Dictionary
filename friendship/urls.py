@@ -9,6 +9,7 @@ urlpatterns = [
     path('add-friend/<str:username>/', views.send_friend_request, name='add_friend'),
     path('respond-friend-request/<int:friendship_id>/<str:response>/', views.respond_to_friend_request, name='respond_friend_request'),
     path("respond_friend_request_a/<int:user1_id>/<int:user2_id>/<str:response>/", views.respond_to_friend_request, name='respond_friend_request_a'),
+    path('cancel_friend_request/<str:username>/', views.cancel_friend_request, name='cancel_friend_request'),
     path('friends/<slug:user_name>/', views.friends_list_view, name='friends_list'),
     path('delete_friend/<int:friendship_id>/', views.delete_friend, name='delete_friend'),
     path('send_group_to_friend/<int:group_id>/<int:user_id>', views.send_group_to_friend, name='send_group_to_friend'),

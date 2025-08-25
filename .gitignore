@@ -10,3 +10,4 @@ cache/
 db.sqlite3
 diff.txt
 staticfiles/
+tree.txt

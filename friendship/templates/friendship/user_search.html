@@ -33,7 +33,7 @@
                                 <a href="{% url 'respond_friend_request_a' user.id request.user.id 'accept' %}" class="add-friend-link">Accept</a>
                                 <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Reject</a>
                             {% elif user.id in friend_requests_out %}
-                                <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Cancel</a> 
+                                <a href="{% url 'cancel_friend_request' username=user.username %}" class="add-friend-link">Cancel</a> 
                             {% else %}
                                 <a href="{% url 'add_friend' user.username %}" class="add-friend-link">Add Friend</a>
                             {% endif %}

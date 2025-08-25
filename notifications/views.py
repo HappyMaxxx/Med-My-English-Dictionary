@@ -68,7 +68,7 @@ def mark_notification_as_read(request, notification_id):
         notification.save()
     return JsonResponse({'status': 'success', 'is_read': True})
 
-def create_notification(receiver, message, type='1', is_read=False, group=None):
+def create_notification(receiver, message, type='1', is_read=False, group=None, friendship_id=None):
     try:
         Notification.objects.create(
             user=receiver,
@@ -76,6 +76,7 @@ def create_notification(receiver, message, type='1', is_read=False, group=None):
             is_read=is_read,
             type=type,
             group=group,
+            friendship_id=friendship_id,
         )
         return 0
     except:

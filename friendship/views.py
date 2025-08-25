@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.generic import ListView
-
+from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 
 from django.db.models import Q
@@ -16,7 +17,7 @@ from practice.models import CommunityGroup
 from django.contrib.auth.models import User
 
 from notifications.views import create_notification
-from achievements.views import process_interaction_achivments
+from achievements.signals import AchievementProcessor
 
 import logging
 
@@ -59,21 +60,40 @@ def user_search(request):
 @login_required
 def send_friend_request(request, username):
     receiver = get_object_or_404(User, username=username)
+    referer = request.META.get('HTTP_REFERER', reverse('profile', kwargs={'user_name': request.user.username}))
 
     if receiver == request.user:
-        return redirect('profile', user_name=request.user.username)
+        return HttpResponseRedirect(referer)
     
     friendship, created = Friendship.objects.get_or_create(sender=request.user, receiver=receiver)
 
     create_notification(
         receiver=receiver,
         message=f"{request.user.username} sent you a friend request",
+        type='3',
+        friendship_id=friendship.pk,
     )
 
-    return redirect('profile', user_name=request.user.username)
+    return HttpResponseRedirect(referer)
+
+@login_required
+def cancel_friend_request(request, username):
+    receiver = get_object_or_404(User, username=username)
+    referer = request.META.get('HTTP_REFERER', reverse('profile', kwargs={'user_name': request.user.username}))
+
+    friendship = Friendship.objects.filter(sender=request.user, receiver=receiver, status='pending').first()
+    
+    if not friendship:
+        return HttpResponseRedirect(referer)
+    
+    friendship.delete()
+    
+    return HttpResponseRedirect(referer)
 
 @login_required
 def respond_to_friend_request(request, friendship_id=None, user1_id=None, user2_id=None, response=None):
+    referer = request.META.get('HTTP_REFERER', reverse('profile', kwargs={'user_name': request.user.username}))
+
     if friendship_id:
         friendship = get_object_or_404(Friendship, id=friendship_id)
     elif user1_id and user2_id:
@@ -85,19 +105,20 @@ def respond_to_friend_request(request, friendship_id=None, user1_id=None, user2_
             status='pending'
         ).first()
         if not friendship:
-            return redirect('friends_list', user_name=request.user.username)
+            return HttpResponseRedirect(referer)
     else:
-        return redirect('friends_list', user_name=request.user.username)
+        return HttpResponseRedirect(referer)
 
-    if friendship.receiver == request.user and response == 'accept':
+    if friendship.receiver != request.user:
+        return HttpResponseRedirect(referer)
+
+    if response == 'accept':
         friendship.status = 'accepted'
         friendship.save()
-    elif (friendship.receiver == request.user or friendship.sender == request.user) and response == 'reject':
+    elif response == 'reject':
         friendship.delete()
-    else:
-        pass
 
-    return redirect('friends_list', user_name=request.user.username)
+    return HttpResponseRedirect(referer)
 
 def delete_friend(request, friendship_id):
     friendship = get_object_or_404(Friendship, id=friendship_id)
@@ -175,7 +196,8 @@ class FriendGroupWordsListView(LoginRequiredMixin, ListView):
         return words
     
     def get_context_data(self, **kwargs):
-        process_interaction_achivments(self.request.user)
+        processor = AchievementProcessor()
+        processor.process_interaction_achievements(self.request.user)
 
         context = super().get_context_data(**kwargs)
         group_id = self.kwargs.get('group_id')

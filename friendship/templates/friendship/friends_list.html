@@ -22,7 +22,7 @@
                     <div class="user-card">
                         <a href="{% url 'profile' friend.username %}" class="user-link">
                             <div class="user-info">
-                                <img src="{{ friend.userprofile.get_avatar_url }}" alt="{{ friend.username }}'s avatar" class="user-avatar">
+                                <img src="{{ friend.user_profile.get_avatar_url }}" alt="{{ friend.username }}'s avatar" class="user-avatar">
                                 <p class="user-name">{{ friend.username }}</p>
                             </div>
                         </a>
@@ -50,7 +50,7 @@
                     <div class="user-card">
                         <a href="{% url 'profile' request.sender.username %}" class="user-link">
                             <div class="user-info">
-                                <img src="{{ request.sender.userprofile.get_avatar_url }}" alt="{{ request.sender.username }}'s avatar" class="user-avatar">
+                                <img src="{{ request.sender.user_profile.get_avatar_url }}" alt="{{ request.sender.username }}'s avatar" class="user-avatar">
                                 <p class="user-name">{{ request.sender.username }}</p>
                             </div>
                         </a>
@@ -76,12 +76,12 @@
                     <div class="user-card">
                         <a href="{% url 'profile' request.receiver.username %}" class="user-link">
                             <div class="user-info">
-                                <img src="{{ request.receiver.userprofile.get_avatar_url }}" alt="{{ request.receiver.username }}'s avatar" class="user-avatar">
+                                <img src="{{ request.receiver.user_profile.get_avatar_url }}" alt="{{ request.receiver.username }}'s avatar" class="user-avatar">
                                 <p class="user-name">{{ request.receiver.username }}</p>
                             </div>
                         </a>
                         <div class="buttons">
-                            <a href="{% url 'respond_friend_request' request.id 'reject' %}" class="btn reject">Cancel</a>
+                            <a href="{% url 'cancel_friend_request' username=request.receiver.username %}" class="btn reject">Cancel</a>
                         </div>
                     </div>
                 </li>
