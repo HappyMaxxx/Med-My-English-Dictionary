@@ -1,1 +1,3 @@
 med/static/med/js/highcharts/* linguist-vendored
+staticfiles/med/js/highcharts/* linguist-vendored
+**/highcharts/** linguist-vendored
