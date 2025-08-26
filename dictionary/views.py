@@ -23,6 +23,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 import os
 
+from celery import shared_task, group
+from celery.result import AsyncResult
+
 from django.contrib.auth.models import User
 from med.models import UserProfile
 from .models import Word, WordGroup
@@ -36,6 +39,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 MAX_GROUP_COUNT = 20
+font_path = os.path.join(settings.BASE_DIR, 'dictionary/static/dictionary/fonts/DejaVuSans.ttf')
+bold_font_path = os.path.join(settings.BASE_DIR, 'dictionary/static/dictionary/fonts/DejaVuSans-Bold.ttf')
+
+pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
+pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', bold_font_path))
 
 class AddWordView(LoginRequiredMixin, CreateView):
     form_class = AddWordForm
@@ -236,17 +244,64 @@ def check_word(request):
             return JsonResponse({'error': ''}, status=200)
         return JsonResponse({'error': 'Invalid word'}, status=200)
 
+def get_word_type(word):
+    if not word:
+        return 'other'
+    api_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+    response = requests.get(api_url)
+    if response.status_code == 200:
+        try:
+            word_type = response.json()[0]['meanings'][0]['partOfSpeech']
+            return word_type
+        except:
+            return 'other'
+    return 'other'
+
+@shared_task
+def process_word(word_data, user_id, group_id):
+    word_type = get_word_type(word_data['word'])
+    word = Word.objects.create(
+        word=word_data['word'],
+        translation=word_data['translation'],
+        example=word_data['example'],
+        user_id=user_id,
+        word_type=word_type,
+    )
+    word_group = WordGroup.objects.get(id=group_id)
+    word_group.words.add(word)
+    return word.id
+
+@shared_task(bind=True, max_retries=10)
+def notify_file_processed(self, user_id, file_name, task_ids):
+    all_done = True
+    for task_id in task_ids:
+        result = AsyncResult(task_id)
+        if not result.ready():
+            all_done = False
+            break
+        if not result.successful():
+            create_notification(
+                receiver=User.objects.get(pk=user_id),
+                message=f"Some words from file '{file_name}' failed to process."
+            )
+            return
+    if not all_done:
+        self.retry(countdown=10)
+    create_notification(
+        receiver=User.objects.get(pk=user_id),
+        message=f"All words from file '{file_name}' have been successfully added."
+    )
+
 def upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):
         group_name = f"All {request.user.username}'s "
-        group, created = WordGroup.objects.get_or_create(
+        word_group, created = WordGroup.objects.get_or_create(
             name=group_name,
             is_main=True,
             user=request.user
         )
         uploaded_file = request.FILES['file']
         file_name = uploaded_file.name.lower()
-
         try:
             if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
                 wb = openpyxl.load_workbook(uploaded_file)
@@ -256,16 +311,23 @@ def upload_file(request):
                     if len(row) == 3:
                         words.append(row)
                 wb.close()
-
                 if words[0] == ('Word', 'Translation', 'Example'):
-                    for word in words[1:]:
-                        word = Word.objects.create(
-                            word=word[0],
-                            translation=word[1],
-                            example=word[2],
-                            user=request.user,
-                        )
-                        group.words.add(word)
+                    tasks = [
+                        process_word.s({
+                            'word': word_data[0],
+                            'translation': word_data[1],
+                            'example': word_data[2]
+                        }, request.user.id, word_group.id)
+                        for word_data in words[1:]
+                    ]
+                    if tasks:
+                        result = group(tasks).apply_async()
+                        task_ids = [task.id for task in result.children]
+                        notify_file_processed.delay(request.user.id, uploaded_file.name, task_ids)
+                    create_notification(
+                        receiver=request.user,
+                        message=f"Processing of file '{uploaded_file.name}' started. Words will be added soon."
+                    )
                     return redirect('words', user_name=request.user.username)
                 else:
                     create_notification(
@@ -273,24 +335,38 @@ def upload_file(request):
                         message="Excel file format is incorrect. First row should be 'Word', 'Translation', 'Example'."
                     )
                     return render(request, 'dictionary/words_ff.html')
-
             elif file_name.endswith('.txt'):
                 content = uploaded_file.read().decode('utf-8')
                 try:
                     json_data = json.loads(content)
                     if isinstance(json_data, list):
+                        tasks = []
                         for item in json_data:
                             if all(k in item for k in ('word', 'translation', 'example')):
-                                word_type = item.get('word_type', 'other') 
-                                
-                                word = Word.objects.create(
-                                    word=item['word'],
-                                    translation=item['translation'],
-                                    example=item['example'],
-                                    word_type=word_type, 
-                                    user=request.user,
-                                )
-                                group.words.add(word)
+                                word_type = item.get('word_type')
+                                if not word_type:
+                                    tasks.append(process_word.s({
+                                        'word': item['word'],
+                                        'translation': item['translation'],
+                                        'example': item['example']
+                                    }, request.user.id, word_group.id))
+                                else:
+                                    word = Word.objects.create(
+                                        word=item['word'],
+                                        translation=item['translation'],
+                                        example=item['example'],
+                                        word_type=word_type,
+                                        user=request.user,
+                                    )
+                                    word_group.words.add(word)
+                        if tasks:
+                            result = group(tasks).apply_async()
+                            task_ids = [task.id for task in result.children]
+                            notify_file_processed.delay(request.user.id, uploaded_file.name, task_ids)
+                        create_notification(
+                            receiver=request.user,
+                            message=f"Processing of file '{uploaded_file.name}' started. Words will be added soon."
+                        )
                         return redirect('words', user_name=request.user.username)
                     else:
                         create_notification(
@@ -304,28 +380,19 @@ def upload_file(request):
                         message="Invalid JSON format in text file."
                     )
                     return render(request, 'dictionary/words_ff.html')
-
             else:
                 create_notification(
                     receiver=request.user,
                     message="Unsupported file format. Please upload .xlsx, .xls, or .txt file."
                 )
                 return render(request, 'dictionary/words_ff.html')
-
         except Exception as e:
             create_notification(
                 receiver=request.user,
                 message=f"An error occurred while processing the file: {e}"
             )
             return render(request, 'dictionary/words_ff.html')
-
     return render(request, 'dictionary/words_ff.html')
-
-font_path = os.path.join(settings.BASE_DIR, 'dictionary/static/dictionary/fonts/DejaVuSans.ttf')
-bold_font_path = os.path.join(settings.BASE_DIR, 'dictionary/static/dictionary/fonts/DejaVuSans-Bold.ttf')
-
-pdfmetrics.registerFont(TTFont('DejaVuSans', font_path))
-pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', bold_font_path))
 
 def wrap_text(text, max_width, font, font_size, pdf):
     words = text.split()
