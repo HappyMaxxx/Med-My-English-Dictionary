@@ -33,12 +33,11 @@
     {% endif %}
 
     <div class="achievements-grid">
-        {% for ach_type, ach_list in achivments.items %}
+        {% for ach_type, ach_list in achievements_by_type.items %}
             <div class="achievement-category">
                 <h2 class="category-title">{{ ach_type }}:</h2>
                 <div class="achievement-list">
                     {% for ach in ach_list %}
-
                     <div style="display: grid; grid-template-rows: auto; justify-items: center;">
                         <div class="achievement-card">
                             {% if ach.icon and ach.name != '?' %}
@@ -49,15 +48,12 @@
                             <p class="description">{{ ach.description }}</p>
                         </div>
 
-                        {% if ach.name != '?' %}
-                        {% if ach not in prof_ach and ach in prof_ach_biggest_level %}
+                        {% if ach.name != '?' and ach not in profile_achievements_list and ach in highest_level_achievements %}
                         <div class="buttons" style="margin-top: 15px;">
-                            <a href='{% url "add_achievement" ach.id %}' class="btn">+</a>
+                            <a href="{% url 'add_achievement' ach.id %}" class="btn">+</a>
                         </div>
                         {% endif %}
-                        {% endif %}
                     </div>
-
                     {% endfor %}
                 </div>
             </div>
@@ -74,12 +70,13 @@
         let draggedItem = null;
 
         container.addEventListener('dragstart', (e) => {
-            draggedItem = e.target;
-            e.target.style.opacity = 0.5;
+            draggedItem = e.target.closest('.achievement-block');
+            draggedItem.style.opacity = 0.5;
         });
 
         container.addEventListener('dragend', (e) => {
-            e.target.style.opacity = '';
+            draggedItem.style.opacity = '';
+            draggedItem = null;
         });
 
         container.addEventListener('dragover', (e) => {
@@ -88,10 +85,7 @@
 
         container.addEventListener('drop', (e) => {
             e.preventDefault();
-            let target = e.target;
-            while (target && target !== container && !target.classList.contains('achievement-block')) {
-                target = target.parentElement;
-            }
+            let target = e.target.closest('.achievement-block');
             if (draggedItem && target && target !== draggedItem) {
                 const allItems = Array.from(container.children);
                 const indexDragged = allItems.indexOf(draggedItem);

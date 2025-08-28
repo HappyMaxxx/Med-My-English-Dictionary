@@ -253,7 +253,7 @@ class ProfileView(LoginRequiredMixin, View):
                 'data': [daily_data.get((start_date + timedelta(days=i)).strftime('%Y-%m-%d'), 0) for i in range(n_days + 1)],
             })
 
-            if user_profile.chenged_order:
+            if user_profile.changed_order:
                 achievements_order = user_profile.achicment_order.strip('[]').replace('"', '').split(",")
 
                 order = [int(i) for i in achievements_order]

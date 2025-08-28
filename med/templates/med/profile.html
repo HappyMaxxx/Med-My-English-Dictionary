@@ -56,7 +56,7 @@
         </div>
     {% elif is_requests_out %}
         <div class="buttons">
-            <a href="{% url 'respond_friend_request_a' user.id request.user.id 'reject' %}" class="add-friend-link">Cancel</a>
+            <a href="{% url 'cancel_friend_request' username=user.username %}" class="add-friend-link">Cancel</a>
         </div>
     {% else %}
     <div class="buttons profile-buttons">
@@ -187,9 +187,6 @@
     {% endif %}
 </div>
 
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-<script src="https://code.highcharts.com/highcharts.js"></script>
-
 <!-- Tubs -->
 <script src="{% static 'med/js/tabs.js' %}"></script>
 <script>
@@ -285,7 +282,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
         credits: {
             enabled: false
-        }
+        },
+        exporting: {
+            enabled: false 
+        },
     });
 </script>
 
@@ -359,7 +359,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     format: '{point.y}',
                     style: {
                         color: textColor,
-                        textOutline: 'none'
+                        textDecoration: 'none', 
+                        cursor: 'default'
                     }
                 }
             }
@@ -367,6 +368,9 @@ document.addEventListener("DOMContentLoaded", () => {
         tooltip: {
             headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
             pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> of total<br/>'
+        },
+        exporting: {
+            enabled: false 
         },
         series: [
             {
@@ -377,11 +381,26 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
         drilldown: {
             breadcrumbs: {
+                buttonTheme: {
+                    style: {
+                        color: textColor,       
+                        textDecoration: 'none',  
+                        cursor: 'default'
+                    },
+                    states: {
+                        hover: {
+                            color: textColor   
+                        },
+                        select: {
+                            color: textColor
+                        }
+                    }
+                },
                 position: {
                     align: 'right'
                 }
             },
-            series: drilldownData
+            series: []
         },
         credits: {
             enabled: false
@@ -438,6 +457,9 @@ document.addEventListener("DOMContentLoaded", () => {
             itemStyle: {
                 color: textColor
             }
+        },
+        exporting: {
+            enabled: false 
         },
         series: [{
             name: 'Words',

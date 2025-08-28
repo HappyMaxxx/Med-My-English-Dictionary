@@ -17,7 +17,7 @@ from dictionary.models import Word, WordGroup
 from .models import CommunityGroup, ReadingText
 
 from med.views import add_to_main_group
-from achievements.views import process_interaction_achivments
+from achievements.signals import AchievementProcessor
 from notifications.views import create_notification
 
 import logging
@@ -259,7 +259,8 @@ class PracticeGroupWordsListView(LoginRequiredMixin, ListView):
         return words
     
     def get_context_data(self, **kwargs):
-        process_interaction_achivments(self.request.user)
+        processor = AchievementProcessor()
+        processor.process_interaction_achievements(self.request.user)
 
         context = super().get_context_data(**kwargs)
         group_id = self.kwargs.get('group_id')
