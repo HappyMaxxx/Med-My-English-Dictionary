@@ -46,14 +46,22 @@
             </div>
             {% elif notification.type == '3' %}
             <div class="notification {% if notification.is_read %}read{% else %}unread{% endif %}" 
-            data-notification-id="{{ notification.id }}">
+            data-notification-id="{{ notification.id }}" data-notification-type="{{ notification.type }}">
                 <div class="notification-body">
                     <p>{{notification.message}}</p>
                 </div>
                 {% if not notification.is_read %}
                 <div class="buttons friend-request-buttons">
-                    <a href="{% url 'respond_friend_request' notification.friendship_id 'accept' %}" class="btn accept friend-request-btn" data-action="accept" data-friendship-id="{{ notification.friendship_id }}">Accept</a>
-                    <a href="{% url 'respond_friend_request' notification.friendship_id 'reject' %}" class="btn reject friend-request-btn" data-action="reject" data-friendship-id="{{ notification.friendship_id }}">Reject</a>
+                    <a href="{% url 'respond_friend_request' notification.friendship_id 'accept' %}"
+                        class="btn accept friend-request-btn" data-action="accept"
+                        data-friendship-id="{{ notification.friendship_id }}">
+                        Accept
+                    </a>
+                    <a href="{% url 'respond_friend_request' notification.friendship_id 'reject' %}"
+                        class="btn reject friend-request-btn" data-action="reject"
+                        data-friendship-id="{{ notification.friendship_id }}">
+                        Reject
+                    </a>
                 </div>
                 {% endif %}
                 <div class="notification-tail">
@@ -103,8 +111,15 @@
         const notifications = document.querySelectorAll('.notification');
         
         notifications.forEach(notification => {
-            notification.addEventListener('click', function() {
+            notification.addEventListener('click', function(e) {
+                if (e.target.classList.contains('friend-request-btn') || 
+                    e.target.closest('.friend-request-buttons')) {
+                    return;
+                }
+                
                 const notificationId = this.getAttribute('data-notification-id');
+                const notificationType = this.getAttribute('data-notification-type');
+                const buttonsContainer = this.querySelector('.friend-request-buttons');
                 
                 fetch(`/notification/${notificationId}/read/`, {
                     method: 'POST',
@@ -118,13 +133,16 @@
                     if (data.status === 'success') {
                         notification.classList.remove('unread');
                         notification.classList.add('read');
+                        console.log(notificationType, buttonsContainer)
+                        if (notificationType === '3' && buttonsContainer) {
+                            buttonsContainer.style.display = 'none';
+                        }
                     }
                 })
                 .catch(error => console.error('Error:', error));
             });
         });
 
-        // Handle friend request buttons
         const friendRequestButtons = document.querySelectorAll('.friend-request-btn');
         
         friendRequestButtons.forEach(button => {
@@ -148,12 +166,10 @@
                 })
                 .then(response => {
                     if (response.ok) {
-                        // Check if response is JSON
                         const contentType = response.headers.get('content-type');
                         if (contentType && contentType.includes('application/json')) {
                             return response.json();
                         } else {
-                            // If not JSON, assume success for redirect or HTML response
                             return { status: 'success' };
                         }
                     } else {
@@ -162,10 +178,8 @@
                 })
                 .then(data => {
                     if (data.status === 'success') {
-                        // Hide the buttons
                         buttonsContainer.style.display = 'none';
                         
-                        // Mark notification as read
                         fetch(`/notification/${notificationId}/read/`, {
                             method: 'POST',
                             headers: {
@@ -202,42 +216,46 @@
 
 <script>
     document.getElementById('mark-all-read').addEventListener('click', function(e) {
-    e.preventDefault();
+        e.preventDefault();
+        const unreadNotifications = document.querySelectorAll('.notification.unread');
 
-    const unreadNotifications = document.querySelectorAll('.notification.unread');
+        unreadNotifications.forEach(notification => {
+            const notificationId = notification.getAttribute('data-notification-id');
+            const notificationType = notification.getAttribute('data-notification-type');
+            const buttonsContainer = notification.querySelector('.friend-request-buttons');
 
-    unreadNotifications.forEach(notification => {
-        const notificationId = notification.getAttribute('data-notification-id');
-
-        fetch(`/notification/${notificationId}/read/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                notification.classList.remove('unread');
-                notification.classList.add('read');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+            fetch(`/notification/${notificationId}/read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    notification.classList.remove('unread');
+                    notification.classList.add('read');
+                    if (notificationType === '3' && buttonsContainer) {
+                        buttonsContainer.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
     });
-});
 </script>
 
 <script>
     document.getElementById('show-unread-only').addEventListener('change', function() {
-    const notifications = document.querySelectorAll('.notification');
-    notifications.forEach(notif => {
-        if (this.checked && notif.classList.contains('read')) {
-            notif.style.display = 'none';
-        } else {
-            notif.style.display = 'flex';
-        }
+        const notifications = document.querySelectorAll('.notification');
+        notifications.forEach(notif => {
+            if (this.checked && notif.classList.contains('read')) {
+                notif.style.display = 'none';
+            } else {
+                notif.style.display = 'flex';
+            }
+        });
     });
-});
 </script>
 {% endblock %}
