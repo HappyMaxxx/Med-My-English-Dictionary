@@ -28,7 +28,8 @@ With Med you can create a personal dictionary, group words into categories, prac
 - ⭐ **Top Users** – Compete with others and climb the leaderboard.  
 - 🎯 **Practice Mode** – Interactive exercises for vocabulary retention.  
 - ⚡ **Asynchronous Tasks** – Celery + Redis for background processing.  
-- 🐳 **Dockerized Setup** – Easy installation and consistent environment.  
+- 🔗 **Real-Time Messaging** – WebSocket for instant updates of messages and notifications.  
+- 🐳 **Dockerized Setup** – Easy installation and consistent environment.   
 
 ---
 
