@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <h1>Site Visit Statistics</h1>
+
+    <div class="chart-container">
+        <h2>Hourly Visits (Today)</h2>
+        <canvas id="hourlyChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Daily Visits (This Month)</h2>
+        <canvas id="monthlyChart"></canvas>
+    </div>
+
+    <style>
+        .chart-container {
+            width: 50%;
+            max-width: 600px; 
+            margin: 20px auto;
+        }
+        h1, h2 { font-family: Arial, sans-serif; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+        new Chart(hourlyCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ hourly_labels | safe }},
+                datasets: [{
+                    label: 'Number of Visits',
+                    data: {{ hourly_data | safe }},
+                    backgroundColor: '#4caf50',
+                    borderColor: '#388e3c',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: true }
+                }
+            }
+        });
+
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: {{ monthly_labels | safe }},
+                datasets: [{
+                    label: 'Number of Visits',
+                    data: {{ monthly_data | safe }},
+                    backgroundColor: '#2196f3',
+                    borderColor: '#1976d2',
+                    fill: false,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: true }
+                }
+            }
+        });
+    </script>
+{% endblock %}

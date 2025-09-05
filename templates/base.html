@@ -69,6 +69,10 @@
                 <a href="{% url 'groups' %}">Groups</a>
 
                 <a href="{% url 'tops_by_category' %}">Top</a>
+
+                {% if request.user.is_staff %}
+                    <a href="{% url 'stats' %}">Stats</a>
+                {% endif %}
             {% else %}
             <div class="nav-left"></div>
             <div class="nav-center">

@@ -14,6 +14,7 @@ urlpatterns = [
     path('', include('friendship.urls')),
     path('', include('achievements.urls')),
     path('', include('notifications.urls')),
+    path('', include('sitepulse.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

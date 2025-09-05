@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'friendship.apps.FriendshipConfig',
     'achievements.apps.AchievementsConfig',
     'notifications.apps.NotificationsConfig',
+    'sitepulse.apps.SitepulseConfig',
 ]
 
 MIDDLEWARE = [
@@ -42,6 +43,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'med.middleware.TrackUserVisitsMiddleware',
+    'sitepulse.middleware.VisitTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'mad.urls'
