@@ -2,26 +2,71 @@
 {% load static %}
 
 {% block content %}
-    <h1>Site Visit Statistics</h1>
-
-    <div class="chart-container">
-        <h2>Hourly Visits (Today)</h2>
-        <canvas id="hourlyChart"></canvas>
-    </div>
-
-    <div class="chart-container">
-        <h2>Daily Visits (This Month)</h2>
-        <canvas id="monthlyChart"></canvas>
-    </div>
-
     <style>
         .chart-container {
             width: 50%;
             max-width: 600px; 
             margin: 20px auto;
         }
-        h1, h2 { font-family: Arial, sans-serif; }
+        h1, h2, label { font-family: Arial, sans-serif; }
+        h2 form { margin: 0; padding: 0; display:inline; }
+        h2 input { border:none; background:none; font-size:1em; cursor:pointer; }
     </style>
+
+    <h1>Site Visit Statistics</h1>
+
+    <div class="chart-container">
+        <h2>
+            Hourly Visits (
+            <form method="get"
+                style="display:inline; background-color: unset; border-radius: 0px; box-shadow: none;
+                padding: 5px;"
+            >
+                <input type="date" name="selected_date" value="{{ selected_date }}"
+                onchange="this.form.submit()" style="color: var(--text-color); text-align: center;">
+            </form>
+            )
+        </h2>
+        <canvas id="hourlyChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>
+            Daily Visits (
+            <form method="get"
+                style="display:inline; background-color: unset; border-radius: 0px; box-shadow: none;
+                padding: 5px;"
+            >
+                <input id="monthPicker" class="month-input" name="selected_month"
+                value="{{ selected_month }}" style="padding: 0%; background-color: unset;
+                color: var(--text-color); border: none; text-align: center; width: 100px;">
+            </form>
+            )
+        </h2>
+        <canvas id="monthlyChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+
+    <script>
+        flatpickr("#monthPicker", {
+            dateFormat: "Y-m",
+            defaultDate: "{{ selected_month }}",
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true,
+                    dateFormat: "Y-m",
+                    altFormat: "F Y"
+                })
+            ],
+            onChange: function(selectedDates, dateStr) {
+                document.getElementById('monthPicker').form.submit();
+            }
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -39,18 +84,14 @@
                 }]
             },
             options: {
-                scales: {
-                    y: { beginAtZero: true }
-                },
-                plugins: {
-                    legend: { display: true }
-                }
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: true } }
             }
         });
 
         const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
         new Chart(monthlyCtx, {
-            type: 'line',
+            type: 'bar', 
             data: {
                 labels: {{ monthly_labels | safe }},
                 datasets: [{
@@ -58,18 +99,14 @@
                     data: {{ monthly_data | safe }},
                     backgroundColor: '#2196f3',
                     borderColor: '#1976d2',
-                    fill: false,
-                    tension: 0.1
+                    borderWidth: 1
                 }]
             },
             options: {
-                scales: {
-                    y: { beginAtZero: true }
-                },
-                plugins: {
-                    legend: { display: true }
-                }
+                scales: { y: { beginAtZero: true } },
+                plugins: { legend: { display: true } }
             }
         });
+
     </script>
 {% endblock %}
