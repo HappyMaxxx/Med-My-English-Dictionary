@@ -5,12 +5,23 @@
     <style>
         .chart-container {
             width: 50%;
-            max-width: 600px; 
+            max-width: 600px;
             margin: 20px auto;
         }
-        h1, h2, label { font-family: Arial, sans-serif; }
-        h2 form { margin: 0; padding: 0; display:inline; }
-        h2 input { border:none; background:none; font-size:1em; cursor:pointer; }
+        h1, h2, label {
+            font-family: Arial, sans-serif;
+        }
+        h2 form {
+            margin: 0;
+            padding: 0;
+            display: inline;
+        }
+        h2 input {
+            border: none;
+            background: none;
+            font-size: 1em;
+            cursor: pointer;
+        }
     </style>
 
     <h1>Site Visit Statistics</h1>
@@ -18,12 +29,8 @@
     <div class="chart-container">
         <h2>
             Hourly Visits (
-            <form method="get"
-                style="display:inline; background-color: unset; border-radius: 0px; box-shadow: none;
-                padding: 5px;"
-            >
-                <input type="date" name="selected_date" value="{{ selected_date }}"
-                onchange="this.form.submit()" style="color: var(--text-color); text-align: center;">
+            <form method="get" style="display: inline; background-color: unset; border-radius: 0px; box-shadow: none; padding: 5px;">
+                <input type="date" name="selected_date" value="{{ selected_date }}" onchange="this.form.submit()" style="color: var(--text-color); text-align: center;">
             </form>
             )
         </h2>
@@ -33,25 +40,35 @@
     <div class="chart-container">
         <h2>
             Daily Visits (
-            <form method="get"
-                style="display:inline; background-color: unset; border-radius: 0px; box-shadow: none;
-                padding: 5px;"
-            >
-                <input id="monthPicker" class="month-input" name="selected_month"
-                value="{{ selected_month }}" style="padding: 0%; background-color: unset;
-                color: var(--text-color); border: none; text-align: center; width: 100px;">
+            <form method="get" style="display: inline; background-color: unset; border-radius: 0px; box-shadow: none; padding: 5px;">
+                <input id="monthPicker" class="month-input" name="selected_month" value="{{ selected_month }}" style="padding: 0; background-color: unset; color: var(--text-color); border: none; text-align: center; width: 100px;">
             </form>
             )
         </h2>
         <canvas id="monthlyChart"></canvas>
     </div>
 
+    <!-- Store data in hidden inputs -->
+    <input type="hidden" id="hourly-labels" value='{{ hourly_labels | safe }}'>
+    <input type="hidden" id="hourly-data" value='{{ hourly_data | safe }}'>
+    <input type="hidden" id="monthly-labels" value='{{ monthly_labels | safe }}'>
+    <input type="hidden" id="monthly-data" value='{{ monthly_data | safe }}'>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
+        // Parse data from hidden inputs
+        const hourlyLabels = JSON.parse(document.getElementById('hourly-labels').value);
+        const hourlyData = JSON.parse(document.getElementById('hourly-data').value);
+        const monthlyLabels = JSON.parse(document.getElementById('monthly-labels').value);
+        const monthlyData = JSON.parse(document.getElementById('monthly-data').value);
+
+        // Initialize Flatpickr
         flatpickr("#monthPicker", {
             dateFormat: "Y-m",
             defaultDate: "{{ selected_month }}",
@@ -66,18 +83,16 @@
                 document.getElementById('monthPicker').form.submit();
             }
         });
-    </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
+        // Hourly Chart
         const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
         new Chart(hourlyCtx, {
             type: 'bar',
             data: {
-                labels: {{ hourly_labels | safe }},
+                labels: hourlyLabels,
                 datasets: [{
                     label: 'Number of Visits',
-                    data: {{ hourly_data | safe }},
+                    data: hourlyData,
                     backgroundColor: '#4caf50',
                     borderColor: '#388e3c',
                     borderWidth: 1
@@ -91,15 +106,17 @@
 
         const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
         new Chart(monthlyCtx, {
-            type: 'bar', 
+            type: 'line',
             data: {
-                labels: {{ monthly_labels | safe }},
+                labels: monthlyLabels,
                 datasets: [{
                     label: 'Number of Visits',
-                    data: {{ monthly_data | safe }},
-                    backgroundColor: '#2196f3',
-                    borderColor: '#1976d2',
-                    borderWidth: 1
+                    data: monthlyData,
+                    backgroundColor: 'rgba(33, 150, 243, 0.2)', 
+                    borderColor: '#2196f3',
+                    borderWidth: 2,
+                    fill: true, 
+                    tension: 0.4
                 }]
             },
             options: {
@@ -107,6 +124,5 @@
                 plugins: { legend: { display: true } }
             }
         });
-
     </script>
 {% endblock %}
