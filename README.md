@@ -27,6 +27,7 @@ With Med you can create a personal dictionary, group words into categories, prac
 - 🔔 **Notifications** – Get updates on your activity and friends.  
 - ⭐ **Top Users** – Compete with others and climb the leaderboard.  
 - 🎯 **Practice Mode** – Interactive exercises for vocabulary retention.  
+- 📊 **SitePulse** – Administrators can view detailed site statistics, including hourly and monthly visits.  
 - ⚡ **Asynchronous Tasks** – Celery + Redis for background processing.  
 - 🔗 **Real-Time Messaging** – WebSocket for instant updates of messages and notifications.  
 - 🐳 **Dockerized Setup** – Easy installation and consistent environment.   
@@ -247,4 +248,4 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 ---
 
-Happy learning with **Med – My English Dictionary**! 🚀  
+Happy learning with **Med – My English Dictionary**! 🚀
