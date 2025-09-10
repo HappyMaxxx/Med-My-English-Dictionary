@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="{% static 'premium/css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 bg-[var(--background-color)]">
+    <!-- Header Section -->
+    <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold">Choose Your Subscription</h1>
+        <p class="text-lg mt-2">Unlock the full potential of Med – My English Dictionary with a premium plan!</p>
+    </div>
+
+    <!-- Subscriptions Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Free Plan -->
+        <div class="bg-[var(--feature-background)] rounded-lg card-shadow p-6 flex flex-col">
+            <h2 class="text-2xl font-semibold text-center">Free</h2>
+            <p class="text-center mt-2">Get started with basic features</p>
+            <p class="text-3xl font-bold text-center mt-4">$0<span class="text-sm">/month</span></p>
+            <ul class="mt-6 space-y-3">
+                <li class="feature-check">Personal dictionary (up to 100 words)</li>
+                <li class="feature-check">Up to 3 word groups</li>
+                <li class="feature-check">Basic practice mode (10 exercises/day)</li>
+                <li class="feature-check">Add up to 5 friends</li>
+                <li class="feature-check">Basic achievements (3 badges)</li>
+                <li class="feature-unavailable">No offline access</li>
+                <li class="feature-unavailable">No advanced analytics</li>
+            </ul>
+            <div class="mt-auto pt-6">
+                <a href="#" class="block text-center bg-[var(--tab-background)] py-2 px-4 rounded-lg cursor-not-allowed">Current Plan</a>
+            </div>
+        </div>
+
+        <!-- Standard Plan -->
+        <div class="bg-[var(--feature-background)] rounded-lg card-shadow p-6 flex flex-col border-2 border-blue-500 relative">
+            <span class="absolute top-0 right-0 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg">Most Popular</span>
+            <h2 class="text-2xl font-semibold text-center">Standard</h2>
+            <p class="text-center mt-2">Enhanced features for better learning</p>
+            <p class="text-3xl font-bold text-center mt-4">$4.99<span class="text-sm">/month</span></p>
+            <ul class="mt-6 space-y-3">
+                <li class="feature-check">Unlimited personal dictionary</li>
+                <li class="feature-check">Unlimited word groups</li>
+                <li class="feature-check">Advanced practice mode (unlimited)</li>
+                <li class="feature-check">Unlimited friends & group chats</li>
+                <li class="feature-check">More achievements</li>
+                <li class="feature-check">Detailed progress analytics</li>
+                <li class="feature-unavailable">No offline access</li>
+            </ul>
+            <div class="mt-auto pt-6">
+                <a href="{% url 'subscribe' plan='standard' %}" class="block text-center btn-primary py-2 px-4 rounded-lg">Choose Standard</a>
+            </div>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="bg-[var(--feature-background)] rounded-lg card-shadow p-6 flex flex-col">
+            <h2 class="text-2xl font-semibold text-center">Pro</h2>
+            <p class="text-center mt-2">All features for ultimate learning</p>
+            <p class="text-3xl font-bold text-center mt-4">$9.99<span class="text-sm">/month</span></p>
+            <ul class="mt-6 space-y-3">
+                <li class="feature-check">Unlimited dictionary with audio/images</li>
+                <li class="feature-check">Collaborative word groups</li>
+                <li class="feature-check">Exclusive games & adaptive tests</li>
+                <li class="feature-check">Group challenges & premium badges</li>
+                <li class="feature-check">Offline access</li>
+                <li class="feature-check">API integrations (Oxford, Cambridge)</li>
+                <li class="feature-check">Priority support & early access</li>
+            </ul>
+            <div class="mt-auto pt-6">
+                <a href="{% url 'subscribe' plan='pro' %}" class="block text-center btn-secondary py-2 px-4 rounded-lg">Choose Pro</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="text-center mt-12">
+        <p>Need help choosing? <a href="mailto:mpatik2006@gmail.com" class="text-[var(--button-background)] hover:underline">Contact us</a> or check our <a href="{% url 'faq' %}" class="text-[var(--button-background)] hover:underline">FAQ</a>.</p>
+    </div>
+</div>
+{% endblock %}

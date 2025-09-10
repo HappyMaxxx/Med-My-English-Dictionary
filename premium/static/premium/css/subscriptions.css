@@ -1,0 +1,59 @@
+/* Custom styles for subscriptions and FAQ pages to match Med's theme */
+.card-shadow {
+    box-shadow: var(--feature-shadow);
+}
+
+.btn-primary {
+    background-color: var(--button-background);
+    color: var(--button-text-color);
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--tab-hover-background);
+}
+
+.btn-secondary {
+    background-color: var(--tab-active-background);
+    color: var(--button-text-color);
+    transition: background-color 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: var(--tab-hover-background);
+}
+
+.feature-check::before {
+    content: '✔';
+    color: var(--list-text-color);
+    margin-right: 8px;
+}
+
+.feature-unavailable::before {
+    content: '✖';
+    color: var(--feature-text-color);
+    margin-right: 8px;
+}
+
+/* FAQ-specific styles */
+.faq-item {
+    transition: all 0.3s ease;
+}
+
+.faq-item summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.faq-item summary:hover {
+    color: var(--button-background);
+}
+
+.faq-item[open] summary {
+    color: var(--button-background);
+}
+
+.faq-item p {
+    color: var(--feature-text-color);
+}

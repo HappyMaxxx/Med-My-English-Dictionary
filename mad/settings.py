@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'achievements.apps.AchievementsConfig',
     'notifications.apps.NotificationsConfig',
     'sitepulse.apps.SitepulseConfig',
+    'premium.apps.PremiumConfig',
 ]
 
 MIDDLEWARE = [
