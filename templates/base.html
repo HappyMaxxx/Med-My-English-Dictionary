@@ -10,130 +10,96 @@
     <link rel="stylesheet" type="text/css" href="{% static 'med/css/styles.css' %}">
     <link rel="icon" href="{% static 'med/img/base/icon.svg' %}" type="image/png"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body>
-
 <header>
-    {% if user.is_authenticated %}
+    {% block styles %}{% endblock %}
 
     <div class="logo_container">
-        {% if is_profile or is_dict %}
-            {% if is_my_profile or is_my_dict %}
-                <a href="{% url 'profile' user.username %}">
-                    <img id="logo_img" src="{% static 'med/img/base/light_logo.svg' %}" 
-                         data-light-src="{% static 'med/img/base/light_logo.svg' %}" 
-                         data-dark-src="{% static 'med/img/base/dark_logo.svg' %}" alt="MED Logo">
-                </a>
-            {% else %}
-                <a href="{% url 'profile' logged_user.username %}">
-                    <img id="logo_img" src="{% static 'med/img/base/light_logo.svg' %}" 
-                         data-light-src="{% static 'med/img/base/light_logo.svg' %}" 
-                         data-dark-src="{% static 'med/img/base/dark_logo.svg' %}" alt="MED Logo">
-                </a>
-            {% endif %}
-        {% else %}
+        {% if user.is_authenticated %}
             <a href="{% url 'profile' user.username %}">
-                <img id="logo_img" src="{% static 'med/img/base/light_logo.svg' %}" 
-                     data-light-src="{% static 'med/img/base/light_logo.svg' %}" 
-                     data-dark-src="{% static 'med/img/base/dark_logo.svg' %}" alt="MED Logo">
+                <img id="logo_img"
+                     src="{% static 'med/img/base/light_logo.svg' %}"
+                     data-light-src="{% static 'med/img/base/light_logo.svg' %}"
+                     data-dark-src="{% static 'med/img/base/dark_logo.svg' %}"
+                     alt="MED Logo">
+            </a>
+        {% else %}
+            <a href="{% url 'home' %}">
+                <img id="logo_img"
+                     src="{% static 'med/img/base/light_logo.png' %}"
+                     data-light-src="{% static 'med/img/base/light_logo.png' %}"
+                     data-dark-src="{% static 'med/img/base/dark_logo.png' %}"
+                     alt="MED Logo">
             </a>
         {% endif %}
     </div>
 
-    {% else %}
-    <div class="logo_container">
-        <a href="{% url 'home' %}"><img id="logo_img" src="{% static 'med/img/base/light_logo.png' %}" data-light-src="{% static 'med/img/base/light_logo.png' %}" data-dark-src="{% static 'med/img/base/dark_logo.png' %}" alt="MED Logo"></a>
-    </div>
-    {% endif %}
-
     <nav class="nav-items" id="nav-items">
-            {% if user.is_authenticated %}
-                <div class="nav-left">
+        {% if user.is_authenticated %}
+            <div class="nav-left">
                 {% if not is_search %}
-                <form method="get" action="{% url 'user_search' %}" class="search-form">
-                    <input type="text" name="q" placeholder="Enter name" required class="search-input">
-                </form>
+                    <form method="get" action="{% url 'user_search' %}" class="search-form">
+                        <input type="text" name="q" placeholder="Enter name" required class="search-input">
+                    </form>
                 {% endif %}
-                </div>
-        
-        <div class="nav-center">
-                {% if is_my_dict %}
+            </div>
+
+            <div class="nav-center">
                 <a href="{% url 'words' user.username %}">Dictionary</a>
-                {% else %}
-                <a href="{% url 'words' request.user.username %}">Dictionary</a>
-                {% endif %}
-
                 <a href="{% url 'practice' %}">Practice</a>
-
                 <a href="{% url 'groups' %}">Groups</a>
-
+                <a href="{% url 'subscriptions' %}">Subscriptions</a>
                 <a href="{% url 'tops_by_category' %}">Top</a>
-
                 {% if request.user.is_staff %}
                     <a href="{% url 'stats' %}">Stats</a>
                 {% endif %}
-            {% else %}
+            </div>
+
+            <div class="buttons">
+                <a href="{% url 'notifications' %}" class="no-style" id="notifications-link">
+                    <i class="fas fa-bell"></i>
+                    {% get_unread_notifications_count request as unread_count %}
+                    <span class="notification-count {% if unread_count == 0 %}hidden{% endif %}">
+                        {% if unread_count > 99 %}99+{% else %}{{ unread_count }}{% endif %}
+                    </span>
+                </a>
+
+                <div class="notifications-dropdown" id="notifications-dropdown">
+                    <ul>
+                        {% get_latest_unread_notifications request as header_notifications %}
+                        {% for notification in header_notifications %}
+                            <li>{{ notification.message }} <small>{{ notification.time_create|date:"d.m.Y H:i" }}</small></li>
+                        {% empty %}
+                            <li>There are no unread messages</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <a id="theme-toggle-light" class="no-style"><i class="fas fa-sun"></i></a>
+                <a id="theme-toggle-dark" class="no-style"><i class="fas fa-moon"></i></a>
+
+                <a href="{% url 'profile' user.username %}">{{ request.user.username }}</a>
+                <a href="{% url 'logout' %}">Log out</a>
+            </div>
+
+        {% else %}
             <div class="nav-left"></div>
             <div class="nav-center">
                 <a href="{% url 'login' %}">Dictionary</a>
-
                 <a href="{% url 'login' %}">Practice</a>
-
                 <a href="{% url 'login' %}">Groups</a>
-                {% endif %}
-                <!-- <a href="#" id="theme-toggle-light">Light Mode</a>
-                <a href="#" id="theme-toggle-dark">Dark Mode</a> -->
+                <a href="{% url 'login' %}">Subscriptions</a>
             </div>
-            
-        <div class="buttons">
-
-            {% if request.user.is_authenticated %}
-            <a href="{% url 'notifications' %}" class="no-style" id="notifications-link">
-                <i class="fas fa-bell"></i>
-                {% get_unread_notifications_count request as unread_count %}
-                <span class="notification-count {% if unread_count == 0 %}hidden{% endif %}">
-                    {% if unread_count > 99 %}
-                        99+
-                    {% else %}
-                        {{ unread_count }}
-                    {% endif %}
-                </span>
-            </a>
-            
-            <div class="notifications-dropdown" id="notifications-dropdown">
-                <ul>
-                    {% get_latest_unread_notifications request as header_notifications %}
-                    {% for notification in header_notifications %}
-                        <li>{{ notification.message }} <small>{{ notification.time_create|date:"d.m.Y H:i" }}</small></li>
-                    {% empty %}
-                        <li>There are no unread messages</li>
-                    {% endfor %}
-                </ul>
+            <div class="buttons">
+                <a href="{% url 'login' %}">Log in</a>
+                <a href="{% url 'register' %}">Register</a>
             </div>
-            {% endif %}
-
-            <a id="theme-toggle-light" class="no-style"><i class="fas fa-sun"></i></a>
-            <a id="theme-toggle-dark" class="no-style"><i class="fas fa-moon"></i></a>
-        {% if request.user.is_authenticated %}
-            {% if is_profile or is_dict %}
-                {% if is_my_profile or is_my_dict %}
-                <a href="{% url 'profile' user.username %}">{{request.user.username}}</a>
-                {% else %}
-                <a href="{% url 'profile' logged_user.username %}">{{request.user.username}}</a>
-                {% endif %}
-            {% else %}
-                <a href="{% url 'profile' user.username %}">{{request.user.username}}</a>
-            {% endif %}
-
-            <a href="{% url 'logout' %}">Log out</a>
-        </div>
-        {% else %}
-            <a href="{% url 'login' %}">Log in</a>
-            <a href="{% url 'register' %}">Register</a>
-        </div>
         {% endif %}
     </nav>
+
     <div class="burger-menu" id="burger-menu">
         <div class="burger-icon">
             <span></span>
@@ -144,33 +110,30 @@
 </header>
 
 <div class="container">
-
-    {% block content %}
-    {% endblock %}
-
+    {% block content %}{% endblock %}
 </div>
 
 <script src="{% static 'med/js/script.js' %}"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const burgerMenu = document.getElementById('burger-menu');
-        const navItems = document.getElementById('nav-items');
+document.addEventListener('DOMContentLoaded', function() {
+    const burgerMenu = document.getElementById('burger-menu');
+    const navItems = document.getElementById('nav-items');
 
-        burgerMenu.addEventListener('click', function() {
-            navItems.classList.toggle('active');
-        });
-
-        document.addEventListener('click', function(event) {
-            if (!navItems.contains(event.target) && !burgerMenu.contains(event.target)) {
-                navItems.classList.remove('active');
-            }
-        });
-
-        navItems.addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
+    burgerMenu.addEventListener('click', function() {
+        navItems.classList.toggle('active');
     });
+
+    document.addEventListener('click', function(event) {
+        if (!navItems.contains(event.target) && !burgerMenu.contains(event.target)) {
+            navItems.classList.remove('active');
+        }
+    });
+
+    navItems.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+});
 </script>
 
 {% if user.is_authenticated %}
@@ -181,13 +144,10 @@ const wsUrl = `${wsProtocol}//${window.location.host}/ws/notifications/${userId}
 
 const socket = new WebSocket(wsUrl);
 
-socket.onopen = function(event) {
-    console.log("WebSocket connection established for user " + userId);
-};
+socket.onopen = () => console.log("WebSocket connected for user " + userId);
 
-socket.onmessage = function(event) {
+socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-
     if (data.type === "notification") {
         const badge = document.querySelector(".notification-count");
         if (badge) {
@@ -198,26 +158,21 @@ socket.onmessage = function(event) {
         const notificationList = document.querySelector("#notifications-dropdown ul");
         if (notificationList) {
             notificationList.innerHTML = "";
-            data.notifications.forEach(notification => {
-                const li = document.createElement("li");
-                li.textContent = `${notification.message} ${notification.time}`;
-                notificationList.appendChild(li);
-            });
-
             if (data.notifications.length === 0) {
                 notificationList.innerHTML = "<li>There are no unread messages</li>";
+            } else {
+                data.notifications.forEach(notification => {
+                    const li = document.createElement("li");
+                    li.textContent = `${notification.message} ${notification.time}`;
+                    notificationList.appendChild(li);
+                });
             }
         }
     }
 };
 
-socket.onerror = function(error) {
-    console.error("WebSocket error:", error);
-};
-
-socket.onclose = function(event) {
-    console.log("WebSocket connection closed:", event);
-};
+socket.onerror = (error) => console.error("WebSocket error:", error);
+socket.onclose = (event) => console.log("WebSocket closed:", event);
 </script>
 {% endif %}
 
