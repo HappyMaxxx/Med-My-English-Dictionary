@@ -29,6 +29,7 @@ With Med you can create a personal dictionary, group words into categories, prac
 - 🎯 **Practice Mode** – Interactive exercises for vocabulary retention.  
 - 📊 **SitePulse** – Administrators can view detailed site statistics, including hourly and monthly visits.  
 - ⚡ **Asynchronous Tasks** – Celery + Redis for background processing.  
+- 🤖 **Telegram Bot** – A handy way to add new words anytime and anywhere.
 - 🔗 **Real-Time Messaging** – WebSocket for instant updates of messages and notifications.  
 - 🐳 **Dockerized Setup** – Easy installation and consistent environment.   
 
@@ -74,11 +75,14 @@ POSTGRES_PASSWORD=postgres
 EMAIL_HOST_USER=your-email-host-user
 EMAIL_HOST_PASSWORD=your-email-host-password
 DEFAULT_FROM_EMAIL=your-default-from-email
+
+BOT_TOKEN=your-bot-token-here
 ```
 
 > **Note**:  
 > - Generate a secure `DJANGO_SECRET_KEY` (e.g., using `python -c "import secrets; print(secrets.token_hex(32))"`).
 > - Configure email credentials if you want notifications via email. [Django Documentation](https://docs.djangoproject.com/en/5.2/topics/email/).
+> - Create a Telegram Bot token using [BotFather](https://t.me/BotFather) and configure it to enable bot features or notifications.
 
 ### 3. Collect Static Files
 
@@ -132,6 +136,7 @@ The `docker-compose.yml` defines these services:
 - **celery** – Celery worker for async tasks  
 - **celery-beat** – Celery beat scheduler for periodic tasks  
 - **flower** – Monitoring dashboard for Celery, port `5555`  
+- **bot** – Telegram bot for user interaction and notifications
 
 ```yaml
 services:
@@ -199,6 +204,16 @@ services:
     depends_on:
       - redis
 
+  bot:
+    build: .
+    command: python3 telegram_bot/main.py
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/app_db
+      
 volumes:
   postgres_data:
 ```
