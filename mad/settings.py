@@ -11,9 +11,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
-# Application definition
-
 INSTALLED_APPS = [
+    # BASE
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -22,7 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'channels',
-    # 'debug_toolbar',
+
+    # APPS
     'med.apps.MedConfig',
     'practice.apps.PracticeConfig',
     'dictionary.apps.DictionaryConfig',
@@ -31,6 +31,11 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
     'sitepulse.apps.SitepulseConfig',
     'premium.apps.PremiumConfig',
+    'api.apps.ApiConfig',
+
+    # REST FRAMEWORK
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -42,7 +47,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'med.middleware.TrackUserVisitsMiddleware',
     'sitepulse.middleware.VisitTrackingMiddleware',
 ]
@@ -181,4 +185,13 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'INFO',
     },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }

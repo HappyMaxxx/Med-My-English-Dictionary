@@ -16,6 +16,7 @@ urlpatterns = [
     path('', include('notifications.urls')),
     path('', include('sitepulse.urls')),
     path('', include('premium.urls')),
+    path('', include('api.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
