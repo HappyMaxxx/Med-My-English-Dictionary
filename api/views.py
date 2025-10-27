@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,7 +8,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 
 from api.decorators import time_logger
-
+from api.serializers import WordSerializer
+from dictionary.models import Word
 
 class TokenView(APIView):
     """
@@ -74,3 +76,93 @@ class TokenView(APIView):
                 {'error': 'No token found to delete.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class WordListCreateView(APIView):
+    """
+    POST — Add a new word to the dictionary
+    GET — Get a list of words for the current user
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @time_logger
+    def get(self, request):
+        """
+        GET: Get a list of words belonging to the current user.
+        """
+        words = Word.objects.filter(user=request.user) 
+        
+        serializer = WordSerializer(words, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @time_logger
+    def post(self, request):
+        """
+        POST: Add a new word for the current user.
+        """
+        serializer = WordSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save(user=request.user) 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WordDetailView(APIView):
+    """
+    DELETE — Delete a word by id
+    PUT — Fully update a word by id
+    PATCH — Partially update a word by id
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, request, pk):
+        """
+        Auxiliary function for obtaining an object 
+        belonging to the user or returning 404.
+        """
+        obj = get_object_or_404(Word, pk=pk, user=request.user)
+        return obj
+
+    @time_logger
+    def put(self, request, pk):
+        """
+        PUT: Completely update the word by id.
+        """
+        word_to_update = self.get_object(request, pk)
+        serializer = WordSerializer(word_to_update, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @time_logger
+    def patch(self, request, pk):
+        """
+        PATCH: Partially update the word by id.
+        """
+        word_to_update = self.get_object(request, pk)
+        serializer = WordSerializer(word_to_update, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @time_logger
+    def delete(self, request, pk):
+        """
+        DELETE: Delete a word by id.
+        """
+        try:
+            word_to_delete = self.get_object(request, pk)
+            word_to_delete.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Word.DoesNotExist:
+             return Response(
+                 {'error': 'Word not found or you do not have permission'},
+                 status=status.HTTP_404_NOT_FOUND
+             )
