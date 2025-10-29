@@ -1,3 +1,5 @@
+import requests
+
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
@@ -99,11 +101,30 @@ class WordListCreateView(APIView):
     def post(self, request):
         """
         POST: Add a new word for the current user.
+        Automatically detects word_type if not provided.
         """
-        serializer = WordSerializer(data=request.data)
-        
+        data = request.data.copy()
+
+        if not data.get('word_type') and data.get('word'):
+            word = data['word'].strip()
+            api_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+            try:
+                response = requests.get(api_url, timeout=5)
+                if response.status_code == 200:
+                    json_data = response.json()
+                    meanings = json_data[0].get('meanings', [])
+                    if meanings:
+                        data['word_type'] = meanings[0].get('partOfSpeech', 'other')
+                    else:
+                        data['word_type'] = 'other'
+                else:
+                    data['word_type'] = 'other'
+            except Exception:
+                data['word_type'] = 'other'
+
+        serializer = WordSerializer(data=data)
         if serializer.is_valid():
-            serializer.save(user=request.user) 
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
