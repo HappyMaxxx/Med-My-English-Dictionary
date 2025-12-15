@@ -34,6 +34,10 @@ from friendship.models import Friendship
 from dictionary.models import Word, WordGroup
 from practice.models import ReadingText
 
+import secrets
+from django.core.cache import cache
+from decouple import config
+
 from med.tasks import send_activation_email
 
 import logging
@@ -517,3 +521,12 @@ def page_not_found(request, exception):
 
 def soon_page(request):
     return render(request, 'med/soon.html')
+
+@login_required
+def generate_telegram_link(request):
+    token = secrets.token_urlsafe(16)
+
+    cache.set(f"tg_link_{token}", request.user.id, timeout=300)
+    
+    bot_username = config('TG_BOT_NAME')
+    return redirect(f"https://t.me/{bot_username}?start={token}")

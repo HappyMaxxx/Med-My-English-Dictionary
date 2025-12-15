@@ -20,4 +20,7 @@ urlpatterns = [
     path('tops/', views.tops_by_category, name='tops_by_category'),
     path('api/get-tops-by-category/', views.api_get_tops_by_category, name='api_get_tops_by_category'),
     path("hide-warning/", views.hide_warning_message, name="hide-warning-message"),
+
+    # Telegram bot
+    path("link-telegram/", views.generate_telegram_link, name="generate_telegram_link"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

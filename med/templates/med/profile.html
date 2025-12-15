@@ -45,6 +45,7 @@
 
     {% if is_my_profile %}
     <div class="buttons profile-buttons">
+        <a href="{% url 'generate_telegram_link' %}">Telegram Bot</a>
         <a href="{% url 'edit_profile' %}">Edit Profile</a>
     </div>
     {% else %}

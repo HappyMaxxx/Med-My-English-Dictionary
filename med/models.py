@@ -28,15 +28,22 @@ class UserProfile(models.Model):
         NOBODY = 'nobody', 'Nobody'
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_profile')
+
+    # Profile page
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     words_num_in_prof = models.IntegerField(choices=NumberWords.choices, default=NumberWords.five)
     what_type_show = models.CharField(max_length=10, choices=Types.choices, default=Types.learning)
-    access_dictionary = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.EVERYBODY)
     show_word_stats = models.CharField(max_length=10, choices=WordsMore.choices, default=WordsMore.EVERYBODY)
     show_pie_chart = models.BooleanField(default=True)
     show_bar_chart = models.BooleanField(default=True)
     show_line_chart = models.BooleanField(default=True)
     charts_order = models.CharField(max_length=30, default='Pie Chart,Bar Chart,Time Line')
+    hide_warning_message = models.BooleanField(default=False)
+
+    # Dictionary
+    access_dictionary = models.CharField(max_length=10, choices=WordsType.choices, default=WordsType.EVERYBODY)
+    
+    # Achievements
     text_read = models.IntegerField(default=0)
     words_added_from_text = models.IntegerField(default=0)
     sent_groups = models.IntegerField(default=0)
@@ -45,12 +52,16 @@ class UserProfile(models.Model):
     changed_order = models.BooleanField(default=False)
     achicment_order = models.CharField(max_length=30, blank=True)
 
-    hide_warning_message = models.BooleanField(default=False)
-
+    # Premium
     is_premium = models.BooleanField(default=False)
     premium_until = models.DateField(null=True, blank=True)
 
+    # Statuses
     grouper = models.BooleanField(default=False)
+
+    # Telegram bot
+    telegram_chat_id = models.CharField(max_length=64, blank=True, null=True, unique=True)
+    is_bot_active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username

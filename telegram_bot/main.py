@@ -9,6 +9,8 @@ import asyncio
 import logging
 from aiogram.fsm.storage.redis import RedisStorage
 
+from handlers import start, help, echo
+
 sys.path.append("/app")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mad.settings")
 django.setup()
@@ -35,11 +37,11 @@ commands = [
 async def on_startup():
     await bot.set_my_commands(commands)
 
-@dp.message()
-async def echo_handler(message: Message):
-    await message.answer(message.text)
-
 async def main():
+    dp.include_router(start.router)
+    dp.include_router(help.router)
+    dp.include_router(echo.router)
+
     try:
         await on_startup()
         await dp.start_polling(bot)

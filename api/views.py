@@ -1,5 +1,6 @@
 import requests
 
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
@@ -12,6 +13,7 @@ from django.contrib.auth import authenticate
 from api.decorators import time_logger
 from api.serializers import WordSerializer
 from dictionary.models import Word
+from med.models import UserProfile
 
 class TokenView(APIView):
     """
@@ -187,3 +189,33 @@ class WordDetailView(APIView):
                  {'error': 'Word not found or you do not have permission'},
                  status=status.HTTP_404_NOT_FOUND
              )
+        
+
+# Telegram bot API
+class LinkTelegramAccountView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get('token')
+        chat_id = request.data.get('chat_id')
+        
+        if not token or not chat_id:
+            return Response({"error": "Missing data"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        user_id = cache.get(f"tg_link_{token}")
+        
+        if not user_id:
+            return Response({"error": "Invalid or expired token"}, status=status.HTTP_404_NOT_FOUND)
+            
+        try:
+            profile, created = UserProfile.objects.get_or_create(user_id=user_id)
+            profile.telegram_chat_id = chat_id
+            profile.is_bot_active = True
+            profile.save()
+            
+            cache.delete(f"tg_link_{token}")
+            
+            return Response({"status": "success", "username": profile.user.username})
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
