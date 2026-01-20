@@ -205,6 +205,7 @@ class LinkTelegramAccountView(APIView):
             
         user_id = cache.get(f"tg_link_{token}")
         
+
         if not user_id:
             return Response({"error": "Invalid or expired token"}, status=status.HTTP_404_NOT_FOUND)
             
@@ -219,3 +220,43 @@ class LinkTelegramAccountView(APIView):
             return Response({"status": "success", "username": profile.user.username})
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class TelegramStatusView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        chat_id = request.query_params.get("chat_id")
+
+        if not chat_id:
+            return Response(
+                {"error": "chat_id required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            profile = UserProfile.objects.get(telegram_chat_id=chat_id)
+            return Response({
+                "linked": True,
+                "username": profile.user.username
+            })
+        except UserProfile.DoesNotExist:
+            return Response({"linked": False})
+
+
+class TelegramTokenView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        chat_id = request.query_params.get("chat_id")
+        if not chat_id:
+            return Response({"error": "chat_id required"}, status=400)
+
+        try:
+            profile = UserProfile.objects.get(telegram_chat_id=chat_id)
+            token, _ = Token.objects.get_or_create(user=profile.user)
+            return Response({"token": token.key})
+        except UserProfile.DoesNotExist:
+            return Response({"error": "Telegram not linked"}, status=404)

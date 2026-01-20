@@ -16,7 +16,7 @@ class Word(models.Model):
 
     word = models.CharField(max_length=100)
     translation = models.CharField(max_length=100)
-    example = models.TextField(blank=True)
+    example = models.TextField(blank=True, null=True)
     time_create = models.DateTimeField(auto_now_add=True)
     time_update = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
