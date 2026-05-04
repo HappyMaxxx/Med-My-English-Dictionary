@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (TokenView, WordDetailView, WordListCreateView,
-                    LinkTelegramAccountView, TelegramStatusView, TelegramTokenView)
+                    LinkTelegramAccountView, TelegramStatusView, TelegramTokenView,
+                    UnLinkTelegramAccountView)
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
@@ -9,6 +10,7 @@ urlpatterns = [
     path('api/v1/words/<int:pk>/', WordDetailView.as_view(), name='word-detail'),
     
     path('api/v1/link-telegram/', LinkTelegramAccountView.as_view(), name='link-telegram'),
-    path("api/v1/telegram-status/", TelegramStatusView.as_view()),
+    path("api/v1/unlink-telegram/", UnLinkTelegramAccountView.as_view(), name="unlink-telegram"),
+    path("api/v1/telegram-status/", TelegramStatusView.as_view(), name="telegram-status"),
     path("api/v1/telegram-token/", TelegramTokenView.as_view(), name="telegram-token"),
 ]

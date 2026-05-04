@@ -5,6 +5,7 @@ import aiohttp
 import logging
 
 from services.redis_storage import store_user_token
+from keyboards.start import new_word_on_start_kb
 
 router = Router()
 
@@ -29,7 +30,7 @@ async def start_handler(message: Message):
                             logging.warning(f"No token returned for chat_id {chat_id}")
 
                 text = f"Привіт, {data['username']} 👋\nДодамо нове слово?"
-                await message.answer(text)
+                await message.answer(text, reply_markup=new_word_on_start_kb)
                 return
 
         if args:
@@ -43,7 +44,8 @@ async def start_handler(message: Message):
                         data = await resp.json(content_type=None)
                         await store_user_token(chat_id, token)
                         await message.answer(
-                            f"Успіх! Ваш акаунт прив'язано до користувача {data.get('username', 'Unknown')}."
+                            f"Успіх! Ваш акаунт прив'язано до користувача {data.get('username', 'Unknown')}.",
+                            reply_markup=new_word_on_start_kb
                         )
                     else:
                         logging.error(f"Error {resp.status}: {response_text}")

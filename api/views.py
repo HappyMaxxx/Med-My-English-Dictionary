@@ -193,9 +193,9 @@ class WordDetailView(APIView):
 
 # Telegram bot API
 class LinkTelegramAccountView(APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
+    authentication_classes = [TokenAuthentication]
 
+    @time_logger
     def post(self, request):
         token = request.data.get('token')
         chat_id = request.data.get('chat_id')
@@ -222,10 +222,28 @@ class LinkTelegramAccountView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class UnLinkTelegramAccountView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @time_logger
+    def post(self, request):
+        try:
+            profile, created = UserProfile.objects.get_or_create(user_id=request.user.id)
+            profile.telegram_chat_id = None
+            profile.is_bot_active = False
+            profile.save()
+
+            return Response({"status": "success", "username": profile.user.username})
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
 class TelegramStatusView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
+    @time_logger
     def get(self, request):
         chat_id = request.query_params.get("chat_id")
 
@@ -249,6 +267,7 @@ class TelegramTokenView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
+    @time_logger
     def get(self, request):
         chat_id = request.query_params.get("chat_id")
         if not chat_id:

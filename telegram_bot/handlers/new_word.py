@@ -9,11 +9,22 @@ from services.dictionary import add_word_api
 
 router = Router()
 
+async def start_new_word_process(message_or_callback, state: FSMContext):
+    await state.clear()
+    if isinstance(message_or_callback, Message):
+        await message_or_callback.answer("Введи слово англійською 🇬🇧")
+    elif isinstance(message_or_callback, CallbackQuery):
+        await message_or_callback.message.answer("Введи слово англійською 🇬🇧")
+        await message_or_callback.answer()
+    await state.set_state(NewWordState.english)
+
 @router.message(Command("new_word"))
 async def new_word_start(message: Message, state: FSMContext):
-    await state.clear()
-    await message.answer("Введи слово англійською 🇬🇧")
-    await state.set_state(NewWordState.english)
+    await start_new_word_process(message, state)
+
+@router.callback_query(lambda c: c.data == "new_word")
+async def new_word_callback(callback: CallbackQuery, state: FSMContext):
+    await start_new_word_process(callback, state)
 
 @router.message(NewWordState.english)
 async def get_english(message: Message, state: FSMContext):

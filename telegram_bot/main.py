@@ -27,11 +27,12 @@ bot = Bot(token=BOT_TOKEN)
 storage = RedisStorage.from_url("redis://redis:6379/0")
 dp = Dispatcher(storage=storage)
 
-from handlers import start, help, echo, new_word
+from handlers import start, help, echo, new_word, link
 
 commands = [
     types.BotCommand(command="start", description="Get started"),
     types.BotCommand(command="new_word", description="Add new word"),
+    types.BotCommand(command="unlink_telegram", description="Unlink your Telegram account"),
     types.BotCommand(command="help", description="Get help"),
 ]
 
@@ -40,8 +41,10 @@ async def on_startup():
 
 async def main():
     dp.include_router(start.router)
+    dp.include_router(link.router)
     dp.include_router(new_word.router)
     dp.include_router(help.router)
+
     dp.include_router(echo.router)
 
     try:
